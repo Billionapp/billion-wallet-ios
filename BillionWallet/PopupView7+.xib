@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="12121" systemVersion="16F73" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+    <device id="retina5_5" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12089"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="PopupView" customModule="WalletUI" customModuleProvider="target">
+            <connections>
+                <outlet property="popupImage" destination="v6Y-Vh-NdT" id="wea-7E-V0k"/>
+                <outlet property="popupLabel" destination="P1d-SX-kV9" id="Fli-lt-zBB"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <imageView clearsContextBeforeDrawing="NO" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="v6Y-Vh-NdT">
+                    <rect key="frame" x="174" y="335" width="66" height="66"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="66.000000000000043" id="g7R-A7-WqH"/>
+                        <constraint firstAttribute="width" constant="65.999999999999986" id="hMC-tF-Y2u"/>
+                    </constraints>
+                </imageView>
+                <label opaque="NO" clearsContextBeforeDrawing="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="P1d-SX-kV9">
+                    <rect key="frame" x="99" y="443.66666666666663" width="216" height="118.99999999999989"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="118.99999999999996" id="59V-GC-LOH"/>
+                        <constraint firstAttribute="width" constant="215.99999999999997" id="6aW-ny-JCN"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="15"/>
+                    <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <nil key="highlightedColor"/>
+                </label>
+            </subviews>
+            <constraints>
+                <constraint firstItem="P1d-SX-kV9" firstAttribute="top" secondItem="v6Y-Vh-NdT" secondAttribute="bottom" constant="42.5" id="8DN-T2-3xn"/>
+                <constraint firstItem="v6Y-Vh-NdT" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="P7g-t1-Df0"/>
+                <constraint firstItem="P1d-SX-kV9" firstAttribute="centerX" secondItem="v6Y-Vh-NdT" secondAttribute="centerX" id="kYb-8e-aVa"/>
+                <constraint firstItem="v6Y-Vh-NdT" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="tpI-CP-O1S"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <nil key="simulatedTopBarMetrics"/>
+            <nil key="simulatedBottomBarMetrics"/>
+        </view>
+    </objects>
+</document>
