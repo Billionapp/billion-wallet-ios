@@ -1,30 +1,27 @@
-billion-wallet-ios
-==========
+## Billion – Bitcoin Wallet
 
-Billion Bitcoin Wallet is an elegant and secure Bitcoin wallet!
 
-## Features
+**Billion** is an open-source Bitcoin wallet for iPhone that implements innovative features such as the system of social financial connections based on Reusable Payment Codes and gorgeous user interface that provides easier than ever access to the most advanced financial systems.
 
-* Elegant UI
-* SPV P2P architecture
-* Social Connections functionality based on BIP-0047 Reusable Payment Codes
-* Full control over private keys
-* Manual network fee
+### Main Distinctive Features
 
-## Installation
+- Gorgeous user interface
+- Hierarchically Deterministic key management based on [BIP44](https://github.com/bitcoin/bips/blob/master/bip-0044.mediawiki); extended with
+- System of Social Financial Connections based on [BIP47 – Reusable Payment Codes](https://github.com/bitcoin/bips/blob/master/bip-0047.mediawiki)
+- Direct connection to Bitcoin network and [Simplified Payment Verification](https://en.bitcoin.it/wiki/Thin_Client_Security#Header-Only_Clients)
+- Bitcoin private keys are under user's control and stored using best in industry hardware encryption of iPhone
+- Custom fees
 
-Clone the project
+### Installation
 
-    git clone https://github.com/Billionapp/billion-wallet-ios.git
-    cd billion-wallet-ios
-    git submodule init
-    git submodule update
-    pod install
+Billion is in open beta development stage. You can join by sending an email request to [info@billionapp.org](mailto:beta@billionapp.org?subject=Billion beta participation request&body=Just send this 📧 as it is  – we will reply you with an invitation soon 😎).
 
-Run `BillionWallet.xcworkspace`
+`Beta – Stage 1. Starting November 3rd 2017`
 
-You may want to import build schemes located in `schemes` directory
+### Website
 
-## Website
+[BillionApp.org](http://billionapp.org)
 
-[Billion.org](http://billion.org)
+### License
+
+**Billion** is and available under the terms of the MIT license.
