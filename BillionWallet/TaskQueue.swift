@@ -8,14 +8,22 @@
 
 import UIKit
 
-struct TaskQueue {
-    
+struct TaskQueue: CustomStringConvertible {
     enum OperationType: Int, CodingKey {
-        case registrationNew
-        case registrationRestore
+        case register
+        case updateProfile
+        case pushConfig
     }
    
     let operationType: OperationType
+    
+    var description: String {
+        switch operationType {
+        case .register: return "Registration"
+        case .updateProfile: return "Profile update"
+        case .pushConfig: return "Configure push notifications"
+        }
+    }
 }
 
 // MARK: - Equatable

@@ -9,37 +9,41 @@
 import Foundation
 
 protocol GeneralVMDelegate: class {
-    func balanceDidChange(number: UInt64)
-    func didReceiveTransactions()
-    func didSelectFilter(_ value: Bool)
-    func reachabilityDidChange(status: Bool)
+    func willUpdateItems(_ items: HistoryUpdater)
+    func didReceiveContacts()
     func didChangeLockStatus(_ isLocked: Bool)
     func didChangeIsTouchIdEnabled(_ isTouchIdEnabled: Bool)
+    func scrollViewDidScroll(_ scrollView: UIScrollView)
+    func didSelectContact(_ contact: ContactProtocol)
+    func setConveyorAfterUnlock()
 }
 
 class GeneralVM {
-    
     enum SyncStatus: String {
         case connecting
         case syncing
         case synced
     }
-
-    var dateFormatter: DateFormatter!
+    
+    lazy var txsDataManager: TxsDataManager = {
+        let manager = TxsDataManager(viewModel: self, fiatConverter: fiatConverter)
+        return manager
+    }()
+    
+    lazy var contactsDataSource: GeneralContactsDataSource = {
+        let dataSource = GeneralContactsDataSource(viewModel: self)
+        dataSource.delegate = self
+        return dataSource
+    }()
     var currentFilter: FilterView.Filter?
-    var filteredTransactions = [Transaction]() {
+    
+    var contacts = [ContactProtocol]() {
         didSet {
-            delegate?.didReceiveTransactions()
+            delegate?.didReceiveContacts()
         }
     }
     
-    var allTransactions = [Transaction]()
-    
-    var balance: UInt64 {
-        didSet {
-            delegate?.balanceDidChange(number: balance)
-        }
-    }
+    var filteredItems = [HistoryDisplayable]()
     
     var passcode: String? {
         return keychain.pin
@@ -53,48 +57,128 @@ class GeneralVM {
         return defaultsProvider.isTouchIdEnabled
     }
     
-    weak var delegate: GeneralVMDelegate? {
-        didSet {
-            delegate?.balanceDidChange(number: balance)
-        }
-    }
+    var batchUpdateQueue: DispatchQueue
     
+    weak var delegate: GeneralVMDelegate?
+    weak var cellDelegate: TxCellDelegate?
+    
+    private var messageFetchProvider: MessageFetchProviderProtocol!
     weak var walletProvider: WalletProvider!
     weak var accountProvider: AccountManager?
-    weak var icloudProvider: ICloud?
+    weak var icloudProvider: ICloud!
     weak var defaultsProvider: Defaults!
-    weak var contactsProvider: ContactsProvider?
-    weak var ratesProvider: RatesProvider?
-    weak var taskQueueProvider: TaskQueueProvider?
+    weak var contactsProvider: ContactsProvider!
+    private let ratesProvider: RateProviderProtocol!
+    weak var userPaymentRequestProvider: UserPaymentRequestProtocol!
+    weak var selfPaymentRequestProvider: SelfPaymentRequestProtocol!
+    weak var failureTransactionProvider: FailureTxProtocol!
     weak var feeProvider: FeeProvider?
+    weak var tapticService: TapticService!
+    private let authChecker: AuthCheckerProtocol
     var keychain: Keychain
+    var imageCache = NSCache<NSString,UIImage>()
+    private let routingVisitor: HistoryDisplayableVisitor
+    private let fiatConverter: FiatConverter
+    private var contactChannel: ContactChannel?
+    private var transactionsInterim: [Transaction] = []
+    private var sortedTxs: [Transaction] = []
     
     // MARK: - Lifecycle
-    init(walletProvider: WalletProvider, keychain: Keychain, accountProvider: AccountManager, icloudProvider: ICloud, defaultsProvider: Defaults, contactsProvider: ContactsProvider, ratesProvider: RatesProvider, taskQueueProvider: TaskQueueProvider, feeProvider: FeeProvider) {
-
+    init(walletProvider: WalletProvider,
+         keychain: Keychain,
+         accountProvider: AccountManager,
+         icloudProvider: ICloud,
+         defaultsProvider: Defaults,
+         contactsProvider: ContactsProvider,
+         ratesProvider: RateProviderProtocol,
+         feeProvider: FeeProvider,
+         userPaymentRequestProvider: UserPaymentRequestProtocol,
+         selfPaymentRequestProvider: SelfPaymentRequestProtocol,
+         failureTransactionProvider: FailureTxProtocol,
+         routingVisitor: HistoryDisplayableVisitor,
+         tapticService: TapticService,
+         messageFetchProvider: MessageFetchProviderProtocol,
+         fiatConverter: FiatConverter,
+         authChecker: AuthCheckerProtocol) {
+        
+        self.messageFetchProvider = messageFetchProvider
+        self.routingVisitor = routingVisitor
         self.walletProvider = walletProvider
-        self.keychain = keychain
-        self.balance = 0
-        self.dateFormatter = DateFormatter()
-        dateFormatter.locale = Locale.current
-        dateFormatter.dateStyle = .medium
-        self.updateBalance()
         self.accountProvider = accountProvider
         self.icloudProvider = icloudProvider
         self.defaultsProvider = defaultsProvider
         self.ratesProvider = ratesProvider
         self.contactsProvider = contactsProvider
         self.feeProvider = feeProvider
-        self.taskQueueProvider?.start()
-        walletProvider.peerManager.connect()
-        ratesProvider.startTimer()
-        feeProvider.startTimer()
+        self.userPaymentRequestProvider = userPaymentRequestProvider
+        self.selfPaymentRequestProvider = selfPaymentRequestProvider
+        self.failureTransactionProvider = failureTransactionProvider
+        self.tapticService = tapticService
+        self.keychain = keychain
+        self.fiatConverter = fiatConverter
+        self.authChecker = authChecker
         
-        let notifyName = "BRWalletBalanceChangedNotification"
-        let reachNotify = "NetworkReachabilityChangedNotification"
-        NotificationCenter.default.addObserver(self, selector: #selector(updateBalance), name: NSNotification.Name(rawValue: notifyName), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(checkReachabilityStatus), name: NSNotification.Name(rawValue: reachNotify), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(didUpdateLockStatus(_:)), name: .didUpdateLockStatus, object: nil)
+        self.batchUpdateQueue = DispatchQueue(label: "batch-update-queue")
+        walletProvider.peerManager.connect()
+        feeProvider.startTimer()
+        messageFetchProvider.startFetching()
+        copyPrivPcToSharedKeychain()
+        
+        let clearCacheForContact = "ClearCacheForContactNotification"
+        let txStatusNotify = Notification.Name(rawValue: "BRPeerManagerTxStatusNotification")
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(updateHistory),
+                                               name: UserPaymentRequestEvent,
+                                               object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(updateHistory),
+                                               name: SelfPaymentRequestEvent,
+                                               object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(updateHistory),
+                                               name: FailureTransactionsEvent,
+                                               object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(updateAll),
+                                               name: .walletBalanceChangedNotificationName,
+                                               object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(updateItemsForRates(_:)),
+                                               name: .walletRatesChangedNotificationName,
+                                               object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(didUpdateLockStatus(_:)),
+                                               name: .didUpdateLockStatus,
+                                               object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(clearCacheForContact(notification:)),
+                                               name: NSNotification.Name(rawValue: clearCacheForContact),
+                                               object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(updateHistory),
+                                               name: .transactionsLinkedToContact,
+                                               object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(updateHistory),
+                                               name: txStatusNotify,
+                                               object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(updateAll),
+                                               name: .walletSwitchCurrencyNotificationName,
+                                               object: nil)
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+        self.contactChannel?.removeObserver(withId: self.objId)
+        self.contactChannel = nil
+    }
+  
+    func copyPrivPcToSharedKeychain() {
+        let selfPrivData = accountProvider?.getSelfCPPriv()
+        let keychain = Keychain()
+        keychain.selfPCPriv = selfPrivData
+    }
+    
+    func isNeedToCreatePin() -> Bool {
+        return (passcode ?? "").isEmpty
+    }
+    
+    @objc func clearCacheForContact(notification: Notification) {
+        if let userInfo = notification.userInfo, let cache = userInfo["cacheString"] as? NSString {
+            imageCache.removeObject(forKey: cache)
+        }
     }
     
     @objc func didChangeIsTouchIdEnabled(_ notification: Notification) {
@@ -102,12 +186,14 @@ class GeneralVM {
             delegate?.didChangeIsTouchIdEnabled(isTouchIdEnabled)
         }
     }
-
-    @objc func updateBalance() {
-        if let balanceInt = self.walletProvider?.manager.wallet?.balance {
-            balance = balanceInt
-        }
-        getTransactions()
+    
+    func updateFiatConverter() {
+        self.fiatConverter.changeCurrency(newCurrency: defaultsProvider.currencies.first!)
+    }
+    
+    @objc func updateAll() {
+        updateFiatConverter()
+        updateHistory(nil)
     }
     
     @objc func didUpdateLockStatus(_ notification: Notification) {
@@ -116,92 +202,211 @@ class GeneralVM {
         }
     }
     
-    func getTransactions() {
-        guard let bTransactions = walletProvider?.manager.wallet?.allTransactions as? [BRTransaction] else {
-            return
-        }
-        
-        let sorted = bTransactions.reversed()
-        
-        let allContacts = contactsProvider?.allContacts()
-        
-        let transactionsInterim = sorted.map { transaction -> Transaction in
-            let rates = ratesProvider?.ratesForTx(transaction: transaction) ?? []
-            let txHash = UInt256S(transaction.txHash)
-            if let contact = contactsProvider?.getContact(txHash: txHash) {
-                let isNotificationTx = (contact as? PaymentCodeContact)?.isContactForNotificationTransaction(txHash: txHash)
-                return Transaction(brTransaction: transaction, contact: contact, isNotificationTx: isNotificationTx ?? false, rates: rates)
-            } else if let contact = contactsProvider?.getContactForNotification(txHash: txHash) {
-                return Transaction(brTransaction: transaction, contact: contact, isNotificationTx: true, rates: rates)
+    @objc func updateItemsForRates(_ notification: Notification) {
+        if let rateHistory = notification.object as? RateHistory {
+            var updateIndexes:IndexSet = []
+            let newItems = NSArray(array: self.filteredItems, copyItems: true) as! [HistoryDisplayable]
+            for (i, var element) in newItems.enumerated() {
+                if Int64(element.time.timeIntervalSince1970) == rateHistory.blockTimestamp {
+                    if element is TransactionDisplayer {
+                        guard let currency = self.defaultsProvider.currencies.first else { return }
+                        let rateSource = HistoricalRatesSource(ratesProvider: self.ratesProvider)
+                        rateSource.set(time: element.time.timeIntervalSince1970)
+                        let historicalFiatConverter = FiatConverter(currency: currency, ratesSource: rateSource)
+                        let txHashHex = element.identity.components(separatedBy: ":").last
+                        let txs = transactionsInterim.filter { $0.txHash.data.hex == txHashHex }
+                        if let tx = txs.first {
+                            element = TransactionDisplayer(transaction: tx,
+                                                           walletProvider: self.walletProvider,
+                                                           defaults: self.defaultsProvider,
+                                                           fiatConverter: self.fiatConverter,
+                                                           historicalFiatConverter: historicalFiatConverter)
+                            updateIndexes.insert(i)
+                        }
+                    }
+                }
+            }
+            if updateIndexes.count > 0 {
                 
-            } else {
-                let contact = allContacts?.filter({ $0.isContact(for: transaction) }).first
-                return Transaction(brTransaction: transaction, contact: contact, isNotificationTx: false, rates: rates)
+                Logger.debug("INDEXES COUNT FOR UPDATE RATES: \(updateIndexes.count)")
+                let updater = HistoryUpdater()
+                updater.configureUpdateByIndexes(indexes: updateIndexes)
+                
+                DispatchQueue.main.async { [weak self] in
+                    self?.delegate?.willUpdateItems(updater)
+                }
+            }
+        }
+    }
+    
+    func compareHistoryDisplayable(_ lhs: HistoryDisplayable, _ rhs: HistoryDisplayable) -> Bool {
+        if lhs.time > rhs.time {
+            return true
+        } else if lhs.time == rhs.time && lhs.sortPriority > rhs.sortPriority {
+            return true
+        } else if lhs.time == rhs.time && lhs.sortPriority == rhs.sortPriority {
+            return lhs.identity.data(using: .utf8)!.last! > rhs.identity.data(using: .utf8)!.last!
+        } else {
+            return false
+        }
+    }
+    
+    @objc func updateHistory(_ notification: Notification?) {
+        Logger.debug("\(String(describing: notification))")
+        batchUpdateQueue.async {
+            guard let wallet = try? self.walletProvider.getWallet() else {
+                return
             }
             
-        }
-        
-        allTransactions = transactionsInterim
-        filteredTransactions = allTransactions
-    }
-    
-    func checkWalletDigest() {
-        guard accountProvider?.currentWalletDigest != nil else {
-            _ = accountProvider?.createNewWalletDigest()
-            return
-        }        
-    }
-    
-    func restoreUserNotesIfNeeded() {
-        if !defaultsProvider.isBackupRestored {
-            icloudProvider?.restoreComments(walletProvider: walletProvider)
-        }
-    }
-    
-    @objc func checkReachabilityStatus(notification: NSNotification) {
-        if let reachability = notification.object as? Reachability {
-            let status = reachability.currentReachabilityStatus() == NotReachable
-            delegate?.reachabilityDidChange(status: status)
-        }
-    }
-    
-    func currentSyncStatus() -> SyncStatus {
-        let peerMan = walletProvider.peerManager
-        if peerMan.syncProgress < 1.0 {
-            if !peerMan.isConnectedToDownloadPeer() {
-                return .connecting
-            } else {
-                return .syncing
+            // Memorize old state
+            let oldItems = self.filteredItems
+            
+            
+            // Compute new state
+            let bTransactions = wallet.allTransactions
+            
+            let contacts = self.contactsProvider.allContacts()
+            
+            self.transactionsInterim.removeAll()
+            self.sortedTxs.removeAll()
+            self.transactionsInterim = bTransactions.map { transaction -> Transaction in
+                let tx = Transaction(brTransaction: transaction, walletProvider: self.walletProvider)
+                let txHash = UInt256S(transaction.txHash)
+                
+                if let contact = self.getContact(txHash: txHash, contacts: contacts) {
+                    let isNotificationTx = (contact as? PaymentCodeContact)?.isContactForNotificationTransaction(txHash: txHash)
+                    tx.contact = contact
+                    tx.isNotificationTx = isNotificationTx == true
+                }
+                
+                return tx
             }
-        } else {
-            return .synced
+            
+            for tx in self.transactionsInterim {
+                if !tx.isIncomingNotificationTx() {
+                    self.sortedTxs.append(tx)
+                }
+            }
+            
+            var newTxs = [TransactionDisplayer]()
+            for tx in self.sortedTxs {
+                autoreleasepool(invoking: {
+                    guard let currency = self.defaultsProvider.currencies.first else { return }
+                    let rateSource = HistoricalRatesSource(ratesProvider: self.ratesProvider)
+                    rateSource.set(time: tx.dateTimestamp.timeIntervalSince1970)
+                    let historicalFiatConverter = FiatConverter(currency: currency, ratesSource: rateSource)
+                    newTxs.append(TransactionDisplayer(transaction: tx,
+                                                       walletProvider: self.walletProvider,
+                                                       defaults: self.defaultsProvider,
+                                                       fiatConverter: self.fiatConverter,
+                                                       historicalFiatConverter: historicalFiatConverter))
+                })
+            }
+            
+            let userPaymentRequests = self.userPaymentRequestProvider.allUserPaymentRequests.filter {
+                $0.state == .waiting || $0.state == .declined || $0.state == .failed
+            }
+            let uprDisplayers = userPaymentRequests.map { UserPaymentRequestDisplayer(userPaymentRequest: $0, fiatConverter: self.fiatConverter, contactsProvider: self.contactsProvider) }
+            
+            let selfPaymentRequests = self.selfPaymentRequestProvider.allSelfPaymentRequests
+            let sprDisplayers = selfPaymentRequests.map { SelfPaymentRequestDisplayer(selfPaymentRequest: $0, contactsProvider: self.contactsProvider, fiatConverter: self.fiatConverter) }
+            
+            let failureTransactions = self.failureTransactionProvider.allFailureTxs
+            let failureTxDisplayers = failureTransactions.map { FailureTxDisplayer(failureTx: $0, fiatConverter: self.fiatConverter, contactsProvider: self.contactsProvider) }
+            
+            let historyItems = Array([
+                newTxs as [HistoryDisplayable],
+                uprDisplayers as [HistoryDisplayable],
+                failureTxDisplayers as [HistoryDisplayable],
+                sprDisplayers as [HistoryDisplayable]
+                ].joined())
+            let newItems = historyItems.sorted(by: self.compareHistoryDisplayable)
+            
+            // Create Update object
+            let updater = HistoryUpdater()
+            updater.configureUpdate(fromState: oldItems, toState: newItems)
+            // Call delegate's method with update object
+            DispatchQueue.main.async { [weak self] in
+                self?.delegate?.willUpdateItems(updater)
+            }
         }
     }
     
-    func currentSyncPercent() -> Double {
-        let peerMan = walletProvider.peerManager
-        let syncProgress = peerMan.syncProgress
-        return syncProgress
+    func commitUpdates(_ updates: HistoryUpdater) throws {
+        // FIXME: Assert old state is equal to current state
+        guard filteredItems.count == updates.oldState.count else {
+            Logger.warn("Updater startState does not match current state: \(filteredItems.count) != \(updates.oldState.count)")
+            self.updateHistory(nil)
+            throw GeneralVMError.commitCheckFailed
+        }
+        // Change current state to updated values
+        self.filteredItems = updates.newState
     }
     
-    func currentBlock() -> BRMerkleBlock {
-        let peerMan = walletProvider.peerManager
-        return peerMan.lastBlock()
+    func itemForIdentity(_ identity: String) -> HistoryDisplayable {
+        // FIXME: thread safety
+        return filteredItems.first { $0.identity == identity }!
     }
     
-    func currentBlockDate() -> String {
-        let blockTs = currentBlock().timestamp
-        let date = Date(timeIntervalSince1970: TimeInterval(blockTs))
-        return dateFormatter.string(from: date)
+    private func getContact(txHash: UInt256S, contacts: [ContactProtocol]) -> ContactProtocol? {
+        if let firstContact = contacts.first(where: { $0.txHashes.contains(txHash.data.hex) }) {
+            if firstContact.isArchived,
+                let firstUnarchivedContact = contacts.first(where: { $0.txHashes.contains(txHash.data.hex) && !$0.isArchived }) {
+                return firstUnarchivedContact
+            }
+            return firstContact
+        }
+        return nil
     }
     
-    func estimatedBlockHeight() -> UInt32 {
-        let peerMan = walletProvider.peerManager
-        return peerMan.estimatedBlockHeight
+    func getContacts() {
+        contacts = contactsProvider.allContacts(isArchived: false)
     }
-        
-    deinit {
-        NotificationCenter.default.removeObserver(self)
+    
+    func restoreIfNeeded() {
+        let digest = accountProvider?.getOrCreateWalletDigest()!
+        restoreFromIcloudBackupIfNeeded(digest: digest!)
+    }
+    
+    func restoreFromIcloudBackupIfNeeded(digest: String) {
+        if !defaultsProvider.isBackupRestored && !defaultsProvider.isWalletJustCreated {
+            icloudProvider?.restoreComments(walletProvider: walletProvider)
+            icloudProvider?.restoreConfig(walletProvider: walletProvider, defaults: defaultsProvider, currentWalletDigest: digest)
+            icloudProvider?.restoreContacts(contactsProvider: contactsProvider)
+            authChecker.ensureAuthIsOk()
+        }
+    }
+    
+    func showDetails(for historyDisplayable: HistoryDisplayable, cellY: CGFloat, backImage: UIImage) {
+        historyDisplayable.showDetails(visitor: routingVisitor, cellY: cellY, backImage: backImage)
+    }
+    
+    // MARK: - Channels
+    private lazy var objId: String = {
+        let id = "\(type(of: self)):\(String(format: "%p", unsafeBitCast(self, to: Int.self)))"
+        return id
+    }()
+    
+    func setContactChannel(_ channel: ContactChannel) {
+        self.contactChannel = channel
+        channel.addObserver(Observer<ContactsProvider.ContactMessage>(id: self.objId, callback: { [weak self] message in
+            self?.acceptContactMessage(message)
+        }))
+    }
+    
+    private func acceptContactMessage(_ message: ContactsProvider.ContactMessage) {
+        switch message {
+        case .contactAdded(let newContact):
+            if !self.contacts.contains(where: { $0.uniqueValue == newContact.uniqueValue }) {
+                self.contacts.append(newContact)
+            }
+        case .contactUpdated:
+            return
+        case .contactRemoved(let removedContact):
+            if let index = self.contacts.index(where: { $0.uniqueValue == removedContact.uniqueValue }) {
+                self.contacts.remove(at: index)
+            }
+        }
     }
 }
 
@@ -210,41 +415,48 @@ class GeneralVM {
 extension GeneralVM: PasscodeOutputDelegate {
     
     func didCompleteVerification() {
-        
+        delegate?.setConveyorAfterUnlock()
     }
     
-    func didUpdatePascode(_ passcode: String) {
+    func didUpdatePasscode(_ passcode: String) {
         keychain.pin = passcode
+        didCompleteVerification()
     }
     
+    func didCancelVerification() {
+        delegate?.setConveyorAfterUnlock()
+    }
 }
 
 // MARK: - FilterViewDelegate
-
 extension GeneralVM: FilterViewDelegate {
     
     func didAddFilter(_ filter: FilterView.Filter) {
         currentFilter = filter
-        filteredTransactions = allTransactions.filter { tx in
-            
-            var sendedFiltred = true
-            if let sended = filter.sended {
-                sendedFiltred =  tx.isReceived == !sended
-            }
-            
-            var timestampFiltred = true
-            if let timestamp = tx.timestamp, let filterDate = filter.selectedDate {
-                timestampFiltred = Calendar.current.isDate(timestamp, inSameDayAs: filterDate)
-            }
-            
-            return sendedFiltred && timestampFiltred
-        }
-        delegate?.didSelectFilter(true)
     }
     
     func didRemoveFilters() {
-        currentFilter = nil
-        filteredTransactions = allTransactions
-        delegate?.didSelectFilter(false)
+    }
+}
+
+// MARK: - GeneralContactsDataSourceDelegate
+
+extension GeneralVM: GeneralContactsDataSourceDelegate {
+    
+    func didSelect(at index: Int) {
+        let contact = contacts[index]
+        delegate?.didSelectContact(contact)
+    }
+}
+
+enum GeneralVMError: LocalizedError {
+    case commitCheckFailed
+    
+    // TODO: Localize?
+    var errorDescription: String? {
+        switch self {
+        case .commitCheckFailed:
+            return "Updater old state does not match current state"
+        }
     }
 }

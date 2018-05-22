@@ -143,10 +143,8 @@ NSDictionary *getKeychainDict(NSString *key, NSError **error);
 		udidDict = [[NSMutableDictionary alloc] init];
 	}
 	
-	if (![udidDict objectForKey:acNum]) {
-		[udidDict setValue:udid forKey:acNum];
-		setKeychainDict(udidDict, UDID, YES);
-	}
+    [udidDict setValue:udid forKey:acNum];
+    setKeychainDict(udidDict, UDID, YES);
 }
 
 + (NSData *) getKeyChainUdidForAccountNumber: (uint32_t) accountNumber {
@@ -163,36 +161,14 @@ NSDictionary *getKeychainDict(NSString *key, NSError **error);
         shKDHDict = [[NSMutableDictionary alloc] init];
     }
     
-    if (![shKDHDict objectForKey:acNum]) {
-        [shKDHDict setValue:key forKey:acNum];
-        setKeychainDict(shKDHDict, SHARED_KEY_DH, YES);
-    }
+    [shKDHDict setValue:key forKey:acNum];
+    setKeychainDict(shKDHDict, SHARED_KEY_DH, YES);
 }
 
 + (NSString *) getKeyChainSharedPubDHForAccount: (uint32_t) accountNumber {
     NSString *acNum = [NSString stringWithFormat:@"%u", accountNumber];
     NSDictionary *shKDHDict = getKeychainDict(SHARED_KEY_DH, nil);
     return [shKDHDict valueForKey:acNum];
-}
-
-+ (void) setKeyChainSecretDHForAccount: (uint32_t) number secret: (NSData *_Nullable) secret {
-    NSString *acNum = [NSString stringWithFormat:@"%u", number];
-    NSDictionary *secretKDHDict = getKeychainDict(SECRET_DH, nil);
-    
-    if (!secretKDHDict) {
-        secretKDHDict = [[NSMutableDictionary alloc] init];
-    }
-    
-    if (![secretKDHDict objectForKey:acNum]) {
-        [secretKDHDict setValue:secret forKey:acNum];
-        setKeychainDict(secretKDHDict, SECRET_DH, YES);
-    }
-}
-
-+ (NSData *) getKeyChainSecretDHForAccount:(uint32_t)number {
-    NSString *acNum = [NSString stringWithFormat:@"%u", number];
-    NSDictionary *secretKDHDict = getKeychainDict(SECRET_DH, nil);
-    return [secretKDHDict valueForKey:acNum];
 }
 
 + (void) setKeyChainPassword: (NSString *) password {

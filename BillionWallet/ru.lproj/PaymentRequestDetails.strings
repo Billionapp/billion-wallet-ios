@@ -1,0 +1,39 @@
+
+/* Payment request status: received */
+"PaymentRequest.receiverRequest" = "Получен запрос на получение средств";
+
+/* Payment request status: declined */
+"PaymentRequest.requestDeclined" = "Запрос на получение средств отклонен";
+
+/* Payment request status: in progress */
+"PaymentRequest.requestInProgress" = "Запрос на получение отправлен";
+
+/* Payment request status: rejected */
+"PaymentRequest.requestRejected" = "Запрос на получение отменен";
+
+/* Self payment request details title */
+"PaymentRequest.sentRequestTitle" = "Отправлен\nзапрос на получение";
+
+/* User payment request details title */
+"PaymentRequest.receiverRequestTitle" = "Входящий\nзапрос на получение";
+
+/* Declined payment request details title */
+"PaymentRequest.receiverRequestDeclinedTitle" = "Запрос на получение\nсредств отклонен";
+
+/* Text to appear on confirm button for request */
+"PaymentRequest.confirmButtonText" = "Подтвердить";
+
+/* Text to appear on decline button for request */
+"PaymentRequest.declineButtonText" = "Отклонить";
+
+/* Text to appear on cancel button for request */
+"PaymentRequest.cancelButtonText" = "Отмена";
+
+/* Text to appear on delete button for request */
+"PaymentRequest.deleteButtonText" = "Удалить";
+
+/* Text to appear on buble title for request */
+"PaymentRequest.bubbleTitleText" = "Запрос на получение";
+
+/* Insufficient balance alert */
+"SendScreen.Notice.insufficientBalanceError" = "Недостаточно средств";

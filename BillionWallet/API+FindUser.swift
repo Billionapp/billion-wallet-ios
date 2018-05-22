@@ -9,11 +9,12 @@
 import Foundation
 
 extension API {
-    func findUser(nickname: String, completion: @escaping (Result<UserData>) -> Void) {
+    func findUser(pc: String, completion: @escaping (Result<UserData>) -> Void) {
         
-        let request = NetworkRequest(method: .GET, path: "/users?nick=\(nickname)")
+        let request = NetworkRequest(method: .GET, path: "/users?pc=\(pc)")
         
-        network.makeRequest(request) { (result: Result<JSON>) in
+        Logger.debug("\(request)")
+        network.makeRequest(request, resultQueue: DispatchQueue.global()) { (result: Result<JSON>) in
             switch result {
             case .success(let json):
                 guard let userData = UserData(json: json) else {

@@ -10,103 +10,122 @@ import Foundation
 import UIKit
 
 protocol  ProfileVMDelegate: class {
-    func update(userData: LocalUserData?)
+    func didReceiveUserData(_ contact: LocalUserData?)
     func closeView()
+    func didReceiveSharePicture(card: UIImage)
 }
 
 class ProfileVM {
     
     weak var delegate: ProfileVMDelegate?
-    weak var api: API?
-    weak var icloudProvider: ICloud?
-    weak var defaults: Defaults?
-
-    var userData: LocalUserData?
+    private weak var api: API!
+    private weak var icloudProvider: ICloud!
+    private weak var defaults: Defaults!
+    private let accountProvider: AccountManager!
     
-    var photo: Data?
-    var name: String?
-    var nick: String?
+    private var userData: LocalUserData?
+    private var newName: String?
+    private var newPhoto: Data?
     
-    init(api: API, icloudProvider: ICloud, defaults: Defaults) {
+    var paymentCodeString: String!
+    
+    init(api: API, icloudProvider: ICloud, defaults: Defaults, accountProvider: AccountManager) {
         self.api = api
         self.icloudProvider = icloudProvider
         self.defaults = defaults
-        
+        self.accountProvider = accountProvider
+        self.paymentCodeString = accountProvider.getSelfPCString()
+    }
+    
+    func getUserData() {
         if let userData = icloudProvider.restoreObjectsFromBackup(LocalUserData.self).first {
             self.userData = userData
-            delegate?.update(userData: userData)
+            delegate?.didReceiveUserData(userData)
         }
     }
     
+    func setName(to name: String) {
+        newName = name
+    }
+    
+    func setPhoto(to photo: Data) {
+        newPhoto = photo
+    }
+    
     func save() {
-        if nick != nil || name != nil {
-            updateUserData()
-        } else if photo != nil {
-            updateAvatar()
+        if let name = newName {
+            updateUserData(name: name)
+        }
+        
+        if let photo = newPhoto {
+            updateAvatar(photo: photo)
+        }
+        
+        if newName == nil && newPhoto == nil {
+            delegate?.closeView()
         }
     }
     
     func cancel() {
         clearChanges()
-        delegate?.update(userData: userData)
+        delegate?.didReceiveUserData(userData)
+    }
+    
+    func shareContact(card: UIImage) {
+        delegate?.didReceiveSharePicture(card: card)
     }
     
     func getPaymentCodeQRImage() -> UIImage? {
-        let pc = BRWalletManager.getKeychainPaymentCode(forAccount: 0)
-        return createQRFromString(pc, size: CGSize(width: 150, height: 150), inverseColor: true)
+        return createQRFromString(paymentCodeString, size: CGSize(width: 150, height: 150), inverseColor: true)
     }
     
-    fileprivate func updateUserData() {
-        
-        api?.updateSelfProfile(nick: nick, name: name) { [weak self] result in
-            guard let this = self else { return }
+    fileprivate func updateUserData(name: String) {
+        api?.updateSelfProfile(name: name) { [weak self] result in
             
             switch result {
             case .success:
                 
-                if this.photo != nil {
-                    this.updateAvatar()
-                    
-                } else {
-                    this.backupUserData()
+                if let userData = self?.icloudProvider.restoreObjectsFromBackup(LocalUserData.self).first {
+                    let newUserData = LocalUserData(name: name, imageData: userData.attach?.data)
+                    try? self?.icloudProvider.backup(object: newUserData)
                 }
                 
-                self?.delegate?.closeView()
-                
+                self?.finish()
             case .failure:
-                this.delegate?.update(userData: this.userData)
+                Logger.warn("Cannot update profile")
+                self?.delegate?.didReceiveUserData(self?.userData)
             }
         }
         
     }
     
-    fileprivate func updateAvatar() {
-        guard let photo = photo else {
-            return
-        }
-        
+    fileprivate func updateAvatar(photo: Data) {
         api?.addSelfAvatar(imageData: photo) { [weak self] result in
-            guard let this = self else { return }
             
             switch result {
             case .success:
-                this.backupUserData()
+                
+                if let userData = self?.icloudProvider.restoreObjectsFromBackup(LocalUserData.self).first {
+                    let newUserData = LocalUserData(name: userData.name, imageData: photo)
+                    try? self?.icloudProvider.backup(object: newUserData)
+                }
+                
+                self?.finish()
             case .failure:
-                this.delegate?.update(userData: this.userData)
+                self?.delegate?.didReceiveUserData(self?.userData)
             }
         }
     }
-    
-    fileprivate func backupUserData() {
-        userData = LocalUserData(name: name ?? userData?.name, nick: nick ?? userData?.nick, imageData: photo ?? userData?.imageData)
-        try? icloudProvider?.backup(object: userData!)
+
+    fileprivate func finish() {
+        userData = LocalUserData(name: newName ?? userData?.name, imageData: newPhoto ?? userData?.imageData)
+        delegate?.didReceiveUserData(userData)
         clearChanges()
     }
     
     fileprivate func clearChanges() {
-        name = nil
-        nick = nil
-        photo = nil
+        newName = nil
+        newPhoto = nil
     }
     
 }

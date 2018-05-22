@@ -10,15 +10,47 @@ import UIKit
 
 final class ExitModalView: UIView {
     
-    fileprivate weak var viewModel: SettingsVM?
-    fileprivate weak var router: MainRouter?
+    typealias LocalizedStrings = Strings.Exit
+    
+    private let viewModel: SettingsVM
+    @IBOutlet private weak var exitWalletLabel: UILabel! {
+        didSet {
+            exitWalletLabel.text = LocalizedStrings.title
+        }
+    }
+    @IBOutlet private weak var exitHintLabel: UILabel! {
+        didSet {
+            exitHintLabel.text = LocalizedStrings.hint
+        }
+    }
+    @IBOutlet private weak var clearIcloudLabel: UILabel! {
+        didSet {
+            clearIcloudLabel.text = LocalizedStrings.clearIcloud
+        }
+    }
+    @IBOutlet private weak var exitButton: UIButton! {
+        didSet {
+            exitButton.setTitle(LocalizedStrings.exitButton, for: .normal)
+        }
+    }
+    @IBOutlet private weak var cancelButton: UIButton! {
+        didSet {
+            cancelButton.setTitle(LocalizedStrings.cancelButton, for: .normal)
+        }
+    }
+    @IBOutlet private weak var clearCloudSwitch: UISwitch!
+    private weak var router: MainRouter?
+    private weak var view: UIView!
 
-    init(viewModel: SettingsVM, router: MainRouter) {
-        super.init(frame: UIScreen.main.bounds)
-        fromNib()
-        addBlur()
+    init(viewModel: SettingsVM, router: MainRouter, backImage: UIImage?) {
         self.viewModel = viewModel
+        super.init(frame: UIScreen.main.bounds)
+        self.view = fromNib()
         self.router = router
+        
+        let imageView = UIImageView(frame: self.bounds)
+        imageView.image = backImage
+        self.insertSubview(imageView, at: 0)
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -26,7 +58,8 @@ final class ExitModalView: UIView {
     }
     
     @IBAction func exitAction() {
-        viewModel?.clearAll()
+        let clearCloud = clearCloudSwitch.isOn
+        viewModel.clearAll(clearCloud: clearCloud)
         router?.showAddWalletView()
         close()
     }

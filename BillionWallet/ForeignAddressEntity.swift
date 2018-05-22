@@ -18,4 +18,5 @@ public class ForeignAddressEntity: NSManagedObject {
     @NSManaged var avatarData: Data?
     @NSManaged var isArchived: Bool
     @NSManaged var txHashes: Set<String>
+    @NSManaged var lastUsed: NSNumber
 }

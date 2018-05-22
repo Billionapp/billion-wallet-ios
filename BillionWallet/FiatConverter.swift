@@ -19,9 +19,9 @@ protocol RatesSource: class {
 
 class FiatConverter {
     
-    weak var ratesSource: RatesSource!
+    var ratesSource: RatesSource!
     
-    let fiatCurrency: Currency
+    var fiatCurrency: Currency
     let formatter: NumberFormatter
     
     init(currency: Currency, ratesSource: RatesSource, locale: Locale = .current) {
@@ -37,6 +37,22 @@ class FiatConverter {
         
         self.ratesSource = ratesSource
         self.fiatCurrency = currency
+    }
+    
+    func changeCurrency(newCurrency: Currency) {
+        fiatCurrency = newCurrency
+        formatter.currencyCode = newCurrency.code
+    }
+    
+    func fiatStringForFiatValue(_ fiatValue: Int64) -> String {
+        let decimal = Decimal(fiatValue)
+        return formatter.string(from: decimal as NSDecimalNumber) ?? ""
+    }
+    
+    func btcStringForFiatValue(_ fiatValue: Int64) -> String {
+        let decimal = Decimal(fiatValue)
+        let amount = convertToBtc(fiatValue: decimal)
+        return Satoshi.amount(UInt64(amount))
     }
     
     func fiatStringForBtcValue(_ btcValue: UInt64) -> String {
@@ -67,7 +83,7 @@ class FiatConverter {
         
         let btcValue = ((fiatValue * Decimal(1e8) / Decimal(rate.btc)) as NSDecimalNumber).doubleValue
         
-        return UInt64(btcValue)
+        return UInt64(round(btcValue))
     }
 }
 

@@ -11,114 +11,73 @@ import LocalAuthentication
 
 protocol PasscodeOutputDelegate: class {
     func didCompleteVerification()
-    func didUpdatePascode(_ passcode: String)
+    func didUpdatePasscode(_ passcode: String)
+    func didCancelVerification()
 }
 
 extension PasscodeOutputDelegate {
-    func didUpdatePascode(_ passcode: String) {}
+    func didUpdatePasscode(_ passcode: String) {}
+    func didCancelVerification() {}
 }
 
 class PasscodeViewController: BaseViewController<PasscodeVM> {
     
+    typealias LocalizedString = Strings.Passcode
+    
+    @IBOutlet var pinView: PinsView!
     @IBOutlet var numberButtons: [UIButton]!
-    @IBOutlet var pinImageViews: [UIImageView]!
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var subtitleLabel: UILabel!
     @IBOutlet weak var deleteButton: UIButton!
     @IBOutlet weak var cancelButton: UIButton!
-    @IBOutlet weak var pinsView: UIView!
     
     weak var router: MainRouter?
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        viewModel.verifyWithTouchIdIfNeeded()
+        localize()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        pinView.maxDots = viewModel.pinSize
         viewCustomization(passcodeCase: viewModel.passcodeCase)
-        viewModel.verifyWithTouchId()
-        viewModel.lockDeviceIfNeeded()
     }
     
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        
-        NSObject.cancelPreviousPerformRequests(withTarget: self, selector: #selector(didFinishAutoLayout), object: nil)
-        perform(#selector(didFinishAutoLayout), with: nil, afterDelay: 0)
-    }
-    
-    @objc func didFinishAutoLayout() {
-        numberButtons.forEach { button in
-            button.layer.cornerRadius = button.frame.width / 2
-            button.layer.masksToBounds = true
-        }
+    private func localize() {
+        cancelButton.setTitle(LocalizedString.cancel, for: .normal)
+        deleteButton.setTitle(LocalizedString.delete, for: .normal)
     }
     
     // MARK: - Private methods
     
-    fileprivate func viewCustomization(passcodeCase: PasscodeCase) {
+    private func viewCustomization(passcodeCase: PasscodeCase) {
         titleLabel.text = passcodeCase.title
         subtitleLabel.text = passcodeCase.subtitle
         
-        switch viewModel.passcodeCase {
+        deleteButton.isHidden = true
+        
+        switch passcodeCase {
         case .lock:
-            cancelButton.isHidden = true
+            titleLabel.isHidden = true
+            cancelButton.isHidden = false
         case .createFirst:
+            titleLabel.isHidden = false
             cancelButton.isHidden = true
         case .createSecond:
+            titleLabel.isHidden = false
             cancelButton.isHidden = false
-        default:
+        case .migrateUpdateSecond, .migrate, .migrateUpdateFirst:
+            titleLabel.isHidden = false
             cancelButton.isHidden = true
+        default:
+            titleLabel.isHidden = false
+            cancelButton.isHidden = false
+            deleteButton.isHidden = true
         }
     }
     
-    fileprivate func animate(sender: UIButton, index: Int) {
-        let path = UIBezierPath()
-        let pinCenter = pinImageViews[index].center(in: view)
-        let buttonCenter = sender.center(in: view)
-        
-        let circle = CircleView(frame: sender.bounds)
-        circle.style = .light
-        view.addSubview(circle)
-        
-        path.move(to: buttonCenter)
-        let cp = CGPoint(x: pinCenter.x, y: buttonCenter.y)
-        path.addCurve(to: CGPoint(x:pinCenter.x, y:pinCenter.y), controlPoint1: cp, controlPoint2: pinCenter)
-        
-        let positionAnim = CAKeyframeAnimation(keyPath: "position")
-        positionAnim.path = path.cgPath
-        positionAnim.calculationMode = kCAAnimationLinear
-        
-        circle.layer.position = pinCenter
-        
-        let fadeAnim = CABasicAnimation(keyPath: "opacity")
-        fadeAnim.fromValue = NSNumber(value: 0)
-        fadeAnim.toValue = NSNumber(value: 1)
-        circle.layer.opacity = 1.0
-        
-        let scale = pinImageViews[0].bounds.width / sender.bounds.width
-        let scaleAnim = CABasicAnimation(keyPath: "transform")
-        scaleAnim.fromValue = NSValue(caTransform3D: CATransform3DIdentity)
-        scaleAnim.toValue = NSValue(caTransform3D: CATransform3DMakeScale(scale, scale, 1))
-        circle.layer.transform = CATransform3DMakeScale(0.0, 0.0, 1.0)
-        
-        let group = CAHandledGroupAnimation()
-        group.completionHandler = {
-            self.viewModel.pin += String(sender.tag)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1, execute: {
-                circle.removeFromSuperview()
-            })
-        } as (() -> Void)
-        
-        group.animations = [scaleAnim, positionAnim, fadeAnim]
-        group.duration = 0.4
-        group.isRemovedOnCompletion = true
-        circle.layer.add(group, forKey: "fly")
-    }
-    
-    func shakeAnimation() {
+    private func shakeAnimation() {
         let animation = CABasicAnimation(keyPath: "position")
         animation.duration = 0.06
         animation.repeatCount = 4
@@ -127,28 +86,35 @@ class PasscodeViewController: BaseViewController<PasscodeVM> {
         animation.toValue = CGPoint(x: view.center.x + 10, y: view.center.y)
         view.layer.add(animation, forKey: "position")
     }
+  
+    private func showDeleteButton() {
+        deleteButton.isHidden = false
+        cancelButton.isHidden = true
+    }
+    
+    private func hideDeleteButton() {
+        deleteButton.isHidden = true
+        switch viewModel.passcodeCase {
+        case .createFirst, .migrateUpdateSecond, .migrate, .migrateUpdateFirst:
+            cancelButton.isHidden = true
+        default:
+            cancelButton.isHidden = false
+        }
+    }
     
     // MARK: - Actions
     
     @IBAction func buttonPressed(_ sender: UIButton) {
-        if viewModel.pin.characters.count < 4 {
-            viewModel.pin += String(sender.tag)
-        }
+        viewModel.pinInput(String(sender.tag))
     }
     
     @IBAction func deletePressed(_ sender: UIButton) {
-        viewModel.clearPin()
+        viewModel.backspace()
     }
     
     @IBAction func cancelPressed(_ sender: UIButton) {
-        switch viewModel.passcodeCase {
-        case .createSecond:
-            viewModel.passcodeCase = .createFirst
-        default:
-            dismiss()
-        }
+        viewModel.cancel()
     }
-
 }
 
 // MARK: - PasscodeVMDelegate
@@ -167,11 +133,22 @@ extension PasscodeViewController: PasscodeVMDelegate {
         dismiss()
     }
     
-    func didUpdatePin() {
-        for (i, imageView) in pinImageViews.enumerated() {
-            imageView.isHighlighted = i < viewModel.pin.characters.count
-        }
+    func didCancelVerification() {
+        dismiss()
     }
     
+    func didUpdate(symbolCount: Int) {
+        pinView.filledDots = symbolCount
+        showDeleteButton()
+    }
+    
+    func didUpdateMaxDots(_ maxDots: Int) {
+        pinView.maxDots = maxDots
+    }
+    
+    func didClearInput() {
+        pinView.filledDots = 0
+        hideDeleteButton()
+    }
 }
 

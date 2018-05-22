@@ -1,0 +1,48 @@
+
+/* Scan title */
+"Scan.title" = "掃描";
+
+/* Extract QR code from picture button title */
+"Scan.extractButton" = "在相片中提取二維碼";
+
+/* label shown that image which user scaned */
+"Scan.Notice.incorrectPC" = "這不是Billion代碼";
+
+/* Scan the QR title */
+"Scan.directionHint" = "掃描二維碼";
+
+/* Label shown that user need to allow access to to camera in Settings */
+"Scan.Notice.cameraAccessError" = "不能存取相機。請在手機設定中允許Billion存取你的相機";
+
+/* Label shown that user need to allow access to to photo library in Settings */
+"Scan.Notice.photoLibrary" = "不能存取相片。請在手機設定中允許Billion存取你的相片";
+
+/* Label mean that user scaned his own Billion code */
+"Scan.Notice.selfPC" = "這是你的個人Billion代碼";
+
+/* Invalid QR code title */
+"Scan.Notice.invalidQr" = "非有效二維碼";
+
+/* This is your own address title */
+"Scan.Notice.selfAddress" = "這是你的個人地址";
+
+/* Open iOS Gallery app to select photo */
+"Scan.galeryButton" = "打開相片";
+
+/* Cancel button title */
+"Scan.cancelButton" = "取消";
+
+/* Label shown that app need some permission in setting of device */
+"Scan.Notice.permissionRequired" = "權限要求";
+
+/* Settings */
+"Scan.Notice.openSettings" = "設定";
+
+/* Cancel */
+"Scan.Notice.cancel" = "取消";
+
+/* Extract QR-code title */
+"Scan.title.extractQR" = "提取二維碼";
+
+/* Select an image with QR-code title */
+"Scan.subtitle.selectImageWithQR" = "選取含二維碼相片";

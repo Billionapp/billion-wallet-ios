@@ -1,0 +1,21 @@
+
+/* Network fee title on the buble */
+"NetworkFee" = "網路手續費";
+
+/* commission for private connection */
+"PrivateConnection" = "為私人連接";
+
+/* Blockchain */
+"Blockchain" = "區塊鏈";
+
+/* Notification transaction title */
+"Title" = "交易提示";
+
+/* Blockchain network fee for private connection title */
+"Subtitle" = "私人連接的區塊鏈網路手續費";
+
+/* Confirmations label count */
+"NotificationDetails.confirmations" = "確認";
+
+/* notice displayed after txid is copied */
+"Alert.txidCopied" = "Txid已複製到剪貼板";

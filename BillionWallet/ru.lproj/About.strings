@@ -1,0 +1,40 @@
+
+"About.titleAboutPC" = "Payment code";
+
+"About.titleAirConnectivity" = "Air Connectivity";
+
+"About.titleReceive" = "Отправка и получение";
+
+"About.titleFee" = "Настройка комиссии сети";
+
+"About.titleSatoshi" = "Сатоши";
+
+"About.titleSpv" = "SPV";
+
+"About.forgetLabelAboutPC" = "Никакой верификации по смс или электронной почте. Достаточно сохранить фразу восстановления и персонализировать BillionCard, содержащую Payment Code. Благодаря BIP47 Payment Code транзакции сохраняют приватность.";
+
+"About.withReusableLabelAbout" = "Использование Reusable Payment Codes позволяет приватно добавлять контакты практически мнгновенно с помощью функции Air Connectivity.";
+
+"About.enjoyLabelAbout" = "Запрашивайте получение средств у Ваших контактов напрямую и отправляйте их в несколько касаний. ";
+
+"About.findingLabelAbout" = "Поиск контактов поблизости";
+
+"About.toInstantlyLabelAbout" = "Для добавления этот режим должен быть включен на обоих устройствах";
+
+"About.fromLabel" = "от кого";
+
+"About.saveLabel" = "Настраивайте комиссию сети Bitcoin. В приложении Billion можно выбирать комиссию сети для максимально быстрого подтверждения транзакций.";
+
+"About.satoshiLabel" = "Считайте средства удобно — в Billion средства считаются в satoshi ㋛. Никаких лишних нулей!";
+
+"About.spvLabel" = "Все это дополнено SPV архитектурой, которая обеспечивает прямое подключение к блокчейну Bitcoin без промежуточных серверов.";
+
+"About.nextButtonTitle" = "Далее";
+
+"About.feeTimeLabel" = "время на подтв.";
+
+"About.feeTotalLabel" = "итого комиссия";
+
+"About.spvTopLabel" = "Синхронизация с блокчейн";
+
+"About.spvBottomLabel" = "10 апреля 2018 года 14:57";

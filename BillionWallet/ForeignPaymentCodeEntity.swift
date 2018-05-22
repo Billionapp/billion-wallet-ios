@@ -16,10 +16,14 @@ public class ForeignPaymentCodeEntity: NSManagedObject {
     @NSManaged public var avatarData: Data?
     @NSManaged public var isArchived: Bool
     @NSManaged var txHashes: Set<String>
+    @NSManaged public var lastUsed: NSNumber
     
     // MARK: - PaymentCodeContactProtocol
     @NSManaged var paymentCode: String
     @NSManaged var firstUnusedIndex: NSNumber
     @NSManaged var receiveAddresses: [String]
     @NSManaged var notificationTxHash: String?
+    @NSManaged var incomingNotificationTxHash: String?
+    @NSManaged var sendAddresses: [String]
+    @NSManaged var notificationAddress: String
 }

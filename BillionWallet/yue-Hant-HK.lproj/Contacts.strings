@@ -1,0 +1,12 @@
+
+/* Contacts title */
+"Contacts.title" = "通訊錄";
+
+/* Cancel */
+"Contacts.cancelButton" = "取消";
+
+/* Message that user have no contacts */
+"Contacts.noContacts" = "沒有聯絡人";
+
+/* Add contact button title */
+"Contacts.addContact" = "新增聯絡人";

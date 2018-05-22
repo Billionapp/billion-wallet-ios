@@ -8,11 +8,15 @@
 
 import UIKit
 
-protocol PaymentCodeContactProtocol {
+protocol PaymentCodeContactProtocol: ContactProtocol {
     var paymentCode: String { get }
+    var paymentCodeObject: PaymentCode { get }
     var firstUnusedIndex: Int { get set }
     var receiveAddresses: [String] { get set }
     var notificationTxHash: String? { get set}
+    var incomingNotificationTxhash: String? { get set }
+    var sendAddresses: [String] { get set }
+    var notificationAddress: String? { get set }
 }
 
 extension PaymentCodeContactProtocol {
@@ -21,38 +25,67 @@ extension PaymentCodeContactProtocol {
         return notificationTxHash == nil
     }
     
-    func isContactForNotificationTransaction(txHash: UInt256S) -> Bool {
-        return notificationTxHash == txHash.data.hex
+    var paymentCodeObject: PaymentCode {
+        return try! PaymentCode(with: self.paymentCode)
     }
     
-    mutating func addressToSend() -> String? {
+    func isContactForNotificationTransaction(txHash: UInt256S) -> Bool {
+        return notificationTxHash == Data(txHash.data.reversed()).hex
+    }
+    
+    func generateSendAddresses(range: CountableRange<Int>) -> [String] {
         let selfPCPrivData = BRWalletManager.getKeychainPaymentCodePriv(forAccount: 0)
-        let selfPCInternal = PrivatePaymentCode(priv: selfPCPrivData)
+        
+        guard let selfPCInternal = try? PrivatePaymentCode(priv: selfPCPrivData) else {
+            return []
+        }
+        
+        var newSendAddresses = [String]()
+        for index in range {
+            guard
+                let recipientPC = try? PaymentCode(with: paymentCode),
+                let key = selfPCInternal.ethemeralSendBRKey(to: recipientPC, i: UInt32(index)) else {
+                continue
+            }
+            newSendAddresses.append(key.address!)
+        }
+        return newSendAddresses
+    }
+    
+    func addressToSend() -> String? {
+        let selfPCPrivData = AccountManager.shared.getSelfCPPriv()
+        guard let selfPCInternal = try? PrivatePaymentCode(priv: selfPCPrivData) else {
+            return nil
+        }
         
         guard
             let recipientPC = try? PaymentCode(with: paymentCode),
             let key = selfPCInternal.ethemeralSendBRKey(to: recipientPC, i: UInt32(firstUnusedIndex)) else {
             return nil
         }
-        
-        incrementFirstUnusedIndex()
-        
         return key.address
     }
+    
+    mutating func incrementFirstUnusedIndex() {
+        firstUnusedIndex += 1
+    }
 
-    static func generateReceiveAddresses(pc: String, range: CountableRange<Int>) -> [String] {
+    func generateReceiveAddresses(range: CountableRange<Int>) -> [String] {
         var seedPhrase: String!
 #if TEST_SUITE
         seedPhrase = TestConstants.seedPhrase
 #else
-        seedPhrase = BRWalletManager.getMnemonicKeychainString()!
+        seedPhrase = AccountManager.shared.getMnemonic()!
 #endif
         let seed = BRBIP39Mnemonic().deriveKey(fromPhrase: seedPhrase, withPassphrase: nil)!
         
         let currentAccount = AccountManager.shared.currentAccountNumber
-        let contactPC = try! PaymentCode(with: pc)
+        let contactPC = try! PaymentCode(with: paymentCode)
         let pcPrivData = BIP44Sequence().paymentCodePrivateKey(forAccount: currentAccount, fromSeed: seed)
-        let pcInternal = PrivatePaymentCode(priv: pcPrivData)
+        
+        guard let pcInternal = try? PrivatePaymentCode(priv: pcPrivData) else {
+            return []
+        }
         
         //receive addresses
         var addresses = [String]()
@@ -63,21 +96,76 @@ extension PaymentCodeContactProtocol {
         return addresses
     }
     
-    func isContact(for transaction: BRTransaction) -> Bool {
+    func getConnectedAddress(for transaction: Transaction) -> String? {
+        let outputsAddresses = transaction.outputAddresses
+        let txSet = Set(outputsAddresses)
+        let pregenSet = Set(receiveAddresses)
+        let pregenSendSet = Set(sendAddresses)
+        
+        let intersection = txSet.intersection(pregenSet)
+        if let receive = intersection.first {
+            return receive
+        }
+        
+        let sendIntersection = txSet.intersection(pregenSendSet)
+        if let send = sendIntersection.first {
+            return send
+        }
+        
+        return nil
+    }
+    
+    func getConnectedReceiveAddress(for transaction: BRTransaction) -> String? {
         let outputsAddresses = transaction.outputAddresses.flatMap { $0 as? String }
         let txSet = Set(outputsAddresses)
         let pregenSet = Set(receiveAddresses)
+        
         let intersection = txSet.intersection(pregenSet)
-        return intersection.count > 0
+        if let receive = intersection.first {
+            return receive
+        }
+        
+        return nil
     }
     
-    mutating func incrementFirstUnusedIndex() {
-        firstUnusedIndex += 1
+    func getConnectedSendAddress(for transaction: BRTransaction) -> String? {
+        let outputsAddresses = transaction.outputAddresses.flatMap { $0 as? String }
+        let txSet = Set(outputsAddresses)
+        let pregenSet = Set(sendAddresses)
         
-        if firstUnusedIndex >= receiveAddresses.count {
-            let newReceiveAddresses = Self.generateReceiveAddresses(pc: paymentCode, range: receiveAddresses.count..<receiveAddresses.count+25)
-            receiveAddresses += newReceiveAddresses
+        let intersection = txSet.intersection(pregenSet)
+        if let send = intersection.first {
+            return send
         }
+        
+        return nil
+    }
+    
+   func getNewPregeneratedReceiveAddresses(forReceivingAddress address: String) -> [String] {
+        let constant = Int(PaymentCodeContact.pregenCount / 4)
+        guard let index = receiveAddresses.index(of: address), index < receiveAddresses.count - constant else {
+            let newReceiveAddresses = generateReceiveAddresses(range: receiveAddresses.count..<receiveAddresses.count+3*constant)
+            return newReceiveAddresses
+        }
+        return []
+    }
+    
+    func getNewPregeneratedSendAddresses(forSendAddress address: String) -> [String] {
+        let constant = Int(PaymentCodeContact.pregenCount / 4)
+        guard let index = sendAddresses.index(of: address), index < sendAddresses.count - constant else {
+            let newReceiveAddresses = generateSendAddresses(range: sendAddresses.count..<sendAddresses.count+3*constant)
+            return newReceiveAddresses
+        }
+        return []
+    }
+}
+
+// MARK: - ContactDisplayable
+
+extension PaymentCodeContactProtocol {
+    
+    var sharingString: String {
+        return "billion://contact/\(paymentCode)"
     }
     
 }

@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import os.log
 
 class Logger {
     
@@ -33,13 +34,44 @@ class Logger {
         return components.isEmpty ? "" : components.last!
     }
     
+    class func configureFileLogging() {
+        // If using release builds, log everything in a file instead of stderr
+        #if ENABLE_FILE_LOGGING
+        let url = getLogFile()
+        let pathStr = url.relativePath.cString(using: .ascii)!
+        freopen(pathStr, "a+", stderr)
+        #endif
+    }
+    
+    class func flushFileBuffer() {
+        #if ENABLE_FILE_LOGGING
+        fflush(stderr)
+        #endif
+    }
+    
+    class func getLogFile() -> URL {
+        let urls = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        let date = Calendar.current.startOfDay(for: Date())
+        let fileName = "\(formatter.string(from: date)).log"
+        
+        let url = urls.first!.appendingPathComponent(fileName)
+        return url
+    }
+    
     class func log(_ message: String,
         level: LogLevel = defaultLevel,
         fileName: String = #file,
         line: Int = #line,
         funcName: String = #function) {
-        let logString = "\(Date().toString()) [\(level.rawValue)] [\(sourceFileName(filePath: fileName)):\(line)] \(funcName) -> \(message)"
-        print(logString)
+//        os_log("[%{public}@] [%{public}@:%ld] %{public}@ -> %{public}@", level.rawValue, sourceFileName(filePath: fileName), line, funcName, message)
+//        #if !DEBUG
+//        if level == .debug {
+//            return
+//        }
+//        #endif
+        NSLog("[%@] [%@:%ld] %@ -> %@", level.rawValue, sourceFileName(filePath: fileName), line, funcName, message)
     }
 
     class func debug(_ text: String,

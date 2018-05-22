@@ -10,7 +10,7 @@ import UIKit
 
 class RatesProvider {
     weak var apiProvider: API?
-    weak var walletProvider: WalletProvider?
+    private weak var walletProvider: WalletProvider!
     private var timer: Timer?
     var ratesCash = [Rate]()
     var ratesHistory = [RateHistory]()
@@ -23,8 +23,12 @@ class RatesProvider {
         checkRateHistory()
     }
     
-    func ratesForTx(transaction: BRTransaction) -> [Rate] {
-        let history = ratesHistory.filter({ $0.txts == Int64(transaction.timestamp + NSTimeIntervalSince1970) })
+    func ratesForTx(transaction: Transaction) -> [Rate] {
+        return getRatesFor(time: transaction.timestamp)
+    }
+    
+    func getRatesFor(time: TimeInterval) -> [Rate] {
+        let history = ratesHistory.filter({ $0.txts == Int64(time + NSTimeIntervalSince1970) })
         if let rateForTx = history.first {
             return rateForTx.rates
         } else {
@@ -33,49 +37,62 @@ class RatesProvider {
     }
     
     func checkRateHistory() {
-        if let wallet = walletProvider?.manager.wallet {
-            checkRateHistoryForTxs(transactions: wallet.allTransactions as! [BRTransaction])
+        // FIXME: try to remove wallet from dependencies in rates provider
+        guard let wallet = try? walletProvider.getWallet() else {
+            return
         }
+        let allTx = wallet.allTransactions.map({ Transaction(brTransaction: $0, walletProvider: walletProvider) })
+        checkRateHistoryForTxs(transactions: allTx)
     }
     
     func startTimer() {
         Logger.info("Rates timer is fired")
-        apiProvider?.getCurrenciesRate(completion: {[weak self] (result) in
-            switch result {
-            case .success(let rates):
-                self?.ratesCash = rates
-                Logger.info("Success download rates. Rates updated")
-                return
-            case .failure(_):
-                Logger.error("Download rates error")
-                return
-            }
-        })
+        getRate()
         timer = Timer.scheduledTimer(timeInterval: 120, target: self, selector: #selector(getRate), userInfo: nil, repeats: true)
     }
     
     @objc func getRate() {
-        apiProvider?.getCurrenciesRate(completion: {[weak self] (result) in
+        let callback: (Result<[Rate]>) -> Void = { [weak self] (result) in
             switch result {
             case .success(let rates):
                 self?.ratesCash = rates
                 Logger.info("Success download rates. Rates updated")
-                return
             case .failure(let error):
+                if let lastHistory = self?.ratesHistory.first {
+                    self?.ratesCash = lastHistory.rates
+                } else {
+                    //FIXME: Hardcoded rates
+                    self?.ratesCash = [Rate.init(currencyCode: "USD", btc: 12349.58, timestamp: 1516118276),
+                                       Rate.init(currencyCode: "HKD", btc: 96615.086693000005, timestamp: 1516118276),
+                                       Rate.init(currencyCode: "CNY", btc: 79564.639066000003, timestamp: 1516118276)]
+                }
                 Logger.error("Download rates error: \(error.localizedDescription)")
-                return
+            }
+            NotificationCenter.default.post(name: .walletBalanceChangedNotificationName,
+                                            object: nil)
+        }
+        
+        apiProvider?.getCurrenciesRate(completion: { [weak self] result in
+            switch result {
+            case .success:
+                callback(result)
+            case .failure(let error):
+                Logger.warn("Rates request failed, retring with fallback. Reason: \(error.localizedDescription)")
+                self?.apiProvider?.getCurrenciesRateFallback(completion: callback)
             }
         })
     }
     
-    func getRateHistory(tx: BRTransaction) {
+    func getRateHistory(tx: Transaction) {
         apiProvider?.getCurrenciesRateHistory(from: tx, completion: {[weak self] (result) in
+            guard let strongSelf = self else { return }
+            
             switch result {
             case .success(let rates):
-                guard let tuple = self?.infoFromTx(tx: tx) else { return }
+                guard let tuple = try? strongSelf.infoFromTx(tx: tx) else { return }
                 let rateHistory = RateHistory(txts: Int64(tx.timestamp+NSTimeIntervalSince1970), rates: rates, isReceivedTx: tuple.isReceived, amount: tuple.amount)
                 try? rateHistory.save()
-                self?.ratesHistory.append(rateHistory)
+                strongSelf.ratesHistory.append(rateHistory)
                 Logger.info("Success download rates history.")
                 return
             case .failure(let error):
@@ -85,7 +102,7 @@ class RatesProvider {
         })
     }
     
-    func checkRateHistoryForTxs(transactions: [BRTransaction]) {
+    func checkRateHistoryForTxs(transactions: [Transaction]) {
         transactions.forEach { (transaction) in
             let txTimestamp = String(format:"%.0f", (transaction.timestamp+NSTimeIntervalSince1970))
             let url = localRatesURL.appendingPathComponent("\(txTimestamp).json")
@@ -94,13 +111,19 @@ class RatesProvider {
                     let intStamp = Int64(txTimestamp) {
                     let difference = existCash.rateTimestamp - intStamp
                     if abs(difference) < 600 {
-                        let tuple = self.infoFromTx(tx: transaction)
-                        let rateHistory = RateHistory(txts: Int64(transaction.timestamp+NSTimeIntervalSince1970), rates: ratesCash, isReceivedTx: tuple.isReceived, amount: tuple.amount)
-                        try? rateHistory.save()
-                        self.ratesHistory.append(rateHistory)
+                        
+                        do {
+                            let tuple = try self.infoFromTx(tx: transaction)
+                            let rateHistory = RateHistory(txts: Int64(transaction.timestamp+NSTimeIntervalSince1970), rates: ratesCash, isReceivedTx: tuple.isReceived, amount: tuple.amount)
+                            try? rateHistory.save()
+                            self.ratesHistory.append(rateHistory)
+                        } catch let error {
+                            Logger.warn("\(error.localizedDescription)")
+                            return
+                        }
                     }
                 }
-                getRateHistory( tx:transaction )
+                getRateHistory(tx: transaction)
                 return
             }
             let historyItem = RateHistory(fromTxTimestamp: txTimestamp)
@@ -122,9 +145,10 @@ class RatesProvider {
         timer?.fire()
     }
     
-    func infoFromTx(tx: BRTransaction) -> (isReceived: Bool, amount: Int64) {
-        let sent = walletProvider?.manager.wallet?.amountSent(by: tx) ?? 0
-        let received = walletProvider?.manager.wallet?.amountReceived(from: tx) ?? 0
+    private func infoFromTx(tx: Transaction) throws -> (isReceived: Bool, amount: Int64) {
+        let wallet = try walletProvider.getWallet()
+        let sent = wallet.amountSent(by: tx.brTransaction)
+        let received = wallet.amountReceived(from: tx.brTransaction)
         let isReceived = !(sent > 0)
         var amount:Int64
         if isReceived {
@@ -137,6 +161,7 @@ class RatesProvider {
 }
 
 extension RatesProvider: RatesSource {
+    
     func rateForCurrency(_ currency: Currency) -> Rate? {
         return ratesCash.first { $0.currencyCode == currency.code }
     }

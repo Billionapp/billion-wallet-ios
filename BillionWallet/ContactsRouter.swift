@@ -10,22 +10,25 @@ import Foundation
 
 class ContactsRouter: Router {
     
-    let mainRouter: MainRouter
-    let mode: ContactsVM.Mode
-    weak var output: ContactsOutputDelegate?
-    let back: UIImage
+    private weak var mainRouter: MainRouter!
+    private let mode: ContactsVM.Mode
+    private weak var output: ContactsOutputDelegate?
+    private weak var app: Application!
     
-    init(mainRouter: MainRouter, output: ContactsOutputDelegate?, mode: ContactsVM.Mode, back: UIImage) {
+    init(mainRouter: MainRouter, output: ContactsOutputDelegate?, mode: ContactsVM.Mode, app: Application) {
         self.mainRouter = mainRouter
         self.output = output
         self.mode = mode
-        self.back = back
+        self.app = app
     }
     
     func run() {
-        let viewModel = ContactsVM(contactsProvider: ContactsProvider(), output: output, mode: mode)
+        let viewModel = ContactsVM(contactsProvider: app.contactsProvider,
+                                   output: output,
+                                   mode: mode,
+                                   scannerProvider: app.scannerProvider,
+                                   tapticService: app.tapticService)
         let viewController = ContactsViewController(viewModel: viewModel)
-        viewController.backForBlur = back
         viewController.router = mainRouter
         mainRouter.navigationController.push(viewController: viewController)
     }

@@ -9,11 +9,16 @@
 import Foundation
 
 struct MessageEnvelope {
+    /// Messenger protocol version
     var version: UInt8 = 1
-    var i: UInt32   // Sender index
-    var j: UInt32   // Recipient index
-    var c: Data     // Ciphertext
-    var d: Data     // ciphertext auth Digest
+    /// Sender index
+    var i: UInt32
+    /// Recepient index
+    var j: UInt32
+    /// Ciphertext
+    var c: Data
+    /// Auth digest for ciphertext
+    var d: Data
     
     init(_ i: UInt32, _ j: UInt32, _ c: Data, _ d: Data) {
         self.i = i

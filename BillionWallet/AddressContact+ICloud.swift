@@ -18,13 +18,18 @@ extension AddressContact: ICloudBackupProtocol {
         return address + "/\(address)"
     }
     
+    var attach: ICloudAttach? {
+        return .image(data: avatarData)
+    }
+    
     var backupJson: [String: Any] {
         return [
             "displayName": displayName,
             "isAvatarSet": isAvatarSet,
             "isArchived": isArchived,
             "address": address,
-            "txHashes": Array(txHashes)
+            "txHashes": Array(txHashes),
+            "lastUsed": lastUsed,
             ].removeNils()
     }
     
@@ -36,8 +41,14 @@ extension AddressContact: ICloudBackupProtocol {
         
         let isArchived = json["isArchived"] as? Bool ?? false
         let txHashes = json["txHashes"] as? [String] ?? []
+        let lastUsed = json["lastUsed"] as? NSNumber ?? NSNumber(value: Double(0))
         
-        self.init(address: address, displayName: displayName, avatarData: attachData, isArchived: isArchived, txHashes: Set(txHashes))
+        self.init(address: address,
+                  displayName: displayName,
+                  avatarData: attachData,
+                  isArchived: isArchived,
+                  txHashes: Set(txHashes),
+                  lastUsed: lastUsed)
     }
     
 }

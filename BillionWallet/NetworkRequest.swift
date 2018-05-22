@@ -31,19 +31,27 @@ struct NetworkRequest {
         case DELETE     = "DELETE"
     }
     
-    let defaultBaseUrl = "https://devapi.digitalheroes.tech"
+    let prefix = "https://"
+#if DEBUG
+    let urlBody = "dev.digitalheroes.tech"
+#else
+    let urlBody = "api.digitalheroes.tech"
+#endif
+    var defaultBaseUrl: String {
+        return prefix + urlBody
+    }
     
     // MARK: - Public Properties
     let method: NetworkRequest.Method
     let baseUrl: String?
     let path: String
     let headers: [String: String]?
-    let body: [String: Any]?
-    let data: Data?
+    let body: Any?
+    var data: Data?
     
     let authManager = AuthManager()
     
-    init(method: NetworkRequest.Method, baseUrl: String? = nil, path: String, headers: [String:String]? = nil, body: [String: Any]? = nil, data: Data? = nil) {
+    init(method: NetworkRequest.Method, baseUrl: String? = nil, path: String, headers: [String:String]? = nil, body: Any? = nil, data: Data? = nil) {
         self.method = method
         self.baseUrl = baseUrl
         self.path = path
@@ -53,7 +61,7 @@ struct NetworkRequest {
     }
     
     // MARK: - Public Functions
-    func buildURLRequest() throws -> URLRequest {
+    mutating func buildURLRequest() throws -> URLRequest {
         let urlString = baseUrl ?? defaultBaseUrl
         guard let url = URL(string: urlString + path) else {
             throw NetworkRequestError.invalidURL(urlString + path)
@@ -74,16 +82,19 @@ struct NetworkRequest {
             }
 
             jsonDataString = jsonDataString.replacingOccurrences(of: "\\/", with: "/")
-            request.httpBody = jsonDataString.data(using: .utf8 )
-            
-        } else if let data = data {
-            request.httpBody =  data
+            self.data = jsonDataString.data(using: .utf8 )
+        }
+        
+        if let data = data {
+            request.httpBody = data
         }
         
         if path.contains("register"), let authHeaders = authManager.getRegisterHeader(for: self) {
             for header in authHeaders {
                 request.setValue(header.value, forHTTPHeaderField: header.key)
             }
+        } else if path.contains("rates") || path.contains("fee_analysis") {
+            // passthrough
         } else if let authHeaders = authManager.getAuthHeader(for: self) {
             for header in authHeaders {
                 request.setValue(header.value, forHTTPHeaderField: header.key)

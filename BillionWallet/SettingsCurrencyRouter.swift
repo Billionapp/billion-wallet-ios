@@ -10,13 +10,21 @@ import Foundation
 
 struct SettingsCurrencyRouter: Router {
     
-    let mainRouter: MainRouter
+    private weak var mainRouter: MainRouter!
+    private weak var app: Application!
+    private let back: UIImage?
+    
+    init(mainRouter: MainRouter, app: Application, back: UIImage?) {
+        self.mainRouter = mainRouter
+        self.app = app
+        self.back = back
+    }
     
     // MARK: - Start routing
     func run() {
-        // MARK: Inject dependencies or address only from mainRouter?.application to viewModel
-        let viewModel = SettingsCurrencyVM(defaultsProvider: mainRouter.application.defaults, walletProvider:mainRouter.application.walletProvider)
+        let viewModel = SettingsCurrencyVM(defaultsProvider: app.defaults, walletProvider: app.walletProvider)
         let viewController = SettingsCurrencyViewController(viewModel: viewModel)
+        viewController.backImage = back
         mainRouter.navigationController.push(viewController: viewController)
     }
     

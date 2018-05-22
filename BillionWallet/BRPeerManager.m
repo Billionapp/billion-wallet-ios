@@ -38,7 +38,6 @@
 #import "NSManagedObject+Sugar.h"
 #import "Reachability.h"
 
-#import "BREventManager.h"
 #import "BillionWallet-Swift.h"
 #import <netdb.h>
 
@@ -104,7 +103,8 @@ static const struct { uint32_t height; const char *hash; uint32_t timestamp; uin
     { 403200, "000000000000000000c4272a5c68b4f55e5af734e88ceab09abf73e9ac3b6d01", 1458292068, 0x1806a4c3 },
     { 423360, "000000000000000001630546cde8482cc183708f076a5e4d6f51cd24518e8f85", 1470163842, 0x18057228 },
     { 443520, "00000000000000000345d0c7890b2c81ab5139c6e83400e5bed00d23a1f8d239", 1481765313, 0x18038b85 },
-    { 481824, "0000000000000000001c8018d9cb3b742ef25114f27563e3fc4a1902167f9893", 1503539857, 402734313 }
+    { 463680, "000000000000000000431a2f4619afe62357cd16589b638bb638f2992058d88e", 1493259601, 0x18021b3e },
+    { 477792, "00000000000000000016ba7786309176445b838b36a16bd1ef3c3e3020473206", 1501153434, 0x18014735 }
 };
 
 static const char *dns_seeds[] = {
@@ -484,12 +484,24 @@ static const char *dns_seeds[] = {
         }
     }
     
+    //Adding receive addresses for paymant code contact
+    NSMutableArray *pcReceiveAddresses = [NSMutableArray new];
+    NSArray *entities = ForeignPaymentCodeEntity.allObjects;
+    for (ForeignPaymentCodeEntity *ent in entities) {
+        [pcReceiveAddresses addObjectsFromArray:ent.receiveAddresses];
+    }
+    NSArray *entitiesF = ForeignFriendEntity.allObjects;
+    for (ForeignFriendEntity *ent in entitiesF) {
+        [pcReceiveAddresses addObjectsFromArray:ent.receiveAddresses];
+    }
+    
+    elemCount += [pcReceiveAddresses count] + 2; // + Notification data
+    
     BRBloomFilter *filter = [[BRBloomFilter alloc] initWithFalsePositiveRate:self.fpRate
                              forElementCount:(elemCount < 200 ? 300 : elemCount + 100) tweak:(uint32_t)peer.hash
                              flags:BLOOM_UPDATE_ALL];
 
-    for (NSString *addr in addresses) {// add addresses to watch for tx receiveing money to the wallet
-        
+    for (NSString *addr in addresses) { // add addresses to watch for tx receiveing money to the wallet
         if ([addr respondsToSelector: @selector(addressToHash160)]) {
             NSData *hash = addr.addressToHash160;
             if (hash && ! [filter containsData:hash]) [filter insertData:hash];
@@ -506,18 +518,10 @@ static const char *dns_seeds[] = {
         if (! [filter containsData:d]) [filter insertData:d];
     }
     
-    //Adding receive addresses for paymant code contact
-    NSMutableArray *receiveAddresses = [NSMutableArray new];
-    NSArray *entities = ForeignPaymentCodeEntity.allObjects;
-    if (entities.count != 0) {
-        for (ForeignPaymentCodeEntity *ent in entities) {
-            [receiveAddresses addObjectsFromArray:ent.receiveAddresses];
-        }
-        
-        for (NSString *addr in receiveAddresses) {
-            NSData *hash = addr.addressToHash160;
-            if (hash && ! [filter containsData:hash]) [filter insertData:hash];
-        }
+    // PC receive addresses
+    for (NSString *addr in pcReceiveAddresses) {
+        NSData *hash = addr.addressToHash160;
+        if (hash && ! [filter containsData:hash]) [filter insertData:hash];
     }
     
     // MARK: Add notification address to bloom filter version 1
@@ -598,7 +602,7 @@ static const char *dns_seeds[] = {
             [self syncStopped];
 
             dispatch_async(dispatch_get_main_queue(), ^{
-                NSError *error = [NSError errorWithDomain:@"BreadWallet" code:1
+                NSError *error = [NSError errorWithDomain:@"BillionWallet" code:1
                                   userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"no peers found", nil)}];
 
                 [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerSyncFailedNotification
@@ -657,21 +661,9 @@ static const char *dns_seeds[] = {
 {
     NSLog(@"[BRPeerManager] publish transaction %@", transaction);
     if (! transaction.isSigned) {
-        if (completion) {
-            [[BREventManager sharedEventManager] saveEvent:@"peer_manager:not_signed"];
-            completion([NSError errorWithDomain:@"BreadWallet" code:401 userInfo:@{NSLocalizedDescriptionKey:
-                        NSLocalizedString(@"bitcoin transaction not signed", nil)}]);
-        }
-        
         return;
     }
     else if (! self.connected && self.connectFailures >= MAX_CONNECT_FAILURES) {
-        if (completion) {
-            [[BREventManager sharedEventManager] saveEvent:@"peer_manager:not_connected"];
-            completion([NSError errorWithDomain:@"BreadWallet" code:-1009 userInfo:@{NSLocalizedDescriptionKey:
-                        NSLocalizedString(@"not connected to the bitcoin network", nil)}]);
-        }
-        
         return;
     }
 
@@ -751,9 +743,18 @@ static const char *dns_seeds[] = {
 
 - (void)setBlockHeight:(int32_t)height andTimestamp:(NSTimeInterval)timestamp forTxHashes:(NSArray *)txHashes
 {
-    NSArray *updatedTx = [[BRWalletManager sharedInstance].wallet setBlockHeight:height andTimestamp:timestamp
+    BRWalletManager * manager = [BRWalletManager sharedInstance];
+    NSArray *updatedTx = [manager.wallet setBlockHeight:height andTimestamp:timestamp
                           forTxHashes:txHashes];
     
+    // first block with transactions
+    if(height != TX_UNCONFIRMED && updatedTx.count > 0 && manager.wallet.allTransactions.count == updatedTx.count) {
+        NSTimeInterval creationTime = manager.seedCreationTime;
+        // not set yet?
+        if (creationTime == BIP39_CREATION_TIME || creationTime == 0) {
+            [manager setSeedCreationTime:timestamp];
+        }
+    }
     
     
     if (height != TX_UNCONFIRMED) { // remove confirmed tx from publish list and relay counts
@@ -761,17 +762,7 @@ static const char *dns_seeds[] = {
         [self.publishedCallback removeObjectsForKeys:txHashes];
         [self.txRelays removeObjectsForKeys:txHashes];
     }
-    
-    for (NSValue *hash in updatedTx) {
-        NSError *kvErr = nil;
-        BRTxMetadataObject *txm;
-        UInt256 h;
-        
-        [hash getValue:&h];
-        txm = [[BRTxMetadataObject alloc] initWithTxHash:h store:[BRAPIClient sharedClient].kv];
-        txm.blockHeight = height;
-        if (txm) [[BRAPIClient sharedClient].kv set:txm error:&kvErr];
-    }
+
 }
 
 - (void)txTimeout:(NSValue *)txHash
@@ -783,8 +774,8 @@ static const char *dns_seeds[] = {
     [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:txHash];
 
     if (callback) {
-        [[BREventManager sharedEventManager] saveEvent:@"peer_manager:tx_canceled_timeout"];
-        callback([NSError errorWithDomain:@"BreadWallet" code:BITCOIN_TIMEOUT_CODE userInfo:@{NSLocalizedDescriptionKey:
+        //[[BREventManager sharedEventManager] saveEvent:@"peer_manager:tx_canceled_timeout"];
+        callback([NSError errorWithDomain:@"BillionWallet" code:BITCOIN_TIMEOUT_CODE userInfo:@{NSLocalizedDescriptionKey:
                   NSLocalizedString(@"transaction canceled, network timeout", nil)}]);
     }
 }
@@ -911,7 +902,6 @@ static const char *dns_seeds[] = {
     if (notify) {
         dispatch_async(dispatch_get_main_queue(), ^{
             if (rescan) {
-                [[BREventManager sharedEventManager] saveEvent:@"peer_manager:tx_rejected_rescan"];
                 [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"transaction rejected", nil)
                   message:NSLocalizedString(@"Your wallet may be out of sync.\n"
                                             "This can often be fixed by rescanning the blockchain.", nil) delegate:self
@@ -919,7 +909,6 @@ static const char *dns_seeds[] = {
                   otherButtonTitles:NSLocalizedString(@"rescan", nil), nil] show];
             }
             else {
-                [[BREventManager sharedEventManager] saveEvent:@"peer_manager_tx_rejected"];
                 [[[UIAlertView alloc] initWithTitle:NSLocalizedString(@"transaction rejected", nil)
                   message:nil delegate:nil cancelButtonTitle:NSLocalizedString(@"ok", nil) otherButtonTitles:nil] show];
             }
@@ -1077,10 +1066,17 @@ static const char *dns_seeds[] = {
 
     // drop peers that don't support SPV filtering
     if (peer.version >= 70011 && ! (peer.services & SERVICES_NODE_BLOOM)) {
+        NSLog(@"%@:%d connection drop: node doesn't support SPV mode", peer.host, peer.port);
         [peer disconnect];
         return;
     }
-
+    
+    if ((peer.services & SERVICES_NODE_UAHF) == SERVICES_NODE_UAHF) {
+        NSLog(@"%@:%d connection drop: uahf nodes not supported", peer.host, peer.port);
+        [peer disconnect];
+        return;
+    }
+    
     if (self.connected && (self.estimatedBlockHeight >= peer.lastblock || self.lastBlockHeight >= peer.lastblock)) {
         if (self.lastBlockHeight < self.estimatedBlockHeight) return; // don't load bloom filter yet if we're syncing
         [peer sendFilterloadMessage:[self bloomFilterForPeer:peer].data];
@@ -1146,7 +1142,7 @@ static const char *dns_seeds[] = {
 {
     NSLog(@"%@:%d disconnected%@%@", peer.host, peer.port, (error ? @", " : @""), (error ? error : @""));
     
-    if ([error.domain isEqual:@"BreadWallet"] && error.code != BITCOIN_TIMEOUT_CODE) {
+    if ([error.domain isEqual:@"BillionWallet"] && error.code != BITCOIN_TIMEOUT_CODE) {
         [self peerMisbehavin:peer]; // if it's protocol error other than timeout, the peer isn't following the rules
     }
     else if (error) { // timeout or some non-protocol related network error
@@ -1186,10 +1182,6 @@ static const char *dns_seeds[] = {
             [self connect]; // try connecting to another peer
         }
     }
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
-    });
 }
 
 - (void)peer:(BRPeer *)peer relayedPeers:(NSArray *)peers
@@ -1224,6 +1216,12 @@ static const char *dns_seeds[] = {
     transaction.timestamp = [NSDate timeIntervalSinceReferenceDate];
     if (syncing && ! [manager.wallet containsTransaction:transaction]) return;
     if (! [manager.wallet registerTransaction:transaction]) return;
+    
+    // First transaction encountered
+    // TODO: Check if this can happen on transaction, that is not really first one?
+    if ([manager.wallet allTransactions].count == 1) {
+        NSLog(@"[DEBUG] First transaction");
+    }
     if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
 
     if ([manager.wallet amountSentByTransaction:transaction] > 0 && [manager.wallet transactionIsValid:transaction]) {
@@ -1244,16 +1242,9 @@ static const char *dns_seeds[] = {
         }
 
         dispatch_async(dispatch_get_main_queue(), ^{
-            NSError *kvErr = nil;
-            
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:hash];
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
             if (callback) callback(nil);
-            
-            [[BRAPIClient sharedClient].kv
-             set:[[BRTxMetadataObject alloc] initWithTransaction:transaction exchangeRate:manager.localCurrencyPrice
-                  exchangeRateCurrency:manager.localCurrencyCode feeRate:manager.wallet.feePerKb
-                  deviceId:[BRAPIClient sharedClient].deviceId] error:&kvErr];
         });
     }
     
@@ -1285,10 +1276,18 @@ static const char *dns_seeds[] = {
     void (^callback)(NSError *error) = self.publishedCallback[hash];
     
     NSLog(@"%@:%d has transaction %@", peer.host, peer.port, hash);
-    if (! tx) tx = [manager.wallet transactionForHash:txHash];
-    if (! tx || (syncing && ! [manager.wallet containsTransaction:tx])) return;
-    if (! [manager.wallet registerTransaction:tx]) return;
-    if (peer == self.downloadPeer) self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
+    if (! tx) {
+        tx = [manager.wallet transactionForHash:txHash];
+    }
+    if (! tx || (syncing && ! [manager.wallet containsTransaction:tx])) {
+        return;
+    }
+    if (! [manager.wallet registerTransaction:tx]) {
+        return;
+    }
+    if (peer == self.downloadPeer) {
+        self.lastRelayTime = [NSDate timeIntervalSinceReferenceDate];
+    }
     
     // keep track of how many peers have or relay a tx, this indicates how likely the tx is to confirm
     if (callback || (! syncing && ! [self.txRelays[hash] containsObject:peer])) {
@@ -1304,16 +1303,9 @@ static const char *dns_seeds[] = {
         }
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            NSError *kvErr = nil;
-            
             [NSObject cancelPreviousPerformRequestsWithTarget:self selector:@selector(txTimeout:) object:hash];
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
             if (callback) callback(nil);
-
-            [[BRAPIClient sharedClient].kv
-             set:[[BRTxMetadataObject alloc] initWithTransaction:tx exchangeRate:manager.localCurrencyPrice
-                  exchangeRateCurrency:manager.localCurrencyCode feeRate:manager.wallet.feePerKb
-                  deviceId:[BRAPIClient sharedClient].deviceId] error:&kvErr];
         });
     }
     
@@ -1337,9 +1329,7 @@ static const char *dns_seeds[] = {
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerTxStatusNotification object:nil];
 #if DEBUG
-            [[[UIAlertView alloc] initWithTitle:@"transaction rejected"
-              message:[NSString stringWithFormat:@"rejected by %@:%d with code 0x%x", peer.host, peer.port, code]
-              delegate:nil cancelButtonTitle:@"ok" otherButtonTitles:nil] show];
+            NSLog(@"[ERROR] Transaction rejected by %@:%d with code 0x%x", peer.host, peer.port, code);
 #endif
         });
     }
@@ -1417,7 +1407,10 @@ static const char *dns_seeds[] = {
     }
 
     block.height = prev.height + 1;
-    txTime = block.timestamp/2 + prev.timestamp/2;
+    
+    // Replaced because WHY?
+    /* txTime = block.timestamp/2 + prev.timestamp/2; */
+    txTime = prev.timestamp;
 
     if ((block.height % BLOCK_DIFFICULTY_INTERVAL) == 0) { // hit a difficulty transition, find previous transition time
         BRMerkleBlock *b = block;
@@ -1567,6 +1560,28 @@ static const char *dns_seeds[] = {
         [self.orphans removeObjectForKey:blockHash];
         [self peer:peer relayedBlock:b];
     }
+    
+    if (syncDone) {
+        [self updateRatesNotification:block.timestamp-NSTimeIntervalSince1970];
+        [self syncFinishedNotification:block.timestamp-NSTimeIntervalSince1970];
+    }
+    
+}
+
+- (void)syncFinishedNotification:(NSTimeInterval)timestamp
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSDictionary *info = @{@"timestamp": @(timestamp)};
+        [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerLastBlockSyncedNotification object:nil userInfo:info];
+    });
+}
+
+- (void)updateRatesNotification:(NSTimeInterval)timestamp
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSDictionary *info = @{@"timestamp": @(timestamp)};
+        [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerNewBlockNotification object:nil userInfo:info];
+    });
 }
 
 - (void)peer:(BRPeer *)peer notfoundTxHashes:(NSArray *)txHashes andBlockHashes:(NSArray *)blockhashes
@@ -1612,10 +1627,11 @@ static const char *dns_seeds[] = {
     
     if (callback && ! [manager.wallet transactionIsValid:tx]) {
         [self.publishedTx removeObjectForKey:hash];
-        error = [NSError errorWithDomain:@"BreadWallet" code:401
+        error = [NSError errorWithDomain:@"BillionWallet" code:401
                  userInfo:@{NSLocalizedDescriptionKey:NSLocalizedString(@"double spend", nil)}];
-    }
-    else if (tx && ! [manager.wallet transactionForHash:txHash] && [manager.wallet registerTransaction:tx]) {
+    } else if (tx &&
+             ! [manager.wallet transactionForHash:txHash] &&
+             [manager.wallet registerTransaction:tx]) {
         [[BRTransactionEntity context] performBlock:^{
             [BRTransactionEntity saveContext]; // persist transactions to core data
         }];
@@ -1639,19 +1655,28 @@ static const char *dns_seeds[] = {
     return tx;
 }
 
-// MARK: - UIAlertViewDelegate
-
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
-{
-    if (buttonIndex == alertView.cancelButtonIndex) return;
-    [self rescan];
-}
-
 - (void)rescanFrom:(uint32_t)startHeight;
 {
     if (! self.connected) return;
     
     dispatch_async(self.q, ^{
+        BRMerkleBlock* block = _lastBlock;
+        for(int i = _lastBlock.height; block && i > startHeight; i--) {
+            block = self.blocks[uint256_obj(block.prevBlock)];
+        }
+        
+        if(! block) {
+            // start the chain download from the most recent checkpoint that's at least a week older than earliestKeyTime
+            for (int i = CHECKPOINT_COUNT - 1; ! _lastBlock && i >= 0; i--) {
+                if (i == 0 || checkpoint_array[i].timestamp + 7*24*60*60 < self.earliestKeyTime + NSTimeIntervalSince1970) {
+                    UInt256 hash = *(UInt256 *)@(checkpoint_array[i].hash).hexToData.reverse.bytes;
+                    
+                    block = self.blocks[uint256_obj(hash)];
+                }
+            }
+        }
+        
+        _lastBlock = block;
         
         if (self.downloadPeer) { // disconnect the current download peer so a new random one will be selected
             [self.peers removeObject:self.downloadPeer];

@@ -15,12 +15,9 @@ protocol InputTextViewDelegate: class {
 
 final class InputTextView: LoadableFromXibView {
     
-    weak var output: InputTextViewDelegate? {
-        didSet {
-            // ???
-            Logger.debug("???")
-        }
-    }
+    typealias LocalizedStrings = Strings.Modal
+    
+    weak var output: InputTextViewDelegate?
     
     fileprivate var dataManager: StackViewDataManager!
     fileprivate var titledView: TitledView!
@@ -39,7 +36,7 @@ final class InputTextView: LoadableFromXibView {
     
     fileprivate func setupMenuStackView() {
         titledView = TitledView()
-        titledView.title = NSLocalizedString("Restore wallet", comment: "") as String
+        titledView.title = LocalizedStrings.title
         titledView.closePressed = { [weak self] in
             self?.removeFromSuperview()
         }
@@ -56,8 +53,12 @@ final class InputTextView: LoadableFromXibView {
         
         dataManager.append(container:
             ViewContainer<ColumnsView>(item: ([
-                ViewContainer<TextFieldSheetView>(item: .default(placeholder: "Enter recover phrase"), actions: [changeAction()]),
-                ViewContainer<ButtonSheetView>(item: .default(title: "Ok"), actions: [okAction()])
+                ViewContainer<SectionView>(item: [
+                    ViewContainer<TextFieldSheetView>(item: .default(placeholder: LocalizedStrings.placeholder), actions: [changeAction()])
+                    ]),
+                ViewContainer<SectionView>(item: [
+                    ViewContainer<ButtonSheetView>(item: .default(title: LocalizedStrings.okButton), actions: [okAction()])
+                    ])
                 ], .fill))
         )
         menuStackView.resize(in: view)

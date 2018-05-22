@@ -1,0 +1,24 @@
+
+/* Send title */
+"SendScreen.title" = "發送";
+
+/* Amount of money which user want to send. Shown in title */
+"SendScreen.titleAmountEnetered" = "發送\n%@";
+
+/* Your balance title */
+"Send.balanceTitle" = "你的餘額";
+
+/* Label shown on balance button when app locked */
+"SendScreen.billionLocked" = "Billion";
+
+/* placeholder for a local transaction note */
+"SendScreen.Textfield.commentPlaceholder" = "加入備註";
+
+/* Amount of money which user want to send */
+"SendScreen.Textfield.amountPlaceholder" = "輸入金額";
+
+/* This field not translating */
+"SendScreen.Textfield.viewLabelFormat" = "  %@  ";
+
+/* Label shown that the wallet is not already synced */
+"SendScreen.sendBlocked" = "嘗試掃瞄比特幣網路\n可能需要數分鐘";

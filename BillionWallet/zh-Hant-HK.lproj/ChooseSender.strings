@@ -1,0 +1,12 @@
+
+/* Receive title */
+"ChooseSender.title" = "接收";
+
+/* Label offers to choose a contact from who you'll receive money */
+"ChooseSender.from" = "從";
+
+/* Send your one-time adress to receive funds\nor make a direct request title */
+"ChooseSender.subtitle" = "發送你的一次性地址以便接收資金或請求付款";
+
+/* Add Contact button title */
+"ChooseSender.addContact" = "加至聯絡人";

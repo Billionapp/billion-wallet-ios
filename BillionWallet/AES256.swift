@@ -13,7 +13,7 @@ extension LocalCrypto {
     struct aes256 {
         static let blockSize = 128/8
         
-        static func encrypt(_ message: Data, key: Data) -> Data {
+        static func encrypt(_ message: Data, key: Data) throws -> Data {
             var message = message
             
             let blockCount = message.count / blockSize + 1
@@ -32,7 +32,7 @@ extension LocalCrypto {
             return result as Data
         }
         
-        static func decrypt(_ cypher: Data, key: Data) -> Data {
+        static func decrypt(_ cypher: Data, key: Data) throws -> Data {
             let blockCount = cypher.count / blockSize + 1
             let result = NSMutableData(capacity: blockCount*blockSize)!
             for k in 0..<blockCount {

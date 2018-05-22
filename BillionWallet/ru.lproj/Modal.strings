@@ -1,0 +1,15 @@
+
+/* Label shown when you already have a wallet and you can use it */
+"Modal.restoreWalletTitle" = "Восстановить кошелек";
+
+/* Phrase which you enter if you want restore wallet */
+"Modal.recoveryPhrasePlaceholder" = "Ввести фразу восстановления";
+
+/* Done */
+"Modal.buttonOk" = "Далее";
+
+/* Delete */
+"Modal.deleteButton" = "Удалить";
+
+/* Cancel */
+"Modal.cancelButton" = "Отмена";

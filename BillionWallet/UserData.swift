@@ -12,8 +12,11 @@ struct UserData {
     
     let pc: String
     var name: String?
-    var nickName: String?
     var avatarData: Data?
+    
+    init(paymentCode: String) {
+        self.pc = paymentCode
+    }
     
     init?(json: JSON) {
         guard let pc = json["pc"].string else {
@@ -26,13 +29,18 @@ struct UserData {
             self.name = name
         }
         
-        if let nickName = json["nick"].string {
-            self.nickName = nickName
-        }
-        
         if let avatar = json["avatar"].string {
             self.avatarData = Data(base64Encoded: avatar)
         }
+    }
+    
+    var json: [String: Any] {
+        let avatarDataString = avatarData?.base64EncodedString()
+        return [
+            "pc": pc,
+            "name": name,
+            "avatar": avatarDataString
+        ].removeNils()
     }
     
     enum UserDataError: Error {

@@ -1,0 +1,12 @@
+
+/* Receive title */
+"ChooseSender.title" = "Получить";
+
+/* Label offers to choose a contact from who you'll receive money */
+"ChooseSender.from" = "от кого...";
+
+/* Send your one-time adress to receive funds\nor make a direct request title */
+"ChooseSender.subtitle" = "Вы можете отправить одноразовый биткоин-адрес для получения средств или запросить перевод напрямую";
+
+/* Add Contact button title */
+"ChooseSender.addContact" = "Добавить контакт";

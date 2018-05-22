@@ -8,8 +8,11 @@
 
 import Foundation
 
-struct FriendContact {
+struct FriendContact: PaymentCodeContactProtocol {
+
+    static let pregenCount = 100
     
+    // The name we invented
     var nickname: String?
     
     // MARK: - ContactProtocol
@@ -17,18 +20,44 @@ struct FriendContact {
     var avatarData: Data?
     var isArchived: Bool
     var txHashes: Set<String>
+    var lastUsed: NSNumber
     
     // MARK: - PaymentCodeContactProtocol
     let paymentCode: String
     var firstUnusedIndex: Int
     var receiveAddresses: [String]
+    var sendAddresses: [String]
+    // Outgoing notification transaction hash
     var notificationTxHash: String?
+    // Incoming notification transaction hash
+    var incomingNotificationTxhash: String?
+    var notificationAddress: String?
 }
 
 // MARK: - ContactProtocol
 
 extension FriendContact: ContactProtocol {
     
+    mutating func generateSendAddresses() {
+        sendAddresses = generateSendAddresses(range: 0..<PaymentCodeContact.pregenCount)
+    }
+    
+    mutating func generateReceiveAddresses() {
+        receiveAddresses = generateReceiveAddresses(range: 0..<PaymentCodeContact.pregenCount)
+    }
+    
+    func getReceiveAddresses() -> [String] {
+        return receiveAddresses
+    }
+    
+    func getNotificationAddress() -> String? {
+        return notificationAddress
+    }
+    
+    func getSendAddresses() -> [String] {
+        return sendAddresses
+    }
+        
     var uniqueValue: String {
         return paymentCode
     }
@@ -37,20 +66,35 @@ extension FriendContact: ContactProtocol {
         return "paymentCode"
     }
     
-    var description: (smart: String, full: String) {
-        return ("PC", "Friend")
-    }
-    
     static func create(unique paymentCode: String) -> FriendContact {
-        return FriendContact(nickname: nil,
-                             displayName: defaultDisplayName,
-                             avatarData: nil,
+        
+        let friendPC = try? PaymentCode(with: paymentCode)
+        let notifAddress = friendPC?.notificationAddress
+        
+        let contactName = defaultDisplayName + String(paymentCode.suffix(4))
+        let contactAvatarImage = contactName.createAvatarImage()
+        let avatarData = UIImagePNGRepresentation(contactAvatarImage)
+        
+        var friendContact =  FriendContact(nickname: nil,
+                             displayName: contactName,
+                             avatarData: avatarData,
                              isArchived: false,
                              txHashes: [],
+                             lastUsed: NSNumber(value: Double(Date().timeIntervalSince1970)),
                              paymentCode: paymentCode,
                              firstUnusedIndex: 0,
-                             receiveAddresses: generateReceiveAddresses(pc: paymentCode, range: 0..<100),
-                             notificationTxHash: nil)
+                             receiveAddresses: [],
+                             sendAddresses: [],
+                             notificationTxHash: nil,
+                             incomingNotificationTxhash: nil,
+                             notificationAddress: notifAddress)
+        friendContact.generateSendAddresses()
+        friendContact.generateReceiveAddresses()
+        return friendContact
+    }
+    
+    func backup(using icloud: ICloud) throws {
+        try icloud.backup(object: self)
     }
     
     func save() {
@@ -61,21 +105,37 @@ extension FriendContact: ContactProtocol {
             object.avatarData = self.avatarData
             object.isArchived = self.isArchived
             object.txHashes = self.txHashes
+            object.lastUsed = self.lastUsed
             object.paymentCode = self.paymentCode
             object.firstUnusedIndex = NSNumber(value: self.firstUnusedIndex)
             object.receiveAddresses = self.receiveAddresses
             object.notificationTxHash = self.notificationTxHash
+            object.incomingNotificationTxHash = self.incomingNotificationTxhash
+            object.sendAddresses = self.sendAddresses
             try? CoreDataObject.save()
+            NotificationCenter.default.post(name: contactsChangedAfterSaveNotification, object: nil)
         }
     }
     
 }
 
-// MARK: - PaymentCodeContactProtocol
+// MARK: - ContactDisplayable
 
-extension FriendContact: PaymentCodeContactProtocol {
+extension FriendContact: ContactDisplayable {
     
-    
+    var description: (value: String, type: String) {
+        return ("Payment code", "Friend")
+    }
+
+    var givenName: String {
+        get {
+            return nickname ?? displayName
+        }
+        
+        set {
+            nickname = newValue
+        }
+    }
     
 }
 
@@ -91,10 +151,14 @@ extension FriendContact: PlainMappable {
                              avatarData: object.avatarData,
                              isArchived: object.isArchived,
                              txHashes: object.txHashes,
+                             lastUsed: object.lastUsed,
                              paymentCode: object.paymentCode,
                              firstUnusedIndex: object.firstUnusedIndex.intValue,
                              receiveAddresses: object.receiveAddresses,
-                             notificationTxHash: object.notificationTxHash)
+                             sendAddresses: object.sendAddresses,
+                             notificationTxHash: object.notificationTxHash,
+                             incomingNotificationTxhash: object.incomingNotificationTxHash,
+                             notificationAddress: object.notificationAddress)
     }
     
 }

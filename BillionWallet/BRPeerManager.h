@@ -32,12 +32,15 @@ FOUNDATION_EXPORT NSString* _Nonnull const BRPeerManagerSyncStartedNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const BRPeerManagerSyncFinishedNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const BRPeerManagerSyncFailedNotification;
 FOUNDATION_EXPORT NSString* _Nonnull const BRPeerManagerTxStatusNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const BRPeerManagerNewBlockNotification;
+FOUNDATION_EXPORT NSString* _Nonnull const BRPeerManagerLastBlockSyncedNotification;
+
 
 #define PEER_MAX_CONNECTIONS 3
 
 @class BRTransaction;
 
-@interface BRPeerManager : NSObject <BRPeerDelegate, UIAlertViewDelegate>
+@interface BRPeerManager : NSObject <BRPeerDelegate>
 
 @property (nonatomic, readonly) BOOL connected;
 @property (nonatomic, readonly) uint32_t lastBlockHeight;

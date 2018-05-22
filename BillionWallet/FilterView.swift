@@ -16,7 +16,7 @@ protocol FilterViewDelegate: class {
 class FilterView: LoadableFromXibView {
     
     struct Filter {
-        let sended: Bool?
+        let sent: Bool?
         let selectedDate: Date?
     }
     
@@ -58,8 +58,7 @@ class FilterView: LoadableFromXibView {
         receivedButton.layer.masksToBounds = true
         sendedButton.layer.cornerRadius = sendedButton.frame.size.height / 2
         sendedButton.layer.masksToBounds = true
-        sliderView.layer.cornerRadius = 20
-        sliderView.layer.masksToBounds = true
+        sliderView.layer.standardCornerRadius()
         slider.setThumbImage(#imageLiteral(resourceName: "Thumb"), for: .normal)
         
         minLabel.text = dateFormatter.string(from: firstEnterDate)
@@ -79,9 +78,9 @@ class FilterView: LoadableFromXibView {
             return
         }
         
-        if let sended = currentFilter.sended {
-            receivedButton.alpha = sended ? 0.5 : 1
-            sendedButton.alpha = sended ? 1 : 0.5
+        if let sent = currentFilter.sent {
+            receivedButton.alpha = sent ? 0.5 : 1
+            sendedButton.alpha = sent ? 1 : 0.5
         }
         
         if let timestamp = currentFilter.selectedDate {
@@ -105,7 +104,7 @@ class FilterView: LoadableFromXibView {
     }
     
     @objc func didTapBackground() {
-        let filter = Filter(sended: isIncomingSelected(), selectedDate: selectedDate)
+        let filter = Filter(sent: isIncomingSelected(), selectedDate: selectedDate)
         output?.didAddFilter(filter)
         removeFromSuperview()
     }

@@ -50,7 +50,7 @@ class ContactsTests: XCTestCase {
         XCTAssertNotEqual(addressContact.displayName, findedUpdatedAddressContact.displayName)
         XCTAssertNotEqual(addressContact.avatarData, findedUpdatedAddressContact.avatarData)
         XCTAssertNotEqual(addressContact.isArchived, findedUpdatedAddressContact.isArchived)
-        XCTAssertEqual(contactsProvider.addessContacts.count == 1, true)
+        XCTAssertEqual(contactsProvider.addressContacts.count == 1, true)
     }
     
     func testPaymentCodeContactCreation() {
@@ -62,7 +62,7 @@ class ContactsTests: XCTestCase {
         
         let findedPaymentCodeContact: PaymentCodeContact = contactsProvider.getOrCreatePaymentCodeContact(paymentCode: _paymentCode)
         XCTAssertEqual(findedPaymentCodeContact.paymentCode, paymentCodeContact.paymentCode)
-        XCTAssertEqual(findedPaymentCodeContact.receiveAddresses.count == 100, true)
+        XCTAssertEqual(findedPaymentCodeContact.receiveAddresses.count == PaymentCodeContact.pregenCount, true)
         
         // change all ununique variables
         var updatedAddressContact = PaymentCodeContact.create(unique: _paymentCode)

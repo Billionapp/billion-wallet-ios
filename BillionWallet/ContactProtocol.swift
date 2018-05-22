@@ -8,30 +8,38 @@
 
 import Foundation
 
-let defaultDisplayName = "Unnamed"
+let defaultDisplayName = "Billionaire-"
 
-protocol ContactProtocol {
+protocol ContactProtocol: ContactDisplayable {
     static var uniqueAttribute: String { get }
 
     var uniqueValue: String { get }
-    var displayName: String { get set}
-    var avatarData: Data? { get set}
+    var displayName: String { get set }
+    var avatarData: Data? { get set }
     var isArchived: Bool { get set }
     var txHashes: Set<String> { get set }
+    var lastUsed: NSNumber { get set }
     
-    var description: (smart: String, full: String) { get }
     var isNotificationTxNeededToSend: Bool { get }
     
     static func create(unique: String) -> Self
     func save()
-    func isContact(for transaction: BRTransaction) -> Bool
-    mutating func addressToSend() -> String?
+    func backup(using icloud: ICloud) throws
+    func getConnectedAddress(for transaction: Transaction) -> String?
+    func addressToSend() -> String?
+    func getSendAddresses() -> [String]
+    func getNotificationAddress() -> String?
+    var notificationTxHash: String? {get set}
+    func getReceiveAddresses() -> [String]
+    mutating func incrementFirstUnusedIndex()
+    mutating func generateSendAddresses()
 }
 
-// MARK: - Utillitys
+
+// MARK: - Utilities
 
 extension ContactProtocol {
-        
+    
     var isAvatarSet: Bool {
         return avatarData != nil
     }
@@ -41,6 +49,14 @@ extension ContactProtocol {
             return avatarImage
         }
         return createAvatarImage()
+    }
+    
+    var qrImage: UIImage? {
+        return createQRFromString(uniqueValue, size: CGSize(width: 150, height: 150), inverseColor: true)
+    }
+    
+    func isContact(for transaction: Transaction) -> Bool {
+        return getConnectedAddress(for: transaction) != nil
     }
     
 }

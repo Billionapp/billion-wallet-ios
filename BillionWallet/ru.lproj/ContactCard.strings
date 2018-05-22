@@ -1,0 +1,6 @@
+
+/* Label mean that you can delete contact you choose */
+"ContactCard.deleteLabel" = "Удалить контакт";
+
+/* Label shown alies or name */
+"ContactCard.namePlaceholder" = "Введите псевдоним или имя";

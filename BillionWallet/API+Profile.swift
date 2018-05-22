@@ -10,11 +10,10 @@ import UIKit
 
 extension API {
     
-    func addSelfProfile(pc: String, nick: String?, name: String?, completion: @escaping (Result<String>) -> Void) {
+    func addSelfProfile(pc: String, name: String?, completion: @escaping (Result<String>) -> Void) {
         
         let body = [
             "pc": pc,
-            "nick": nick,
             "name": name
         ].removeNils()
         
@@ -30,10 +29,9 @@ extension API {
         }
     }
     
-    func updateSelfProfile(nick: String?, name: String?, completion: @escaping (Result<String>) -> Void) {
+    func updateSelfProfile(name: String?, completion: @escaping (Result<String>) -> Void) {
         
         let body = [
-            "nick": nick,
             "name": name
             ].removeNils()
         
@@ -77,15 +75,12 @@ extension API {
                 }
                 
                 let name = json.dictionaryObject?["name"] as? String
-                let nick = json.dictionaryObject?["nick"] as? String
-                let userData = LocalUserData(name: name, nick: nick, imageData: avatarData)
+                let userData = LocalUserData(name: name, imageData: avatarData)
                 completion(.success(userData))
                 
             case .failure(let error):
                 completion(.failure(error))
             }
         }
-
     }
-    
 }

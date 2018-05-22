@@ -18,11 +18,14 @@ public class ForeignFriendEntity: NSManagedObject {
     @NSManaged var avatarData: Data?
     @NSManaged var isArchived: Bool
     @NSManaged var txHashes: Set<String>
+    @NSManaged var lastUsed: NSNumber
     
     // MARK: - PaymentCodeContactProtocol
     @NSManaged var paymentCode: String
     @NSManaged var firstUnusedIndex: NSNumber
     @NSManaged var receiveAddresses: [String]
     @NSManaged var notificationTxHash: String?
-    
+    @NSManaged var incomingNotificationTxHash: String?
+    @NSManaged var sendAddresses: [String]
+    @NSManaged var notificationAddress: String
 }

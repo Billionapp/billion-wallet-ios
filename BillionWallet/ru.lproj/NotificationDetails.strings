@@ -1,0 +1,21 @@
+
+/* Network fee title on the buble */
+"NetworkFee" = "Комиссия сети";
+
+/* commission for private connection */
+"PrivateConnection" = "за приватный туннель";
+
+/* Blockchain */
+"Blockchain" = "Блокчейн";
+
+/* Notification transaction title */
+"Title" = "Нотификационная транзакция";
+
+/* Blockchain network fee for private connection title */
+"Subtitle" = "Комиссия сети Биткоин за приватное соединение";
+
+/* Confirmations label count */
+"NotificationDetails.confirmations" = "Подтверждения";
+
+/* notice displayed after txid is copied */
+"Alert.txidCopied" = "Txid скопирован в буфер обмена";

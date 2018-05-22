@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_0" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="ChooseFeeViewController" customModule="BillionWallet" customModuleProvider="target">
+            <connections>
+                <outlet property="cancelButton" destination="ia3-th-89N" id="Dvy-HV-6Qo"/>
+                <outlet property="confirmationTimeLabel" destination="zo5-en-wuI" id="wgd-5m-cte"/>
+                <outlet property="confirmationTimeSublabel" destination="gKd-6x-ly8" id="RE8-fd-KFc"/>
+                <outlet property="feeSatPerByteLabel" destination="avp-r7-Zlr" id="gdO-Ka-dZI"/>
+                <outlet property="feeSlider" destination="eBp-nf-DPT" id="4Er-GH-esf"/>
+                <outlet property="feeTotalAmountLabel" destination="8nO-Ot-Bjt" id="iT6-xR-omM"/>
+                <outlet property="feeTotalAmountSublabel" destination="oZ0-TD-dQv" id="RQZ-iR-b5M"/>
+                <outlet property="notEnoughFundsLabel" destination="Fid-SG-tdL" id="fpC-Dq-grq"/>
+                <outlet property="view" destination="iN0-l3-epB" id="gHD-Mh-lfR"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="edF-YA-c7E">
+                    <rect key="frame" x="103" y="303" width="167.5" height="60"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                </view>
+                <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="300" minValue="10" maxValue="300" translatesAutoresizingMaskIntoConstraints="NO" id="eBp-nf-DPT">
+                    <rect key="frame" x="8" y="312" width="304" height="31"/>
+                    <connections>
+                        <action selector="sendAction" destination="-1" eventType="touchUpOutside" id="S4J-SX-gEc"/>
+                        <action selector="sendAction" destination="-1" eventType="touchUpInside" id="cMo-uJ-rNa"/>
+                        <action selector="sliderValueChanged:" destination="-1" eventType="valueChanged" id="Dv6-q6-B0R"/>
+                    </connections>
+                </slider>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="confirmationTime" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="gKd-6x-ly8">
+                    <rect key="frame" x="10" y="212" width="88" height="12"/>
+                    <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="10"/>
+                    <color key="textColor" white="1" alpha="0.5" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="satPerByte" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="avp-r7-Zlr">
+                    <rect key="frame" x="0.0" y="247" width="320" height="36"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="30"/>
+                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8nO-Ot-Bjt">
+                    <rect key="frame" x="235.5" y="162" width="74.5" height="36"/>
+                    <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="30"/>
+                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="zo5-en-wuI">
+                    <rect key="frame" x="10" y="162" width="74.5" height="36"/>
+                    <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="30"/>
+                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="feeTotalAmount" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oZ0-TD-dQv">
+                    <rect key="frame" x="234.5" y="212" width="75.5" height="12"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="10"/>
+                    <color key="textColor" white="1" alpha="0.5" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ia3-th-89N" customClass="GradientButton" customModule="BillionWallet" customModuleProvider="target">
+                    <rect key="frame" x="72" y="444" width="176" height="52"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="52" id="T3M-TK-MGS"/>
+                        <constraint firstAttribute="width" constant="176" id="mGr-qo-a5g"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="16"/>
+                    <state key="normal" title="Cancel">
+                        <color key="titleColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    </state>
+                    <connections>
+                        <action selector="cancel:" destination="-1" eventType="touchUpInside" id="QVp-RF-dQd"/>
+                    </connections>
+                </button>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Not enough funds to cover this network fee" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Fid-SG-tdL">
+                    <rect key="frame" x="56" y="140" width="209" height="80"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="18"/>
+                    <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <nil key="highlightedColor"/>
+                </label>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="oZ0-TD-dQv" secondAttribute="trailing" constant="10" id="0Do-DD-hNO"/>
+                <constraint firstItem="eBp-nf-DPT" firstAttribute="top" secondItem="zo5-en-wuI" secondAttribute="bottom" constant="114" id="3B3-xB-fk7"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="bottom" secondItem="ia3-th-89N" secondAttribute="top" constant="124" id="9mb-FS-btq"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="8nO-Ot-Bjt" secondAttribute="trailing" constant="10" id="Auj-Fa-wc7"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="bottom" secondItem="eBp-nf-DPT" secondAttribute="bottom" constant="226" id="Euw-eQ-Juy"/>
+                <constraint firstItem="eBp-nf-DPT" firstAttribute="top" secondItem="oZ0-TD-dQv" secondAttribute="bottom" constant="88" id="FpO-j5-ciF"/>
+                <constraint firstItem="eBp-nf-DPT" firstAttribute="top" secondItem="gKd-6x-ly8" secondAttribute="bottom" constant="88" id="Luv-tb-Ppv"/>
+                <constraint firstItem="eBp-nf-DPT" firstAttribute="top" secondItem="8nO-Ot-Bjt" secondAttribute="bottom" constant="114" id="Mjd-nX-CVA"/>
+                <constraint firstItem="ia3-th-89N" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="OFx-h0-cNc"/>
+                <constraint firstItem="gKd-6x-ly8" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="10" id="RKC-Ce-Im7"/>
+                <constraint firstItem="zo5-en-wuI" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="10" id="St6-DU-Zf9"/>
+                <constraint firstItem="avp-r7-Zlr" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" id="aOl-SB-MWD"/>
+                <constraint firstItem="eBp-nf-DPT" firstAttribute="top" secondItem="avp-r7-Zlr" secondAttribute="bottom" constant="29" id="cEN-ZL-0QY"/>
+                <constraint firstItem="avp-r7-Zlr" firstAttribute="trailing" secondItem="vUN-kp-3ea" secondAttribute="trailing" id="jx1-Js-nvF"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="eBp-nf-DPT" secondAttribute="trailing" constant="10" id="v8i-70-oci"/>
+                <constraint firstItem="eBp-nf-DPT" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="10" id="y7C-Wj-uHQ"/>
+            </constraints>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+        </view>
+    </objects>
+</document>

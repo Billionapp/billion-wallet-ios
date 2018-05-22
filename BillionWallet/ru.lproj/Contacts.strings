@@ -1,0 +1,12 @@
+
+/* Contacts title */
+"Contacts.title" = "Контакты";
+
+/* Cancel */
+"Contacts.cancelButton" = "Отмена";
+
+/* Message that user have no contacts */
+"Contacts.noContacts" = "Список контактов пуст";
+
+/* Add contact button title */
+"Contacts.addContact" = "Добавить контакт";

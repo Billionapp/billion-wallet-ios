@@ -10,19 +10,21 @@ import Foundation
 
 class  ProfileRouter: Router {
     
-    let mainRouter: MainRouter
-    let back: UIImage
+    private weak var mainRouter: MainRouter!
+    private weak var app: Application!
+    private let back: UIImage
     
-    init(mainRouter: MainRouter, back: UIImage) {
+    init(mainRouter: MainRouter, app: Application, back: UIImage) {
         self.mainRouter = mainRouter
+        self.app = app
         self.back = back
     }
     
     func run() {
-        let viewModel = ProfileVM(api: mainRouter.application.api, icloudProvider: mainRouter.application.iCloud, defaults: mainRouter.application.defaults)
+        let viewModel = ProfileVM(api: app.api, icloudProvider: app.iCloud, defaults: app.defaults, accountProvider: app.accountProvider)
         let viewController =  ProfileViewController(viewModel: viewModel)
         viewController.router = mainRouter
-        viewController.backForBlur = back
+        viewController.backImage = back
         mainRouter.navigationController.push(viewController: viewController)
     }
 }

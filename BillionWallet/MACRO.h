@@ -25,12 +25,8 @@
 #define CREATION_TIME_KEY   @"creationtime"
 #define MASTER_PUBKEY_KEY   @"masterpubkey"
 #define SPEND_LIMIT_KEY     @"spendlimit"
-#define PIN_KEY             @"pin"
-#define PIN_FAIL_COUNT_KEY  @"pinfailcount"
-#define PIN_FAIL_HEIGHT_KEY @"pinfailheight"
 #define AUTH_PRIVKEY_KEY    @"authprivkey"
 #define SEED_KEY            @"seed" // depreceated
-#define USER_ACCOUNT_KEY    @"https://api.breadwallet.com"
 
 #define ACCOUNT_ROOT_PRIV_KEY  @"accountRootPrivKey"
 #define ACCOUNT_ROOT_PUB_KEY   @"accountRootPubKey"
@@ -44,7 +40,10 @@
 #define PAYMENT_CODE_PRIV      @"paymentCodePriv"
 #define NOTIFICATION_ID_VER_1  @"notificationIdVer1"
 #define NOTIFICATION_ID_VER_2  @"notificationIdVer2"
-
-#define SEC_ATTR_SERVICE      @"org.voisine.breadwallet"
+#if BITCOIN_TESTNET
+    #define SEC_ATTR_SERVICE      @"com.evogroup.billionwallet-test"
+#else
+    #define SEC_ATTR_SERVICE      @"com.evogroup.billionwallet"
+#endif
 #define BIP32_HARD 0x80000000
 

@@ -10,13 +10,16 @@ import UIKit
 
 class ContactsCell: UICollectionViewCell {
     
-    @IBOutlet weak var picture: UIImageView?
-    @IBOutlet weak var name: UILabel?
+    @IBOutlet weak var picture: UIImageView!
+    @IBOutlet weak var name: UILabel!
     
 
     override func awakeFromNib() {
         super.awakeFromNib()
-        // Initialization code
+        let backgroundView = UIView()
+        backgroundView.backgroundColor = Theme.Color.selected
+        selectedBackgroundView = backgroundView
+        picture.layer.standardCornerRadius()
     }
 
 }

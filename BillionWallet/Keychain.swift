@@ -7,10 +7,11 @@
 //
 
 import Security
+import Foundation
 
-struct Keychain {
+class Keychain {
     
-    private let serviceName = "billion-wallet"
+    private let serviceName = SEC_ATTR_SERVICE
     
     private let kSecClassGenericPasswordValue = String(format: kSecClassGenericPassword as String)
     private let kSecClassValue = String(format: kSecClass as String)
@@ -21,8 +22,9 @@ struct Keychain {
     private let kSecMatchLimitOneValue = String(format: kSecMatchLimitOne as String)
     private let kSecAttrAccountValue = String(format: kSecAttrAccount as String)
     private let kSecAttrAccessibleValue = String(format: kSecAttrAccessible as String)
+    private let kSecAttrAccessGroupValue = String(format: kSecAttrAccessGroup as String)
     
-    fileprivate func set(_ data: Data, for key: String) {
+    private func set(_ data: Data, for key: String) {
         
         var query = generateQuery(for: key)
         
@@ -30,7 +32,7 @@ struct Keychain {
         
         query.removeValue(forKey: kSecReturnDataValue)
         query.updateValue(data, forKey: kSecValueDataValue)
-        query.updateValue(kSecAttrAccessibleWhenUnlockedThisDeviceOnly, forKey: kSecAttrAccessibleValue)
+        query.updateValue(kSecAttrAccessibleAfterFirstUnlock, forKey: kSecAttrAccessibleValue)
         
         let status = SecItemAdd(query as CFDictionary, nil)
         guard status == errSecSuccess else {
@@ -38,7 +40,7 @@ struct Keychain {
         }
     }
     
-    fileprivate func get(for key: String) -> Data? {
+    private func get(for key: String) -> Data? {
         
         let query = generateQuery(for: key)
         
@@ -52,12 +54,12 @@ struct Keychain {
         return data
     }
     
-    fileprivate func delete(for key: String) {
+    private func delete(for key: String) {
         let query = generateQuery(for: key)
         SecItemDelete(query as CFDictionary)
     }
     
-    fileprivate func generateQuery(for key: String) -> [String: Any] {
+    private func generateQuery(for key: String) -> [String: Any] {
         return [
             kSecClassValue: kSecClassGenericPasswordValue,
             kSecAttrServiceValue: serviceName,
@@ -67,9 +69,25 @@ struct Keychain {
     }
 }
 
-// MARK: - Keychain hepler bilders
-
+// MARK: - Keychain helper builders
 extension Keychain {
+    
+    func deleteAll() {
+        let query = [kSecClassValue: kSecClassGenericPasswordValue]
+        SecItemDelete(query as CFDictionary)
+    }
+    
+    func getData(forKey key: String) -> Data? {
+        return get(for: key)
+    }
+    
+    func setData(_ data: Data?, forKey key: String) {
+        if let data = data {
+            set(data, for: key)
+        } else {
+            delete(for: key)
+        }
+    }
     
     func getString(for key: KeychainKeys) -> String? {
         guard let data = get(for: key.rawValue),
@@ -94,14 +112,11 @@ extension Keychain {
         return true
     }
     
-    func setBool(_ value: Bool,for key: KeychainKeys) {
+    func setBool(_ value: Bool, for key: KeychainKeys) {
         setString(value ? "true" : nil, for: key)
     }
     
     func exist(_ key: KeychainKeys) -> Bool {
         return get(for: key.rawValue) != nil
     }
-    
 }
-
-

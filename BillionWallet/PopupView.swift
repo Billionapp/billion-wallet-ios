@@ -8,6 +8,10 @@
 
 import UIKit
 
+protocol PopupViewDelegate: class {
+    func viewDidDismiss()
+}
+
 public enum PopupType {
     case ok
     case cancel
@@ -25,8 +29,11 @@ public enum PopupType {
 final class PopupView: UIView {
     private let type: PopupType
     private let labelString: String
+    var indicator: UIActivityIndicatorView?
     
     static let loading = PopupView(type: .loading, labelString: "")
+    
+    weak var delegate: PopupViewDelegate?
     
     @IBOutlet private weak var popupImage: UIImageView!
     @IBOutlet private weak var popupLabel: UILabel!
@@ -40,9 +47,15 @@ final class PopupView: UIView {
         setImage()
         setLabel()
         if self.type != .loading {
-           addCloseGesture()
+            addCloseGesture()
+            setTimer()
         } else {
-            popupImage.rotate360Degrees()
+            popupImage.isHidden = true
+            indicator = UIActivityIndicatorView.init(frame: popupImage.frame)
+            self.addSubview(indicator!)
+            indicator!.center = self.center
+            indicator!.activityIndicatorViewStyle = .whiteLarge
+            indicator!.startAnimating()
         }
     }
     
@@ -69,6 +82,12 @@ final class PopupView: UIView {
         popupLabel?.text = labelString
     }
     
+    func setTimer() {
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 1.5) {
+            self.close()
+        }
+    }
+    
     func addCloseGesture() {
         let tap = UITapGestureRecognizer(target: self, action: #selector(close))
         self.addGestureRecognizer(tap)
@@ -76,13 +95,14 @@ final class PopupView: UIView {
     
     @objc func close() {
         self.removeFromSuperview()
+        delegate?.viewDidDismiss()
     }
 }
 
 extension UIView {
     @discardableResult
     func fromNib<T : UIView>() -> T? {
-        guard let view = Bundle.main.loadNibNamed(String(describing: type(of: self)).nibName(), owner: self, options: nil)?[0] as? T else {
+        guard let view = Bundle.main.loadNibNamed(xibName(), owner: self, options: nil)?[0] as? T else {
                 return nil
             }
         self.addFillerSubview(view)
@@ -90,12 +110,19 @@ extension UIView {
         return view
     }
     
+    func xibName() -> String {
+        let nibName = String(describing: type(of: self)).nibName()
+        if let _ = Bundle.main.path(forResource: nibName, ofType: "nib") {
+            return nibName
+        } else {
+            return "\(type(of:self))7+"
+        }
+    }
+    
     func addBlur() {
-        let blurEffect = UIBlurEffect(style: UIBlurEffectStyle.dark)
-        let blurEffectView = UIVisualEffectView(effect: blurEffect)
-        blurEffectView.frame = self.bounds
-        blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
-        blurEffectView.alpha = 0.93
-        self.insertSubview(blurEffectView, at: 0)
+        let screen = captureScreen(view: UIApplication.shared.keyWindow!)
+        let imageView = UIImageView(frame: self.frame)
+        imageView.image = screen
+        self.insertSubview(imageView, at: 0)
     }
 }

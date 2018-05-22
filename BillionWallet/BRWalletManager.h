@@ -31,7 +31,7 @@
 #import "MACRO.h"
 
 #define BTC          @"\xC9\x83"     // capital B with stroke (utf-8)
-#define BITS         @"\xC6\x80"     // lowercase b with stroke (utf-8)
+#define BITS         @"㋛"//@"\xC6\x80"     // lowercase b with stroke (utf-8)
 #define NARROW_NBSP  @"\xE2\x80\xAF" // narrow no-break space (utf-8)
 #define LDQUOTE      @"\xE2\x80\x9C" // left double quote (utf-8)
 #define RDQUOTE      @"\xE2\x80\x9D" // right double quote (utf-8)
@@ -39,7 +39,6 @@
                       NSBundle.mainBundle.infoDictionary[@"CFBundleDisplayName"]]
 
 #define WALLET_NEEDS_BACKUP_KEY @"WALLET_NEEDS_BACKUP"
-#define PIN_UNLOCK_TIME_KEY     @"PIN_UNLOCK_TIME"
 
 
 FOUNDATION_EXPORT NSString* _Nonnull const BRWalletManagerSeedChangedNotification;
@@ -55,7 +54,7 @@ FOUNDATION_EXPORT NSString* _Nonnull const BRWalletManagerSeedChangedNotificatio
 @property (nonatomic, strong) id<BRMnemonic> _Nullable mnemonic;
 @property (nonatomic, readonly) NSData * _Nullable masterPublicKey;//master public key used to generate wallet addresses
 @property (nonatomic, copy) NSString * _Nullable seedPhrase; // requesting seedPhrase will trigger authentication
-@property (nonatomic, readonly) NSTimeInterval seedCreationTime; // interval since refrence date, 00:00:00 01/01/01 GMT
+@property (nonatomic, assign) NSTimeInterval seedCreationTime; // interval since refrence date, 00:00:00 01/01/01 GMT
 @property (nonatomic, readonly) NSTimeInterval secureTime; // last known time from an ssl server connection
 @property (nonatomic, assign) uint64_t spendingLimit; // amount that can be spent using touch id without pin entry
 @property (nonatomic, readonly) NSString * _Nullable authPrivateKey; // private key for signing authenticated api calls
@@ -77,27 +76,10 @@ FOUNDATION_EXPORT NSString* _Nonnull const BRWalletManagerSeedChangedNotificatio
 - (NSData * _Nullable)seedWithPrompt:(NSString * _Nullable)authprompt forAmount:(uint64_t)amount;//auth user,return seed
 - (NSString * _Nullable)seedPhraseWithPrompt:(NSString * _Nullable)authprompt; // authenticates user, returns seedPhrase
 - (BOOL)authenticateWithPrompt:(NSString * _Nullable)authprompt andTouchId:(BOOL)touchId; // prompt user to authenticate
-- (BOOL)setPin; // prompts the user to set or change wallet pin and returns true if the pin was successfully set
-
-// queries api.breadwallet.com and calls the completion block with unspent outputs for the given address
-- (void)utxosForAddresses:(NSArray * _Nonnull)address
-completion:(void (^ _Nonnull)(NSArray * _Nonnull utxos, NSArray * _Nonnull amounts, NSArray * _Nonnull scripts,
-                              NSError * _Null_unspecified error))completion;
-
-// given a private key, queries api.breadwallet.com for unspent outputs and calls the completion block with a signed
-// transaction that will sweep the balance into wallet (doesn't publish the tx)
-- (void)sweepPrivateKey:(NSString * _Nonnull)privKey withFee:(BOOL)fee
-completion:(void (^ _Nonnull)(BRTransaction * _Nonnull tx, uint64_t fee, NSError * _Null_unspecified error))completion;
 
 - (int64_t)amountForString:(NSString * _Nullable)string;
 - (NSString * _Nonnull)stringForAmount:(int64_t)amount;
 - (int64_t)amountForLocalCurrencyString:(NSString * _Nonnull)string;
 - (NSString * _Nonnull)localCurrencyStringForAmount:(int64_t)amount;
-
-//- (void) utxosWithRequest:(NSURLRequest *_Nullable) request forAddresses:(NSArray *_Nullable)addresses
-//               completion:(void (^_Nullable)(NSArray * _Nullable utxos, NSArray * _Nullable amounts, NSArray * _Nullable scripts, NSError * _Nullable error))completion;
-//
-//- (void) sweepPrivateKeyWithRequest: (NSURLRequest *_Nullable) request withPrivKey: (NSString * _Nonnull)privKey withFee:(BOOL)fee
-//                         completion:(void (^ _Nonnull)(BRTransaction * _Nonnull tx, uint64_t fee, NSError * _Null_unspecified error))completion;
 
 @end

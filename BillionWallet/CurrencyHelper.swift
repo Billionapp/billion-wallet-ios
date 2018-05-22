@@ -18,22 +18,36 @@ func localeFromIso(iso: String) -> Locale {
     return Locale.init(identifier: "us_US")
 }
 
-func stringCurrency(from amount: UInt64, localeIso: String) -> String {
+func stringCurrency(from amount: Double, localeIso: String) -> String {
     let currencyFormatter = NumberFormatter()
     currencyFormatter.numberStyle = NumberFormatter.Style.currencyAccounting
-    currencyFormatter.maximumFractionDigits = 0
-    currencyFormatter.locale = Locale.current // localeFromIso(iso: localeIso)
+    currencyFormatter.maximumFractionDigits = 2
+    currencyFormatter.locale = Locale.current
     currencyFormatter.currencyCode = localeIso
     return currencyFormatter.string(from: Decimal(amount) as NSDecimalNumber)!
 }
 
-func stringCurrencyFromDecimal(from amount: NSDecimalNumber, localeIso: String) -> String {
+func stringCurrencyRounded(from amount: Double, localeIso: String) -> String {
+    let currencyFormatter = NumberFormatter()
+    currencyFormatter.maximumFractionDigits = 0
+    currencyFormatter.locale = Locale.current
+    currencyFormatter.currencyCode = localeIso
+    currencyFormatter.numberStyle = .currency
+    currencyFormatter.isLenient = true
+    currencyFormatter.generatesDecimalNumbers = true
+    currencyFormatter.minimumFractionDigits = 0
+    currencyFormatter.maximumFractionDigits = 0
+    
+    return currencyFormatter.string(from: Decimal(amount) as NSDecimalNumber)!
+}
+
+func stringCurrencyFromDecimal(from amount: Decimal, localeIso: String) -> String {
     let currencyFormatter = NumberFormatter()
     currencyFormatter.numberStyle = NumberFormatter.Style.currencyAccounting
     currencyFormatter.maximumFractionDigits = 0
-    currencyFormatter.locale = Locale.current //localeFromIso(iso: localeIso)
+    currencyFormatter.locale = Locale.current
     currencyFormatter.currencyCode = localeIso
-    return currencyFormatter.string(from: amount)!
+    return currencyFormatter.string(from: NSDecimalNumber(decimal: amount))!
 }
 
 func decimal(with string: String) -> NSDecimalNumber {

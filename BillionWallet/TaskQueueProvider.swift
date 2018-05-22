@@ -9,107 +9,192 @@
 import UIKit
 
 class TaskQueueProvider {
+    fileprivate typealias OperationBlock = (@escaping (Result<String>) -> Void) -> Void
     
-    weak var authorizationProvider: AuthorizationProvider?
-    weak var accountProvider: AccountManager?
-    weak var defaults: Defaults?
+    private let retryInterval: Double = 30
     
-    fileprivate let taskQueueProviderQueue = DispatchQueue(label: "TaskQueueProviderQueue")
-    fileprivate let operationQueue: OperationQueue
-    fileprivate var isExecuting = false
-    fileprivate var taskQueue = Set<TaskQueue>() {
-        didSet {
-            defaults?.taskQueue = Array(taskQueue)
-        }
-    }
+    private let authorizationProvider: AuthorizationProvider
+    private let accountProvider: AccountManager
+    private let defaults: Defaults
+    private let profileUpdater: ProfileUpdateManager
+    private let pushConfigurator: PushConfigurator
     
-    var taskHandler: ((Result<String>) -> Void) {
-        return { [unowned self] result in
-            self.isExecuting = false
-            
-            switch result {
-            case .success:
-                Logger.info("Task queue stap successed")
-                self.removeFirstTask()
-                self.start()
-            case .failure:
-                Logger.info("Task queue stap failed. Retrying ...")
-                Helper.delay(5, queue: self.taskQueueProviderQueue, closure: {
-                    self.start()
-                })
-            }
-        }
-    }
-
-    init(authorizationProvider: AuthorizationProvider, accountProvider: AccountManager, defaults: Defaults) {
+    private let workingQueue: DispatchQueue
+    private let operationQueue: OperationQueue
+    private var isExecuting: Bool
+    private var tasksToExecute: Set<TaskQueue>
+    private var executingTasks: Set<TaskQueue>
+    
+    private var timer: Timer?
+    
+    init(authorizationProvider: AuthorizationProvider,
+         accountProvider: AccountManager,
+         defaults: Defaults,
+         profileUpdater: ProfileUpdateManager,
+         pushConfigurator: PushConfigurator) {
+        
         self.authorizationProvider = authorizationProvider
         self.accountProvider = accountProvider
-        self.taskQueue = Set(defaults.taskQueue)
         self.defaults = defaults
+        self.pushConfigurator = pushConfigurator
+        self.profileUpdater = profileUpdater
+        self.tasksToExecute = Set(defaults.taskQueue)
+        self.executingTasks = Set()
         self.operationQueue = OperationQueue()
-        self.operationQueue.maxConcurrentOperationCount = 1
+        self.operationQueue.maxConcurrentOperationCount = 3
+        self.isExecuting = false
+        self.workingQueue = DispatchQueue(label: "TaskQueueProviderQueue")
+        
         start()
     }
     
-    @objc func start() {
-        
-        taskQueueProviderQueue.async {
-            self.executeNextOperation()
+    deinit {
+        stop()
+    }
+    
+    func start() {
+        if isExecuting {
+            Logger.debug("Task queue service is already running")
+            return
         }
+        Logger.info("Task queue service started")
+        Logger.debug("Tasks in queue to execute: \(tasksToExecute), executing: \(executingTasks)")
+        isExecuting = true
+        operationQueue.isSuspended = false
+        for task in tasksToExecute {
+            startTask(task)
+        }
+    }
+    
+    func stop() {
+        if !isExecuting {
+            Logger.debug("Task queue service is not running")
+            return
+        }
+        timer?.invalidate()
+        timer = nil
+        isExecuting = false
+        operationQueue.isSuspended = true
+        operationQueue.cancelAllOperations()
+        operationQueue.isSuspended = false
+        for task in executingTasks {
+            tasksToExecute.insert(task)
+        }
+        executingTasks.removeAll()
+        updateDefaults()
+        Logger.info("Task queue service stopped")
+    }
+    
+    func clear() {
+        self.tasksToExecute.removeAll()
+        self.executingTasks.removeAll()
+        updateDefaults()
+        Logger.debug("Task queue cleared")
+    }
+    
+    func updateDefaults() {
+        defaults.taskQueue = Array(tasksToExecute.union(executingTasks))
     }
     
     func addOperation(type: TaskQueue.OperationType) {
-        let newTaskQueue = TaskQueue(operationType: type)
-        taskQueue.insert(newTaskQueue)
-        start()
+        let newTask = TaskQueue(operationType: type)
+        Logger.debug("Trying to add task \"\(newTask)\"")
+        if executingTasks.union(tasksToExecute).contains(newTask) {
+            Logger.debug("Task queue already contains task \"\(newTask)\"")
+            return
+        }
+        tasksToExecute.insert(newTask)
+        updateDefaults()
+        startTask(newTask)
     }
-    
 }
 
 // MARK: - Private methods
 
 extension TaskQueueProvider {
+    private func taskHandler(forTask task: TaskQueue) -> ((Result<String>) -> Void) {
+        return { [unowned self] result in
+            switch result {
+            case .success:
+                Logger.info("Task \"\(task)\" succeeded.")
+                self.removeTask(task)
+            case .failure(let error):
+                Logger.info("Task \"\(task)\" failed with error: \(error.localizedDescription). Retry in \(self.retryInterval)s")
+                self.retryTask(task)
+            }
+        }
+    }
     
-    fileprivate func executeNextOperation() {
-        guard let operationType = taskQueue.first?.operationType, taskQueue.count != 0, !isExecuting else {
+    private func startTask(_ task: TaskQueue) {
+        Logger.debug("Try to start task \"\(task)\"")
+        guard isExecuting else {
+            Logger.warn("Task queue service is not running yet. Task \"\(task)\" not started.")
             return
         }
-        
-        isExecuting = true
-        
-        let asyncOperation = AsynchronousOperation(executeBlock: operation(for: operationType), completion: self.taskHandler, queue: taskQueueProviderQueue)
-        operationQueue.addOperation(asyncOperation)
-    }
-    
-    fileprivate func removeFirstTask() {
-        if !taskQueue.isEmpty {
-            taskQueue.removeFirst()
+        workingQueue.async {
+            if self.executingTasks.contains(task) {
+                Logger.debug("Task \"\(task)\" is already in executing list")
+                return
+            }
+            let operationType = task.operationType
+            if let operation = self.operation(for: operationType) {
+                self.tasksToExecute.remove(task)
+                self.executingTasks.insert(task)
+                let asyncOperation = AsynchronousOperation(executeBlock: operation,
+                                                           completion: self.taskHandler(forTask: task),
+                                                           queue: self.workingQueue)
+                self.operationQueue.addOperation(asyncOperation)
+            } else {
+                Logger.error("Could not get operation closure for task \"\(task)\"")
+                self.retryTask(task)
+            }
         }
     }
     
-    fileprivate func operation(for type: TaskQueue.OperationType) -> ((@escaping (Result<String>) -> Void) -> Void) {
-        
+    private func removeTask(_ task: TaskQueue) {
+        Logger.debug("Removing task \"\(task)\" from queue")
+        workingQueue.async {
+            self.tasksToExecute.remove(task)
+            self.executingTasks.remove(task)
+            self.updateDefaults()
+        }
+    }
+    
+    private func retryTask(_ task: TaskQueue) {
+        Logger.debug("Posting task \"\(task)\" to retry")
+        workingQueue.async {
+            self.executingTasks.remove(task)
+            self.tasksToExecute.insert(task)
+            Helper.delay(self.retryInterval, queue: self.workingQueue, closure: {
+                self.startTask(task)
+            })
+        }
+    }
+    
+    private func operation(for type: TaskQueue.OperationType) -> (OperationBlock)? {
         switch type {
-        case .registrationNew:
-            
-            return { [weak self] result in
-                guard let walletDigest = self?.accountProvider?.currentWalletDigest else {
-                    return
-                }
-                self?.authorizationProvider?.registerNewAccount(walletDigest: walletDigest, completion: result)
+        case .register:
+            guard let walletDigest = self.accountProvider.getOrCreateWalletDigest() else {
+                return nil
             }
-            
-        case .registrationRestore:
-            
-            return { [weak self] result in
-                guard let walletDigest = self?.accountProvider?.currentWalletDigest else {
-                    return
-                }
-                self?.authorizationProvider?.restoreRegistration(walletDigest: walletDigest, completion: result)
+            return { [unowned self] result in
+                self.authorizationProvider.register(walletDigest: walletDigest, completion: result)
             }
-            
+
+        case .updateProfile:
+            guard let _ = self.accountProvider.getOrCreateWalletDigest() else {
+                return nil
+            }
+            return { [unowned self] result in
+                self.profileUpdater.updateUserProfile(completion: result)
+            }
+        case .pushConfig:
+            guard let deviceToken = defaults.apnsToken else {
+                return nil
+            }
+            return { [unowned self] result in
+                self.pushConfigurator.configurePush(token: deviceToken, completion: result)
+            }
         }
-        
     }
-    
 }

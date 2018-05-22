@@ -14,9 +14,15 @@ final class Defaults {
         get {
             if let data: Data = get(forKey: .taskQueue),
                 let operationTypeRaw = NSKeyedUnarchiver.unarchiveObject(with: data) as? [Int]  {
-                return operationTypeRaw.flatMap { TaskQueue(operationType: TaskQueue.OperationType(rawValue: $0)!) }
+                return operationTypeRaw.flatMap {
+                    guard let type = TaskQueue.OperationType(rawValue: $0) else {
+                        Logger.debug("Ignoring TaskQueue value \"\($0)\"")
+                        return nil
+                    }
+                    return TaskQueue(operationType: type)
+                }
             }
-            
+ 
             return [TaskQueue]()
         }
         
@@ -27,13 +33,13 @@ final class Defaults {
         }
     }
     
-    var fitstEnterDate: Date? {
+    var firstLaunchDate: Date? {
         get {
-            return getObject(forKey: .fitstEnterDate)
+            return getObject(forKey: .firstLaunchDate)
         }
         
         set {
-            set(value: newValue, forKey: .fitstEnterDate)
+            set(value: newValue, forKey: .firstLaunchDate)
         }
     }
     
@@ -47,6 +53,17 @@ final class Defaults {
         }
     }
     
+    var isWalletJustCreated: Bool {
+        get {
+            let value = getBool(forKey: .isWalletJustCreated)
+            set(value: false, forKey: .isWalletJustCreated)
+            return value
+        }
+        set {
+            set(value: newValue, forKey: .isWalletJustCreated)
+        }
+    }
+    
     var userName: String? {
         get {
             return get(forKey: .userName)
@@ -54,16 +71,6 @@ final class Defaults {
         
         set {
             set(value: newValue, forKey: .userName)
-        }
-    }
-    
-    var userNick: String? {
-        get {
-            return get(forKey: .userNick)
-        }
-        
-        set {
-            set(value: newValue, forKey: .userNick)
         }
     }
     
@@ -78,6 +85,16 @@ final class Defaults {
         }
     }
     
+    var appStarted: Bool {
+        get {
+            return getBool(forKey: .appStarted)
+        }
+        set {
+            set(value: newValue, forKey: .appStarted)
+        }
+    }
+    
+    /// Cannot be empty
     var currencies: [Currency] {
         get {
             if let currenciesData: Data = get(forKey: .currency),
@@ -94,36 +111,45 @@ final class Defaults {
         }
     }
     
-    var commission: FeeSize {
+    var useBlockSyncIndication: Bool {
         get {
-            let string: String = get(forKey: .commission, fallback: FeeSize.normal.rawValue)
-            return  FeeSize(rawValue: string)!
+            return getBool(forKey: .useBlockSyncIndication)
         }
-        
         set {
-            set(value: newValue.rawValue, forKey: .commission)
+            set(value: newValue, forKey: .useBlockSyncIndication)
         }
     }
     
     func clear() {
-        for key in Array(UserDefaults.standard.dictionaryRepresentation().keys) {
-            UserDefaults.standard.removeObject(forKey: key)
+        for key in Keys.allValues {
+            UserDefaults.standard.removeObject(forKey: key.rawValue)
         }
     }
     
+    var apnsToken: Data? {
+        get {
+            return get(forKey: .apnsToken)
+        }
+        set {
+            set(value: newValue, forKey: .apnsToken)
+        }
+    }
 }
 
 fileprivate extension Defaults {
     
-    enum Keys: String {
+    enum Keys: String, EnumCollection {
         case isTouchIdEnabled
         case currency
-        case commission
         case isBackupRestored
+        case isWalletJustCreated
         case userName
         case userNick
-        case fitstEnterDate
+        case firstLaunchDate
         case taskQueue
+        case useBlockSyncIndication
+        case appStarted
+        case apnsToken
     }
     
     func set<T: Any>(value: T, forKey key: Keys) {
@@ -161,7 +187,5 @@ fileprivate extension Defaults {
 }
 
 extension Notification.Name {
-    
     static let didChangeIsTouchIdEnabled = Notification.Name("didChangeIsTouchIdEnabled")
-    
 }

@@ -17,5 +17,5 @@ class TransactionProvider {
         self.tx = tx
         self.fee = fee
         self.amount = amount
-    }    
+    }
 }

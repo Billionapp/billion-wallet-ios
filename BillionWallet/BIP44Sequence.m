@@ -233,13 +233,10 @@ static void CKDpub(BRECPoint *K, UInt256 *c, uint32_t i)
     
     UInt256 secret = *(UInt256 *)&I, chain = *(UInt256 *)&I.u8[sizeof(UInt256)];
     
-    uint32_t coin = 0;
-#if BITCOIN_TESTNET
-    coin = 1;
-#endif
+    uint32_t coin = 0;  // Bitcoin derivation path only
     
     CKDpriv(&secret, &chain, 47 | BIP32_HARD); // m/47H
-    CKDpriv(&secret, &chain, coin | BIP32_HARD); // Bitcoin Main m/47H/0H, Test m/44H/1H
+    CKDpriv(&secret, &chain, coin | BIP32_HARD); // Bitcoin Main/Test m/47H/0H
     
     CKDpriv(&secret, &chain, account | BIP32_HARD); // m/47H/coinH/accountH
     

@@ -61,17 +61,15 @@ class Crypto {
     ///   - message: Message
     ///   - key: Encryption key
     /// - Returns: Ciphertext
-    static func encrypt(message: Data, key: Data) -> Data {
+    static func encrypt(message: Data, key: Data) throws -> Data {
         // IV = [0], mode = CBC, padding = PKCS7
-        // FIXME: Crashes on failed key
-        let aes = try! CryptoSwift.AES(key: key.bytes)
+        let aes = try CryptoSwift.AES(key: key.bytes)
         
         // imlicitly set random IV
         var expandedMessage = Data()
         expandedMessage.append(Random.data(AES.blockSize))
         expandedMessage.append(message)
-        // FIXME: Crashes on failed encryption
-        let cypher = try! aes.encrypt(expandedMessage)
+        let cypher = try aes.encrypt(expandedMessage)
         return Data(cypher)
     }
     
@@ -81,12 +79,10 @@ class Crypto {
     ///   - cypher: Ciphertext
     ///   - key: Encryption key
     /// - Returns: Decrypted message
-    static func decrypt(cypher: Data, key: Data) -> Data {
+    static func decrypt(cypher: Data, key: Data) throws -> Data {
         // IV = [0], mode = CBC, padding = PKCS7
-        // FIXME: Crashes on failed key
-        let aes = try! AES(key: key.bytes)
-        // FIXME: Crashes on fail padding
-        let expandedMessage = try! aes.decrypt(cypher)
+        let aes = try AES(key: key.bytes)
+        let expandedMessage = try aes.decrypt(cypher)
         
         // drop implicit random IV
         let message = Data(expandedMessage).suffix(from: AES.blockSize)
@@ -99,9 +95,9 @@ class Crypto {
     ///   - entropy: Random bytes
     ///   - salt: Salt
     /// - Returns: Derived key
-    static func KDF(entropy: Data, salt: Data) -> Data {
-        let pbkdf2 = try! PKCS5.PBKDF2(password: entropy.bytes, salt: salt.bytes, iterations: 4096, variant: CryptoSwift.HMAC.Variant.sha512)
-        let key = try! pbkdf2.calculate()
+    static func KDF(entropy: Data, salt: Data) throws -> Data {
+        let pbkdf2 = try PKCS5.PBKDF2(password: entropy.bytes, salt: salt.bytes, iterations: 4096, variant: CryptoSwift.HMAC.Variant.sha512)
+        let key = try pbkdf2.calculate()
         return Data(key)
     }
     
@@ -111,24 +107,9 @@ class Crypto {
     ///   - message: Message
     ///   - key: Signature key
     /// - Returns: Message signature
-    static func MAC(message: Data, key: Data) -> Data {
+    static func MAC(message: Data, key: Data) throws -> Data {
         let hmac = CryptoSwift.HMAC(key: key.bytes, variant: CryptoSwift.HMAC.Variant.sha512)
-        let mac = try! hmac.authenticate(message.bytes)
+        let mac = try hmac.authenticate(message.bytes)
         return Data(mac)
-    }
-}
-
-extension Crypto: ECIESConfigProvider {
-    func genECIESConfig() -> ECIESConfig {
-        let s1 = "PBKDF2 salt".data(using: .utf8)!
-        let s2 = "HMAC salt".data(using: .utf8)!
-        return ECIESConfig(
-            S1: s1,
-            S2: s2,
-            cypherEncrypt: Crypto.encrypt,
-            cypherDecrypt: Crypto.decrypt,
-            KDF: Crypto.KDF,
-            MAC: Crypto.MAC
-        )
     }
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="13240" systemVersion="16G29" minimumToolsVersion="Xcode 7.3" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14133" systemVersion="17E202" minimumToolsVersion="Xcode 7.3" sourceLanguage="Objective-C" userDefinedModelVersionIdentifier="">
     <entity name="BRAddressEntity" representedClassName="BRAddressEntity" syncable="YES">
         <attribute name="address" optional="YES" attributeType="String" indexed="YES" syncable="YES"/>
         <attribute name="index" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="NO" indexed="YES" syncable="YES"/>
@@ -60,6 +60,7 @@
         <attribute name="avatarData" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="displayName" attributeType="String" syncable="YES"/>
         <attribute name="isArchived" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="lastUsed" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="txHashes" optional="YES" attributeType="Transformable" syncable="YES"/>
         <uniquenessConstraints>
             <uniquenessConstraint>
@@ -71,11 +72,15 @@
         <attribute name="avatarData" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="displayName" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="firstUnusedIndex" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="incomingNotificationTxHash" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="isArchived" optional="YES" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="lastUsed" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="NO" syncable="YES"/>
         <attribute name="nickname" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="notificationAddress" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="notificationTxHash" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="paymentCode" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="receiveAddresses" optional="YES" attributeType="Transformable" syncable="YES"/>
+        <attribute name="sendAddresses" optional="YES" attributeType="Transformable" syncable="YES"/>
         <attribute name="txHashes" optional="YES" attributeType="Transformable" syncable="YES"/>
         <uniquenessConstraints>
             <uniquenessConstraint>
@@ -87,10 +92,14 @@
         <attribute name="avatarData" optional="YES" attributeType="Binary" syncable="YES"/>
         <attribute name="displayName" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="firstUnusedIndex" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="incomingNotificationTxHash" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="isArchived" optional="YES" attributeType="Boolean" usesScalarValueType="YES" syncable="YES"/>
+        <attribute name="lastUsed" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="NO" syncable="YES"/>
+        <attribute name="notificationAddress" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="notificationTxHash" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="paymentCode" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="receiveAddresses" optional="YES" attributeType="Transformable" syncable="YES"/>
+        <attribute name="sendAddresses" optional="YES" attributeType="Transformable" syncable="YES"/>
         <attribute name="txHashes" optional="YES" attributeType="Transformable" syncable="YES"/>
         <uniquenessConstraints>
             <uniquenessConstraint>
@@ -106,8 +115,8 @@
         <element name="BRTxInputEntity" positionX="61" positionY="350" width="128" height="118"/>
         <element name="BRTxMetadataEntity" positionX="504" positionY="-621" width="128" height="105"/>
         <element name="BRTxOutputEntity" positionX="376" positionY="225" width="128" height="148"/>
-        <element name="ForeignAddressEntity" positionX="-45" positionY="-423" width="128" height="120"/>
-        <element name="ForeignFriendEntity" positionX="-90" positionY="-531" width="128" height="180"/>
-        <element name="ForeignPaymentCodeEntity" positionX="-90" positionY="-468" width="128" height="165"/>
+        <element name="ForeignAddressEntity" positionX="342" positionY="-372" width="128" height="135"/>
+        <element name="ForeignFriendEntity" positionX="-468" positionY="-450" width="128" height="240"/>
+        <element name="ForeignPaymentCodeEntity" positionX="-108" positionY="-441" width="128" height="225"/>
     </elements>
 </model>

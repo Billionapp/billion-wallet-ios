@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_0" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="ConfirmDeletingView" customModule="BillionWallet" customModuleProvider="target">
+            <connections>
+                <outlet property="cancelButton" destination="b81-ui-VxQ" id="5uX-ZA-GGx"/>
+                <outlet property="deleteButton" destination="8mm-uq-ov5" id="dyy-dB-i09"/>
+                <outlet property="view" destination="iN0-l3-epB" id="SSp-hP-eEg"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="trash" translatesAutoresizingMaskIntoConstraints="NO" id="hvI-Gd-XW6">
+                    <rect key="frame" x="145.5" y="265" width="29" height="38"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="38" id="L26-1v-lT2"/>
+                        <constraint firstAttribute="width" constant="29" id="eny-rp-UsZ"/>
+                    </constraints>
+                </imageView>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="b81-ui-VxQ" customClass="GradientButton" customModule="BillionWallet" customModuleProvider="target">
+                    <rect key="frame" x="10" y="506" width="300" height="52"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="52" id="6BB-fb-YSO"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="15"/>
+                    <state key="normal">
+                        <color key="titleColor" cocoaTouchSystemColor="tableCellGroupedBackgroundColor"/>
+                    </state>
+                    <connections>
+                        <action selector="cancel:" destination="-1" eventType="touchUpInside" id="0Rv-4f-zEk"/>
+                    </connections>
+                </button>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8mm-uq-ov5" customClass="GradientButton" customModule="BillionWallet" customModuleProvider="target">
+                    <rect key="frame" x="10" y="444" width="300" height="52"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="52" id="bZg-xk-hAP"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="15"/>
+                    <state key="normal">
+                        <color key="titleColor" red="1" green="0.14913141730000001" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                    </state>
+                    <connections>
+                        <action selector="deleteContact:" destination="-1" eventType="touchUpInside" id="ShY-zF-yh1"/>
+                    </connections>
+                </button>
+            </subviews>
+            <color key="backgroundColor" cocoaTouchSystemColor="darkTextColor"/>
+            <constraints>
+                <constraint firstItem="b81-ui-VxQ" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="10" id="EAA-vz-DIJ"/>
+                <constraint firstItem="8mm-uq-ov5" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="10" id="Fy7-0X-a6h"/>
+                <constraint firstItem="hvI-Gd-XW6" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="Tia-it-dpU"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="b81-ui-VxQ" secondAttribute="trailing" constant="10" id="VdP-4Y-Oei"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="8mm-uq-ov5" secondAttribute="trailing" constant="10" id="cNc-A5-dhV"/>
+                <constraint firstItem="b81-ui-VxQ" firstAttribute="top" secondItem="8mm-uq-ov5" secondAttribute="bottom" constant="10" id="doT-Ze-RrC"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="bottom" secondItem="b81-ui-VxQ" secondAttribute="bottom" constant="10" id="i6W-8e-FSa"/>
+                <constraint firstItem="hvI-Gd-XW6" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="nb7-ew-Vfj"/>
+            </constraints>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+        </view>
+        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="PKH-em-EU4">
+            <rect key="frame" x="0.0" y="0.0" width="46" height="30"/>
+            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+            <state key="normal" title="Button"/>
+        </button>
+    </objects>
+    <resources>
+        <image name="trash" width="25" height="32"/>
+    </resources>
+</document>

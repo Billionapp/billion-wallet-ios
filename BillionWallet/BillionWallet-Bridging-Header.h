@@ -17,7 +17,6 @@
 #import "BRAddressEntity.h"
 #import "BRWalletManager.h"
 #import "BRPaymentRequest.h"
-#import "BRAppGroupConstants.h"
 #import "BRPaymentProtocol.h"
 #import "BRTxMetadataEntity.h"
 #import "BRBIP32Sequence.h"
@@ -32,5 +31,6 @@
 #import "UIImage+ImageEffects.h"
 #import "Reachability.h"
 #import "BRMerkleBlock.h"
+#import "UIScrollView+EmptyDataSet.h"
 
 #endif /* BillionWallet_Bridging_Header_h */

@@ -178,7 +178,10 @@ class BIP47Tests: XCTestCase {
         let alicePCPrivData = BIP44Sequence().paymentCodePrivateKey(forAccount: 0, fromSeed: aliceSeed)
         let bobPCData = BIP44Sequence().paymentCode(forAccount: 0, fromSeed: bobSeed)
         
-        let alicePC = PrivatePaymentCode(priv: alicePCPrivData)
+        guard let alicePC = try? PrivatePaymentCode(priv: alicePCPrivData) else {
+            XCTFail("Alice PC initialization failed")
+            return
+        }
         guard let bobPC = try? PaymentCode(pub: bobPCData) else {
             XCTFail("Bob PC initialization failed")
             return
@@ -218,7 +221,11 @@ class BIP47Tests: XCTestCase {
         let bobPCPrivData = BIP44Sequence().paymentCodePrivateKey(forAccount: 0, fromSeed: bobSeed)
         
         // Alice computes shared secrets
-        let alicePCInternal = PrivatePaymentCode(priv: alicePCPrivData)
+        guard let alicePCInternal = try? PrivatePaymentCode(priv: alicePCPrivData) else {
+            XCTFail("Alice PC initialization failed")
+            return
+        }
+        
         let a0 = alicePCInternal.notificationPrivateKey
         for i in 0..<_B.count {
             let BiData = BIP44Sequence().publicKey(UInt32(i), forPaymentCodePub: bobPCData)
@@ -260,31 +267,37 @@ class BIP47Tests: XCTestCase {
         let bobPCData = BIP44Sequence().paymentCode(forAccount: 0, fromSeed: bobSeed)
         let bobPCPrivData = BIP44Sequence().paymentCodePrivateKey(forAccount: 0, fromSeed: bobSeed)
         
-        // Alice computes send addresses Alice->Bob
-        let alicePCInternal = PrivatePaymentCode(priv: alicePCPrivData)
-        guard let bobPC = try? PaymentCode(pub: bobPCData) else {
-            XCTFail("Bob PC initialization failed")
-            return
-        }
-        for i in 0..<_AB.count {
-            let key = alicePCInternal.ethemeralSendBRKey(to: bobPC, i: UInt32(i))
+        do {
             
-            XCTAssertNotNil(key)
-            XCTAssert(key?.address == _AB[i], "Send address (Alice computed) \(i): \(key?.address ?? "nil") != \(_AB[i])")
-        }
-        
-        // Bob computes receive addresses Alice->Bob
-        guard let alicePC = try? PaymentCode(pub: alicePCData) else {
-            XCTFail("Alice PC initialization failed")
-            return
-        }
-        
-        let bobPCInternal = PrivatePaymentCode(priv: bobPCPrivData)
-        for i in 0..<_AB.count {
-            let key = bobPCInternal.ethemeralReceiveBRKey(from: alicePC, i: UInt32(i))
+            // Alice computes send addresses Alice->Bob
+            let alicePCInternal = try PrivatePaymentCode(priv: alicePCPrivData)
+            guard let bobPC = try? PaymentCode(pub: bobPCData) else {
+                XCTFail("Bob PC initialization failed")
+                return
+            }
+            for i in 0..<_AB.count {
+                let key = alicePCInternal.ethemeralSendBRKey(to: bobPC, i: UInt32(i))
+                
+                XCTAssertNotNil(key)
+                XCTAssert(key?.address == _AB[i], "Send address (Alice computed) \(i): \(key?.address ?? "nil") != \(_AB[i])")
+            }
             
-            XCTAssertNotNil(key)
-            XCTAssert(key?.address == _AB[i], "Receive address (Bob computed) \(i): \(key?.address ?? "nil") != \(_AB[i])")
+            // Bob computes receive addresses Alice->Bob
+            guard let alicePC = try? PaymentCode(pub: alicePCData) else {
+                XCTFail("Alice PC initialization failed")
+                return
+            }
+            
+            let bobPCInternal = try PrivatePaymentCode(priv: bobPCPrivData)
+            for i in 0..<_AB.count {
+                let key = bobPCInternal.ethemeralReceiveBRKey(from: alicePC, i: UInt32(i))
+                
+                XCTAssertNotNil(key)
+                XCTAssert(key?.address == _AB[i], "Receive address (Bob computed) \(i): \(key?.address ?? "nil") != \(_AB[i])")
+            }
+            
+        } catch {
+            XCTFail(error.localizedDescription)
         }
     }
     
@@ -296,37 +309,42 @@ class BIP47Tests: XCTestCase {
                 return
         }
         
-        let alicePCPrivData = BIP44Sequence().paymentCodePrivateKey(forAccount: 0, fromSeed: aliceSeed)
-        let bobPCData = BIP44Sequence().paymentCode(forAccount: 0, fromSeed: bobSeed)
-        let bobPCPrivData = BIP44Sequence().paymentCodePrivateKey(forAccount: 0, fromSeed: bobSeed)
-        
-        let alicePC = PrivatePaymentCode(priv: alicePCPrivData)
-        guard let bobPC = try? PaymentCode(pub: bobPCData) else {
-            XCTFail("Bob PC initialization failed")
-            return
+        do {
+            
+            let alicePCPrivData = BIP44Sequence().paymentCodePrivateKey(forAccount: 0, fromSeed: aliceSeed)
+            let bobPCData = BIP44Sequence().paymentCode(forAccount: 0, fromSeed: bobSeed)
+            let bobPCPrivData = BIP44Sequence().paymentCodePrivateKey(forAccount: 0, fromSeed: bobSeed)
+            
+            let alicePC = try PrivatePaymentCode(priv: alicePCPrivData)
+            guard let bobPC = try? PaymentCode(pub: bobPCData) else {
+                XCTFail("Bob PC initialization failed")
+                return
+            }
+            let bobPCPriv = try PrivatePaymentCode(priv: bobPCPrivData)
+            
+            XCTAssert(alicePC.isInternal)
+            XCTAssert(!bobPC.isInternal)
+            
+            guard let aliceK = BRKey(privateKey: alicePrivateInput) else {
+                XCTFail("Cannot continue, alice PK is invalid")
+                return
+            }
+            
+            let aliceInput = Priv(aliceK.secretKey!.pointee)
+            let outpoint = TXOutpointS(data: Data([UInt8](hex: aliceOutpoint)))
+            
+            XCTAssert(outpoint.data.toHexString() == aliceOutpoint)
+            
+            let payload = try alicePC.notificationPayload(for: bobPC, outpoint: outpoint, key: aliceInput)
+            XCTAssertNotNil(payload)
+            XCTAssert(payload.toHexString() == _aliceMaskedPCPayload, "\(payload.toHexString()) != \(_aliceMaskedPCPayload)")
+            
+            let c = try bobPCPriv.unmaskPaymentCode(payload, oupoint: outpoint, key: Pub(data: aliceK.publicKey!))
+            XCTAssertNotNil(c)
+            XCTAssert(c.serializedString == alicePC.serializedString, "\(c.serializedString) != \(alicePC.serializedString)")
+        } catch {
+            XCTFail(error.localizedDescription)
         }
-        let bobPCPriv = PrivatePaymentCode(priv: bobPCPrivData)
-        
-        XCTAssert(alicePC.isInternal)
-        XCTAssert(!bobPC.isInternal)
-        
-        guard let aliceK = BRKey(privateKey: alicePrivateInput) else {
-            XCTFail("Cannot continue, alice PK is invalid")
-            return
-        }
-        
-        let aliceInput = Priv(aliceK.secretKey!.pointee)
-        let outpoint = TXOutpointS(data: Data([UInt8](hex: aliceOutpoint)))
-        
-        XCTAssert(outpoint.data.toHexString() == aliceOutpoint)
-        
-        let payload = alicePC.notificationPayload(for: bobPC, outpoint: outpoint, key: aliceInput)
-        XCTAssertNotNil(payload)
-        XCTAssert(payload.toHexString() == _aliceMaskedPCPayload, "\(payload.toHexString()) != \(_aliceMaskedPCPayload)")
-        
-        let c = bobPCPriv.unmaskPaymentCode(payload, oupoint: outpoint, key: Pub(data: aliceK.publicKey!))
-        XCTAssertNotNil(c)
-        XCTAssert(c.serializedString == alicePC.serializedString, "\(c.serializedString) != \(alicePC.serializedString)")
     }
     
     func testNotificationTransaction() {
@@ -341,41 +359,45 @@ class BIP47Tests: XCTestCase {
         let bobPCData = BIP44Sequence().paymentCode(forAccount: 0, fromSeed: bobSeed)
         let bobPCPrivData = BIP44Sequence().paymentCodePrivateKey(forAccount: 0, fromSeed: bobSeed)
         
-        let alicePC = PrivatePaymentCode(priv: alicePCPrivData)
-        guard let bobPC = try? PaymentCode(pub: bobPCData) else {
-            XCTFail("Bob PC initialization failed")
-            return
+        do {
+            let alicePC = try PrivatePaymentCode(priv: alicePCPrivData)
+            guard let bobPC = try? PaymentCode(pub: bobPCData) else {
+                XCTFail("Bob PC initialization failed")
+                return
+            }
+            let bobPCPriv = try PrivatePaymentCode(priv: bobPCPrivData)
+            
+            XCTAssert(alicePC.isInternal)
+            XCTAssert(!bobPC.isInternal)
+            
+            guard let aliceK = BRKey(privateKey: alicePrivateInput) else {
+                XCTFail("Cannot continue, alice key is invalid")
+                return
+            }
+            
+            let aliceInput = Priv(aliceK.secretKey!.pointee)
+            let outpoint = TXOutpointS(data: Data([UInt8](hex: aliceOutpoint)))
+            
+            XCTAssert(outpoint.data.toHexString() == aliceOutpoint)
+            
+            let tx = BRTransaction()
+            let scriptSigHex = "483045022100ac8c6dbc482c79e86c18928a8b364923c774bfdbd852059f6b3778f2319b59a7022029d7cc5724e2f41ab1fcfc0ba5a0d4f57ca76f72f19530ba97c860c70a6bf0a801210272d83d8a1fa323feab1c085157a0791b46eba34afb8bfbfaeb3a3fcc3f2c9ad8"
+            let scriptSig = Data([UInt8](hex: scriptSigHex))
+            tx.addInputHash(outpoint.txId.uint256, index: UInt(outpoint.index), script: nil, signature: scriptSig, sequence: UINT32_MAX)
+            tx.addOutputAddress(bobPC.notificationAddress!, amount: 10000)
+            tx.addOutputScript(try alicePC.notificationOpReturnScript(for: bobPC, outpoint: outpoint, key: aliceInput), amount: 10000)
+            XCTAssert(tx.data.toHexString() == _aliceToBobNotificationTransaction, "\(tx.data.toHexString()) != \(_aliceToBobNotificationTransaction)")
+            let hashStr = Data(tx.data.sha256().sha256().reversed()).toHexString()
+            XCTAssert(hashStr == _notificationTransactionHash, "\(hashStr) != \(_notificationTransactionHash)")
+            
+            let txData = Data([UInt8](hex: _aliceToBobNotificationTransaction))
+            let tx2 = BRTransaction(message: txData)
+            let alicePCRecovered = try bobPCPriv.recoverCode(from: tx2!)
+            
+            XCTAssert(alicePCRecovered.serializedString == alicePC.serializedString, "\(alicePCRecovered.serializedString) != \(alicePC.serializedString)")
+        } catch {
+            XCTFail(error.localizedDescription)
         }
-        let bobPCPriv = PrivatePaymentCode(priv: bobPCPrivData)
-        
-        XCTAssert(alicePC.isInternal)
-        XCTAssert(!bobPC.isInternal)
-        
-        guard let aliceK = BRKey(privateKey: alicePrivateInput) else {
-            XCTFail("Cannot continue, alice key is invalid")
-            return
-        }
-        
-        let aliceInput = Priv(aliceK.secretKey!.pointee)
-        let outpoint = TXOutpointS(data: Data([UInt8](hex: aliceOutpoint)))
-        
-        XCTAssert(outpoint.data.toHexString() == aliceOutpoint)
-        
-        let tx = BRTransaction()
-        let scriptSigHex = "483045022100ac8c6dbc482c79e86c18928a8b364923c774bfdbd852059f6b3778f2319b59a7022029d7cc5724e2f41ab1fcfc0ba5a0d4f57ca76f72f19530ba97c860c70a6bf0a801210272d83d8a1fa323feab1c085157a0791b46eba34afb8bfbfaeb3a3fcc3f2c9ad8"
-        let scriptSig = Data([UInt8](hex: scriptSigHex))
-        tx.addInputHash(outpoint.txId.uint256, index: UInt(outpoint.index), script: nil, signature: scriptSig, sequence: UINT32_MAX)
-        tx.addOutputAddress(bobPC.notificationAddress!, amount: 10000)
-        tx.addOutputScript(alicePC.notificationOpReturnScript(for: bobPC, outpoint: outpoint, key: aliceInput), amount: 10000)
-        XCTAssert(tx.data.toHexString() == _aliceToBobNotificationTransaction, "\(tx.data.toHexString()) != \(_aliceToBobNotificationTransaction)")
-        let hashStr = Data(tx.data.sha256().sha256().reversed()).toHexString()
-        XCTAssert(hashStr == _notificationTransactionHash, "\(hashStr) != \(_notificationTransactionHash)")
-        
-        let txData = Data([UInt8](hex: _aliceToBobNotificationTransaction))
-        let tx2 = BRTransaction(message: txData)
-        let alicePCRecovered = bobPCPriv.recoverCode(from: tx2!)
-        
-        XCTAssert(alicePCRecovered?.serializedString == alicePC.serializedString, "\(alicePCRecovered?.serializedString ?? "nil") != \(alicePC.serializedString)")
     }
     
     func testOtherNetworks() {
@@ -387,6 +409,6 @@ class BIP47Tests: XCTestCase {
         
         XCTAssert(pcMain.serializedString == _alicePCStr, "Payment code string serialization (main) mismatch \(pcMain.serializedString) != \(_alicePCStr)")
         XCTAssert(pcTest.serializedString == _alicePCStrTest, "Payment code string serialization (test) mismatch \(pcTest.serializedString) != \(_alicePCStrTest)")
-        XCTAssert(pcMain.serializedString.characters.first! != pcTest.serializedString.characters.first!, "First characters of mainnet and testnet serializations don't look different. Not cool.")
+        XCTAssert(pcMain.serializedString.first! != pcTest.serializedString.first!, "First characters of mainnet and testnet serializations don't look different. Not cool.")
     }
 }

@@ -36,6 +36,7 @@ extension BRWalletManager {
         guard let phrase = mnem.normalizePhrase(phrase) else { throw RecoverWalletError.phraseNormalizationError }
         
         let words = phrase.components(separatedBy: .whitespacesAndNewlines)
+        guard words.count == 12 else { throw RecoverWalletError.invalidPhraseError }
         for word in words {
             if !mnem.wordIsValid(word) {
                 throw RecoverWalletError.invalidPhraseError

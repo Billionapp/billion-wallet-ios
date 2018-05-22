@@ -10,18 +10,19 @@ import UIKit
 
 class ContactsViewController: BaseViewController<ContactsVM> {
     
-    @IBOutlet fileprivate weak var searchTextField: UITextField?
-    @IBOutlet fileprivate weak var addButton: UIButton?
-    @IBOutlet fileprivate weak var clearButton: UIButton?
-    @IBOutlet fileprivate weak var contactsCollection: UICollectionView? {
-        didSet {
-            contactsCollection?.register(UINib(nibName: "ContactsCell".nibNameForCell(), bundle: nil), forCellWithReuseIdentifier: "ContactsCell")
-        }
-    }
-    @IBOutlet fileprivate weak var cancelButtonConstraint: NSLayoutConstraint?
+    typealias LocalizedStrings = Strings.Contacts
+    
+    @IBOutlet private weak var addButton: UIButton!
+    @IBOutlet private weak var contactsCollection: UICollectionView!
+    private var titledView: TitledView!
+    private var topGradientView: UIView!
+    private var bottomGradientView: UIView!
+    
+    private let gradientAreaPercent: CGFloat = 0.72
+    
     var backForBlur: UIImage?
     weak var router: MainRouter?
-
+    
     override func configure(viewModel: ContactsVM) {
         viewModel.delegate = self
     }
@@ -29,38 +30,44 @@ class ContactsViewController: BaseViewController<ContactsVM> {
     override func viewDidLoad() {
         super.viewDidLoad()
         setBlurBackground()
-        configureSearchField()
-        setCollectionDelegates()
+        setupCollectionView()
         viewModel.initData()
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(icloudContactsDidSyncronize), name: .iCloudContactsDidFinishSyncronizationNotitfication, object: nil)
-        
-//        viewModel.addTestItems() //For init test data only
+        viewModel.subscribe()
+        setupTitledView()           
+        localize()
+        contactsCollection.addSubview(self.refreshControl)
     }
     
-    deinit {
-        NotificationCenter.default.removeObserver(self)
+    lazy var refreshControl: UIRefreshControl = {
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action:
+            #selector(self.handleRefresh(_:)),
+                                 for: UIControlEvents.valueChanged)
+        refreshControl.tintColor = UIColor.clear
+        return refreshControl
+    }()
+    
+    fileprivate func setupTitledView() {
+        titledView = TitledView()
+        titledView.title = LocalizedStrings.title
+        titledView.closePressed = {
+            self.navigationController?.pop()
+        }
+        view.addSubview(titledView)
     }
     
-    @objc func icloudContactsDidSyncronize() {
-        viewModel.initData()
+    private func localize() {
+        addButton.setTitle(LocalizedStrings.addContact, for: .normal)
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        viewModel.initData()
-    }
-    
-    func configureSearchField() {
-        searchTextField?.layer.borderColor = UIColor.searchBarBorderColor().cgColor
-        searchTextField?.layer.borderWidth = 2
-        searchTextField?.layer.halfHeightCornerRadius()
-        searchTextField?.layer.sublayerTransform = CATransform3DMakeTranslation(27, 0, 0);
-        searchTextField?.delegate = viewModel
-    }
-    
-    func setCollectionDelegates() {
-        contactsCollection?.dataSource = viewModel
-        contactsCollection?.delegate = viewModel
+    func setupCollectionView() {
+        if #available(iOS 10.0, *) {
+            contactsCollection.isPrefetchingEnabled = false
+        }
+        contactsCollection.register(UINib(nibName: "ContactsCell".nibNameForCell(), bundle: nil), forCellWithReuseIdentifier: "ContactsCell")
+        contactsCollection.dataSource = viewModel
+        contactsCollection.delegate = viewModel
+        contactsCollection.emptyDataSetSource = viewModel
     }
     
     func setBlurBackground() {
@@ -70,60 +77,47 @@ class ContactsViewController: BaseViewController<ContactsVM> {
         }
     }
     
-    // MARK: Actions
-    @IBAction func closeAction() {
+    @objc func handleRefresh(_ refreshControl: UIRefreshControl) {
         navigationController?.pop()
+        refreshControl.endRefreshing()
     }
     
-    @IBAction func cancelSearch() {
-        UIView.animate(withDuration: 0.33, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 1, options: .curveEaseOut, animations: { 
-            self.cancelButtonConstraint?.constant = 0
-        })
-        searchTextField?.resignFirstResponder()
-    }
-    
-    @IBAction func clearAction() {
-        searchTextField?.text = ""
-        viewModel.searchString = ""
-    }
-    
+    // MARK: Actions
     @IBAction func addContactPressed(_ sender: UIButton) {
-        router?.showAddContactTypeView()
+        let image = captureScreen(view: view)
+        router?.showAddContactView(back: image)
     }
 }
 
 extension ContactsViewController: ContactsVMDelegate {
-    
-    func searchDidBegin(buttonWidth: CGFloat) {
-        UIView.animate(withDuration: 0.33, delay: 0, usingSpringWithDamping: 0.5, initialSpringVelocity: 1, options: .curveEaseIn, animations: { 
-            self.cancelButtonConstraint?.constant = buttonWidth
-        })
-    }
-    
-    func searchStringDidChange(searchString: String) {
-        if searchString == "" {
-            clearButton?.isEnabled = false
+    func contactsCountEqualZero(_ flag: Bool) {
+        if flag {
+            navigationController?.addSwipeDown()
         } else {
-            clearButton?.isEnabled = true
+            removeSwipeDownGesture()
         }
     }
     
+    func searchStringDidChange(searchString: String) {
+        
+    }
+    
+    func searchDidBegin(buttonWidth: CGFloat) {
+        
+    }
+    
     func filteredDidChanged(filteredArray: [ContactProtocol]) {
-        self.contactsCollection?.reloadData()
+        DispatchQueue.main.async {
+            self.contactsCollection.reloadData()
+        }
     }
     
     func didSelectContact(_ contact: ContactProtocol) {
-        router?.showContactCardView(contact: contact)
+        let back = captureScreen(view: view)
+        router?.showContactCardView(contact: contact, back: back)
     }
     
     func didPickContact(_ contact: ContactProtocol) {
         navigationController?.pop()
     }
 }
-
-extension UIColor {
-    class func searchBarBorderColor() -> UIColor {
-        return UIColor.init(red: 116.0/255.0, green: 123.0/255.0, blue: 139.0/255.0, alpha: 1.0)
-    }
-}
-

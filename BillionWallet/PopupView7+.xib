@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="12121" systemVersion="16F73" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina5_5" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="12089"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
-        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="PopupView" customModule="WalletUI" customModuleProvider="target">
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="PopupView" customModule="BillionWallet" customModuleProvider="target">
             <connections>
                 <outlet property="popupImage" destination="v6Y-Vh-NdT" id="wea-7E-V0k"/>
                 <outlet property="popupLabel" destination="P1d-SX-kV9" id="Fli-lt-zBB"/>
@@ -28,9 +29,9 @@
                     </constraints>
                 </imageView>
                 <label opaque="NO" clearsContextBeforeDrawing="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="P1d-SX-kV9">
-                    <rect key="frame" x="99" y="443.66666666666663" width="216" height="118.99999999999989"/>
+                    <rect key="frame" x="99" y="401" width="216" height="90"/>
                     <constraints>
-                        <constraint firstAttribute="height" constant="118.99999999999996" id="59V-GC-LOH"/>
+                        <constraint firstAttribute="height" constant="90" id="59V-GC-LOH"/>
                         <constraint firstAttribute="width" constant="215.99999999999997" id="6aW-ny-JCN"/>
                     </constraints>
                     <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="15"/>
@@ -39,7 +40,7 @@
                 </label>
             </subviews>
             <constraints>
-                <constraint firstItem="P1d-SX-kV9" firstAttribute="top" secondItem="v6Y-Vh-NdT" secondAttribute="bottom" constant="42.5" id="8DN-T2-3xn"/>
+                <constraint firstItem="P1d-SX-kV9" firstAttribute="top" secondItem="v6Y-Vh-NdT" secondAttribute="bottom" id="8DN-T2-3xn"/>
                 <constraint firstItem="v6Y-Vh-NdT" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="P7g-t1-Df0"/>
                 <constraint firstItem="P1d-SX-kV9" firstAttribute="centerX" secondItem="v6Y-Vh-NdT" secondAttribute="centerX" id="kYb-8e-aVa"/>
                 <constraint firstItem="v6Y-Vh-NdT" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="tpI-CP-O1S"/>
@@ -47,6 +48,7 @@
             <nil key="simulatedStatusBarMetrics"/>
             <nil key="simulatedTopBarMetrics"/>
             <nil key="simulatedBottomBarMetrics"/>
+            <viewLayoutGuide key="safeArea" id="aE7-oq-zdu"/>
         </view>
     </objects>
 </document>

@@ -1,0 +1,24 @@
+
+/* Send title */
+"SendScreen.title" = "Отправить";
+
+/* Amount of money which user want to send. Shown in title */
+"SendScreen.titleAmountEnetered" = "Отправить\n%@";
+
+/* Your balance title */
+"Send.balanceTitle" = "Ваш баланс";
+
+/* Label shown on balance button when app locked */
+"SendScreen.billionLocked" = "Billion";
+
+/* placeholder for a local transaction note */
+"SendScreen.Textfield.commentPlaceholder" = "Заметка";
+
+/* Amount of money which user want to send */
+"SendScreen.Textfield.amountPlaceholder" = "Ввод суммы";
+
+/* This field not translating */
+"SendScreen.Textfield.viewLabelFormat" = "  %@  ";
+
+/* Label shown that the wallet is not already synced */
+"SendScreen.sendBlocked" = "Кошелек не синхронизирован с блокчейн.\nЭто может занять несколько минут.";

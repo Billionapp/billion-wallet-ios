@@ -8,22 +8,26 @@
 
 import UIKit
 
+// @deadpool
+// TODO: Make buttons 'delete' and 'cancel' localizable
 final class ArchiveModalView: UIView {
+    typealias LocalizedStrings = Strings.ContactCard
     
-    fileprivate weak var viewModel: ContactCardVM?
-    fileprivate weak var router: MainRouter?
+    private weak var viewModel: ContactCardVM!
+    private weak var router: MainRouter?
     
-    @IBOutlet fileprivate weak var deleteLabel: UILabel?
+    @IBOutlet private weak var deleteLabel: UILabel!
 
     init(viewModel: ContactCardVM, router: MainRouter) {
         super.init(frame: UIScreen.main.bounds)
-        fromNib()
-        addBlur()
         self.viewModel = viewModel
         self.router = router
         
-        let name = viewModel.contact.displayName
-        deleteLabel?.text = String(format: "Delete contact %@?", name)
+        fromNib()
+        addBlur()
+
+        let name = viewModel.displayName
+        deleteLabel.text = String(format: LocalizedStrings.deleteLabel, name)
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -31,11 +35,7 @@ final class ArchiveModalView: UIView {
     }
     
     @IBAction func deleteAction() {
-        do {
-            try viewModel?.archiveContact()
-        } catch {
-            print(error.localizedDescription)
-        }
+        viewModel?.archiveContact()
         router?.navigationController.pop()
         close()
     }

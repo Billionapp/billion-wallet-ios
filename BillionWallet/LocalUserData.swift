@@ -10,7 +10,6 @@ import UIKit
 
 struct LocalUserData {
     var name: String?
-    var nick: String?
     var imageData: Data?
 }
 
@@ -31,7 +30,7 @@ extension LocalUserData: ICloudBackupProtocol {
     }
     
     var backupJson: [String: Any] {
-        let json: [String: Any?] = ["name": name, "nick": nick]
+        let json: [String: Any?] = ["name": name]
         return json.removeNils()
     }
     
@@ -46,10 +45,6 @@ extension LocalUserData: ICloudBackupProtocol {
     init(from json: [String: Any], with attachData: Data?) throws {
         if let name = json["name"] as? String {
             self.name = name
-        }
-        
-        if let nick = json["nick"] as? String {
-            self.nick = nick
         }
         self.imageData = attachData
     }

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="PaymentRequestMockView" customModule="BillionWallet" customModuleProvider="target">
+            <connections>
+                <outlet property="view" destination="iN0-l3-epB" id="7aq-yQ-2GZ"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view contentMode="scaleToFill" id="iN0-l3-epB">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <visualEffectView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="QUh-o6-UuF">
+                    <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                    <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="Onl-yR-WPE">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                    </view>
+                    <blurEffect style="dark"/>
+                </visualEffectView>
+                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="AttentionIcon" translatesAutoresizingMaskIntoConstraints="NO" id="EMS-PQ-Flr">
+                    <rect key="frame" x="155" y="300.5" width="66" height="66"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="66" id="DoQ-dQ-HxS"/>
+                        <constraint firstAttribute="width" constant="66" id="gxW-wT-JlW"/>
+                    </constraints>
+                </imageView>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Request failed for some reasons" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="OIw-AO-sf0">
+                    <rect key="frame" x="12" y="376.5" width="351" height="48"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="48" id="Ar2-R8-vKz"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="15"/>
+                    <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Dh2-kI-ifj" customClass="GradientButton" customModule="BillionWallet" customModuleProvider="target">
+                    <rect key="frame" x="16" y="589" width="343" height="62"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="62" id="Hk9-nj-Mc2"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="15"/>
+                    <state key="normal" title="Back">
+                        <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </state>
+                    <connections>
+                        <action selector="closePressed:" destination="-1" eventType="touchUpInside" id="61V-Qn-ktI"/>
+                    </connections>
+                </button>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+            <constraints>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="bottom" secondItem="Dh2-kI-ifj" secondAttribute="bottom" constant="16" id="5C0-LT-HCq"/>
+                <constraint firstItem="QUh-o6-UuF" firstAttribute="top" secondItem="iN0-l3-epB" secondAttribute="top" id="7C4-fQ-GFT"/>
+                <constraint firstItem="Dh2-kI-ifj" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="16" id="92I-gT-cvG"/>
+                <constraint firstItem="QUh-o6-UuF" firstAttribute="bottom" secondItem="vUN-kp-3ea" secondAttribute="bottom" id="Fqy-V6-gfS"/>
+                <constraint firstItem="QUh-o6-UuF" firstAttribute="trailing" secondItem="vUN-kp-3ea" secondAttribute="trailing" id="LbM-PN-pxp"/>
+                <constraint firstItem="EMS-PQ-Flr" firstAttribute="centerY" secondItem="iN0-l3-epB" secondAttribute="centerY" id="WsS-ku-VJr"/>
+                <constraint firstItem="EMS-PQ-Flr" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" id="ZNy-My-KFV"/>
+                <constraint firstItem="QUh-o6-UuF" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" id="am8-Ti-qDE"/>
+                <constraint firstItem="OIw-AO-sf0" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="12" id="iSq-YZ-PQ5"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="Dh2-kI-ifj" secondAttribute="trailing" constant="16" id="j79-7a-0SS"/>
+                <constraint firstItem="OIw-AO-sf0" firstAttribute="top" secondItem="EMS-PQ-Flr" secondAttribute="bottom" constant="10" id="jUr-2f-JPE"/>
+                <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="OIw-AO-sf0" secondAttribute="trailing" constant="12" id="xey-V6-1Wi"/>
+            </constraints>
+            <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
+            <point key="canvasLocation" x="34.5" y="54.5"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="AttentionIcon" width="66" height="66"/>
+    </resources>
+</document>

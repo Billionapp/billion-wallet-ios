@@ -1,0 +1,12 @@
+
+/* Text that's visible in a textfield that corresponds to Alias label prior to selection and typing */
+"Profile.aliasBlancTextFieldLabel" = "Введите имя или псевдоним";
+
+/* After that label user entering name */
+"Profile.name" = "Имя";
+
+/* Label shown that payment code has been copied to clipboard */
+"Profile.Notice.pcCopied" = "Ваш payment code скопирован в буфер обмена";
+
+/* Payment code title */
+"Profile.paymentCodeString" = "Payment code";

@@ -1,0 +1,24 @@
+
+/*  */
+"SendScreen.Notice.cannotProcess" = "Невозможно обработать \"%@\"";
+
+/* Label shown which contact will be receiver */
+"SendScreen.toTitle" = "кому...";
+
+/* Label mean that you'll scan address in QR-code */
+"SendScreen.scanButton" = "Сканировать адрес";
+
+/* Label shown that Address of  receiver is in clipboard */
+"SendScreen.sendToAddress" = "Отправить на адрес из буфера обмена";
+
+/* Label mean that you can add new contact */
+"SendScreen.addButton" = "Добавить контакт";
+
+/* Send title */
+"SendScreen.title" = "Отправить";
+
+/* Label shown us different ways to send your money */
+"Send.chooseRecipientSubtitle" = "Вы можете отправить средства контакту, вставить адрес из буфера обмена или отсканировать QR-код.";
+
+/* Empty clipboard alert message */
+"Send.Notice.noStringInClipboard" = "В буфере обмена нет адреса";

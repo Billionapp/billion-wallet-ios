@@ -1,0 +1,30 @@
+
+/* Bitcoin Network fee title */
+"FeeScreen.title" = "比特幣網路手續費";
+
+/* Label shown when you choose network fee */
+"FeeScreen.subtitle" = "設定個人所需的網路手續費。如非進行實時交易，可把手續費調低。";
+
+/* Cancel button title */
+"FeeScreen.cancel" = "取消";
+
+/* Label shown how long transaction goes */
+"Fee.confirmationTimeLabel" = "確認時間";
+
+/* Label shown commission for transaction */
+"Fee.feeTotalAmountLabel" = "網路手續費";
+
+/* Transaction preority in satoshi in byte */
+"Fee.feeSatPerByteFormat" = "%@/byte";
+
+/* Label shown when transaction failed, also show the reason of failed */
+"Fee.transactionFailedFormat" = "不能廣播交易，原因：%@";
+
+/* Receiver of the payment */
+"ChooseFee.receiver" = "接收者：%@";
+
+/* Send {amount to send} */
+"ChooseFee.sendAmount" = "發送 %@";
+
+/* Transfer checkout format */
+"ChooseFee.reason" = "%@\n\n\namount: %@ (%@)\nfees: %@ (%@)\ntotal: %@ (%@)";

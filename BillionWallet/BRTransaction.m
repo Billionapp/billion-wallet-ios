@@ -199,6 +199,11 @@ outputAddresses:(NSArray *)addresses outputAmounts:(NSArray *)amounts
     return self.outScripts;
 }
 
+- (NSString *)txId
+{
+    return [NSString hexWithData:[NSData dataWithBytes:self.txHash.u8 length:sizeof(UInt256)].reverse];
+}
+
 - (NSString *)description
 {
     NSString *txid = [NSString hexWithData:[NSData dataWithBytes:self.txHash.u8 length:sizeof(UInt256)].reverse];

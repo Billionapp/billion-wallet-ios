@@ -49,11 +49,6 @@ extension UIImage {
     
     func resizeTo(newSize: CGSize) -> UIImage {
         
-        let horizontalRatio = newSize.width / size.width
-        let verticalRatio = newSize.height / size.height
-        let ratio = max(horizontalRatio, verticalRatio)
-        let newSize = CGSize(width: size.width * ratio, height: size.height * ratio)
-        
         UIGraphicsBeginImageContextWithOptions(newSize, true, 0)
         draw(in: CGRect(origin: CGPoint(x: 0, y: 0), size: newSize))
         let newImage = UIGraphicsGetImageFromCurrentImageContext()
@@ -63,12 +58,19 @@ extension UIImage {
     }
 }
 
+extension UIView {
+    func makeSnapshot(immediately: Bool = true) -> UIImage? {
+        UIGraphicsBeginImageContextWithOptions(bounds.size, true, 0.0)
+        drawHierarchy(in: bounds, afterScreenUpdates: !immediately)
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        return image
+    }
+}
 
 func captureScreen(view: UIView) -> UIImage {
-    UIGraphicsBeginImageContextWithOptions(view.bounds.size, false, UIScreen.main.scale)
-    view.layer.render(in: UIGraphicsGetCurrentContext()!)
-    let image = UIGraphicsGetImageFromCurrentImageContext()
-    UIGraphicsEndImageContext()
-    return image!.applyDarkEffect()
+    let image = view.makeSnapshot()
+    let tintColor = UIColor.black.withAlphaComponent(0.3)
+    return image!.applyBlur(withRadius: 23, tintColor: tintColor, saturationDeltaFactor: 1.0, maskImage: nil)
 }
 

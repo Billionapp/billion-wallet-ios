@@ -43,10 +43,5 @@ extension ICloudBackupProtocol {
         
         return backupJson.merged(with: attachPreffix)
     }
-    
-    static var folderWithAccount: String {
-        return "acc0/\(folder ?? "")"
-    }
-    
 }
 

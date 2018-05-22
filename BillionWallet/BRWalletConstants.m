@@ -12,5 +12,7 @@ NSString* const BRPeerManagerSyncStartedNotification =      @"BRPeerManagerSyncS
 NSString* const BRPeerManagerSyncFinishedNotification =     @"BRPeerManagerSyncFinishedNotification";
 NSString* const BRPeerManagerSyncFailedNotification =       @"BRPeerManagerSyncFailedNotification";
 NSString* const BRPeerManagerTxStatusNotification =         @"BRPeerManagerTxStatusNotification";
+NSString* const BRPeerManagerNewBlockNotification =         @"BRPeerManagerNewBlockNotification";
+NSString* const BRPeerManagerLastBlockSyncedNotification =         @"BRPeerManagerLastBlockSyncedNotification";
 NSString* const BRWalletManagerSeedChangedNotification =    @"BRWalletManagerSeedChangedNotification";
 NSString* const BRWalletBalanceChangedNotification =        @"BRWalletBalanceChangedNotification";

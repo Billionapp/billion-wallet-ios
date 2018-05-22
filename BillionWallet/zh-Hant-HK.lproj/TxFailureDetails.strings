@@ -1,0 +1,30 @@
+
+/* Screen title for failure transcation details */
+"TxFailureDetails.title" = "發送失敗";
+
+/* Outgoing transaction title */
+"OutgoingTxTitle" = "在途中的交易";
+
+/* Retry transaction */
+"TxFailureDetails.retry" = "重試";
+
+/* Delete transaction */
+"TxFailureDetails.delete" = "刪除";
+
+/* byCurrentRate label */
+"TxFailureDetails.byCurrentRate" = "以現在的比率";
+
+/* static text below fee label */
+"FeeLabel" = "交易手續費";
+
+/* Transaction fee format string in local currency (i.e. 9000 HK$ (100000 sat)) */
+"FeeValueFormat" = "%@ (%@)";
+
+/* Receiver address on outgoing transaction */
+"AddressTitle" = "收款人地址";
+
+/* Confirmations count label */
+"TxFailureDetails.confirmations" = "確認";
+
+/* Alert displayed after receiver address is copied */
+"Alert.addressCopied" = "地址已複製到剪貼板";

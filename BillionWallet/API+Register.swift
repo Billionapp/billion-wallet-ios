@@ -71,18 +71,20 @@ extension API {
                 
                 if (status != "success") {
                     completion(.failure(NetworkError.invalidResponse))
+                    Logger.error("Registration Error \(json["errors"])")
                 } else {
                     let server_ecdh_public = json["data"]["server_ecdh_public"].stringValue
                     completion(.success(server_ecdh_public))
+                    Logger.info("Registration Success")
                 }
                 
             case .failure(let error):
                 completion(.failure(error))
+                Logger.error("Registration Error \(error.localizedDescription)")
             }
             
         }
     }
-    
     
     func authentificateNewUser(completion: @escaping (Result<String>) -> Void) {
         let request = NetworkRequest(method: .GET, path: "/register/echo")
@@ -95,5 +97,4 @@ extension API {
             }
         }
     }
-    
 }

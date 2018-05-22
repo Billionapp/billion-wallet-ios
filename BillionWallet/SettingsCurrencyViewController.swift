@@ -10,6 +10,8 @@ import UIKit
 
 class SettingsCurrencyViewController: BaseViewController<SettingsCurrencyVM> {
 
+    typealias LocalizedStrings = Strings.Settings.Currency
+    
     fileprivate var dataManager: StackViewDataManager!
     fileprivate var titledView: TitledView!
     fileprivate var menuStackView: MenuStackView!
@@ -20,10 +22,16 @@ class SettingsCurrencyViewController: BaseViewController<SettingsCurrencyVM> {
         show()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)        
+        removeSwipeDownGesture()
+        navigationController?.addSwipeDownPop()
+    }
+    
     fileprivate func setupMenuStackView() {
         titledView = TitledView()
-        titledView.title = "Currency"
-        titledView.subtitle = "Select currencies to display the balance of your purse. The first currency in the list is the main one and is displayed on the main screen"
+        titledView.title = LocalizedStrings.title
+        titledView.subtitle = LocalizedStrings.subtitle
         view.addSubview(titledView)
         
         menuStackView = MenuStackView()
@@ -38,24 +46,24 @@ class SettingsCurrencyViewController: BaseViewController<SettingsCurrencyVM> {
             return
         }
         
-        let sectionOne = CurrencyFactory.allowedCurrenies().map { currency in
-            ViewContainer<ButtonSheetView>(item: ButtonSheetView.Model.selectable(title: currency.fullName, selected: currency == selectedCurrency), actions: [selectAction()])
+        let currenciesItems = CurrencyFactory.allowedCurrenies().map { currency in
+                ViewContainer<ButtonSheetView>(item: ButtonSheetView.Model.selectable(title: currency.fullName, selected: currency == selectedCurrency), actions: [selectAction()])
         }
         
-        let sectionTwo = [
+        let sectionOne = ViewContainer<SectionView>(item: currenciesItems)
+
+        let sectionTwo =
             ViewContainer<ColumnsView>(item: ([
-                ViewContainer<ButtonSheetView>(item: .default(title: "OK"), actions: [okAction()]),
-                ViewContainer<ButtonSheetView>(item: .default(title: "Cancel"), actions: [dismissAction()])
+                ViewContainer<SectionView>(item: [
+                    ViewContainer<ButtonSheetView>(item: .default(title: LocalizedStrings.okButton), actions: [okAction()])]),
+                ViewContainer<SectionView>(item: [
+                    ViewContainer<ButtonSheetView>(item: .default(title: LocalizedStrings.cancelButton), actions: [dismissAction()])
+                    ])
                 ], .fillEqually))
-        ]
-        
-        let containers = [
-            ViewContainer<SectionView>(item: sectionOne),
-            ViewContainer<SectionView>(item: sectionTwo)
-        ]
-        
+
         dataManager.clear()
-        dataManager.append(containers: containers)
+        dataManager.append(containers: [sectionOne, sectionTwo])
+        
         menuStackView.resize(in: view)
     }
     

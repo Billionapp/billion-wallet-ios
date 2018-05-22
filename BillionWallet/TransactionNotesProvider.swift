@@ -9,18 +9,19 @@
 import Foundation
 
 class TransactionNotesProvider {
-    let tx: BRTransaction
     
-    init(tx: BRTransaction) {
-        self.tx = tx
+    func setUserNote(with str: String, for txHash: UInt256S) {
+        let data = txHash.data
+        let args: [CVarArg] = [data as CVarArg]
+        if let txCD = BRTxMetadataEntity.objects(matching: "txHash == %@ ", arguments: getVaList(args)).first as? BRTxMetadataEntity {
+            txCD.setValue(str, forKey: "userNote")
+            BRTxMetadataEntity.saveContext()
+        }
     }
     
-    func setUserNote(with str: String) {
-        let data = UInt256S(tx.txHash).data
-        let args: [CVarArg] = [data as CVarArg]
+    func getUserNote(for txHash: UInt256S) -> String? {
+        let args: [CVarArg] = [txHash.data as CVarArg]
         let txCD = BRTxMetadataEntity.objects(matching: "txHash == %@ ", arguments: getVaList(args)).first as! BRTxMetadataEntity
-        txCD.setValue(tx.userNote, forKey: "userNote")
-        txCD.setValue(str, forKey: "userNote")
-        BRTxMetadataEntity.saveContext()
+        return txCD.userNote
     }
 }

@@ -1,0 +1,39 @@
+
+/* Payment request status: received */
+"PaymentRequest.receiverRequest" = "收到付款請求";
+
+/* Payment request status: declined */
+"PaymentRequest.requestDeclined" = "拒絕付款請求";
+
+/* Payment request status: in progress */
+"PaymentRequest.requestInProgress" = "付款請求處理中";
+
+/* Payment request status: rejected */
+"PaymentRequest.requestRejected" = "取消付款請求";
+
+/* Self payment request details title */
+"PaymentRequest.sentRequestTitle" = "向/n發送付款請求";
+
+/* User payment request details title */
+"PaymentRequest.receiverRequestTitle" = "已收到/n付款請求";
+
+/* Declined payment request details title */
+"PaymentRequest.receiverRequestDeclinedTitle" = "已拒絕/n付款請求";
+
+/* Text to appear on confirm button for request */
+"PaymentRequest.confirmButtonText" = "確認";
+
+/* Text to appear on decline button for request */
+"PaymentRequest.declineButtonText" = "拒絕";
+
+/* Text to appear on cancel button for request */
+"PaymentRequest.cancelButtonText" = "取消";
+
+/* Text to appear on delete button for request */
+"PaymentRequest.deleteButtonText" = "刪除";
+
+/* Text to appear on buble title for request */
+"PaymentRequest.bubbleTitleText" = "付款請求";
+
+/* Insufficient balance alert */
+"SendScreen.Notice.insufficientBalanceError" = "餘額不足";

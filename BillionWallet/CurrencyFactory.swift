@@ -14,16 +14,8 @@ class CurrencyFactory {
         return unsafeCurrencyWithCode("USD")
     }
     
-    static func allCurrencies() -> [Currency] {
-        guard let codes = allCodes() else {
-            return [defaultCurrency]
-        }
-        
-        return codes.map { unsafeCurrencyWithCode($0) }
-    }
-    
     static func allowedCurrenies() -> [Currency] {
-        return ["USD", "HKD", "CNY"].map { unsafeCurrencyWithCode($0) }
+        return ["USD", "HKD", "CNY", "EUR", "RUB", "JPY"].map { unsafeCurrencyWithCode($0) }
     }
     
     fileprivate static func unsafeCurrencyWithCode(_ currencyCode: String) -> Currency {
@@ -67,9 +59,5 @@ class CurrencyFactory {
         } else {
             return currencyCode
         }
-    }
-    
-    static func allCodes() -> [String]? {
-        return BRWalletManager.sharedInstance()?.currencyCodes as? [String]
     }
 }

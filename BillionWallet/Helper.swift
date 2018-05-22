@@ -23,15 +23,12 @@ class Helper {
         return nil
     }
     
-    class func generateMessageForAuthentification(contentType: String?, method: String, host: String, uri: String, body: String, udid: String, timestamp: String, nonce: String) -> String {
+    class func generateMessageForAuthentification(contentType: String?, method: String, host: String, uri: String, body: Data?, udid: String, timestamp: String, nonce: String) -> String {
         
-        let contentType = contentType ?? (body.isEmpty ? "" : "application/json")
+        let contentType = contentType ?? (body == nil ? "" : "application/json")
         
-        var bodySha1: String?
-        if !body.isEmpty {
-            bodySha1 = body.data(using: .utf8)?.sha1().hex
-        }
-        return [method, host, uri, contentType , bodySha1 ?? "", udid, timestamp, nonce].joined(separator: "|")
+        let bodySha1 = body?.sha1().hex ?? ""
+        return [method, host, uri, contentType , bodySha1, udid, timestamp, nonce].joined(separator: "|")
     }
     
     class func abbreviateAmount(_ amt: Double) -> String {
@@ -69,7 +66,7 @@ class Helper {
         return outputString
     }
     
-    static func delay(_ delay:Double, queue: DispatchQueue, closure: @escaping ()->()) {
+    static func delay(_ delay: Double, queue: DispatchQueue, closure: @escaping () -> ()) {
         let when = DispatchTime.now() + delay
         queue.asyncAfter(deadline: when, execute: closure)
     }

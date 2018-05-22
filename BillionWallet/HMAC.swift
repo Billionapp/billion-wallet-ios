@@ -27,12 +27,12 @@ extension LocalCrypto {
             return hmac
         }
         
-        static func sha256(_ message: Data, key: Data) -> Data {
+        static func sha256(_ message: Data, key: Data) throws -> Data {
             let digestSize = 256/8
             return digest(message, key: key, hash: SHA256, digestSize: digestSize)
         }
         
-        static func sha512(_ message: Data, key: Data) -> Data {
+        static func sha512(_ message: Data, key: Data) throws -> Data {
             let digestSize = 512/8
             return digest(message, key: key, hash: SHA512, digestSize: digestSize)
         }

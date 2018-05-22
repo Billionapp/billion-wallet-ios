@@ -14,73 +14,143 @@ protocol SettingsVMDelegate: class {
 
 class SettingsVM {
     
-    let defaultsProvider: Defaults
-    let iCloudProvider: ICloud
-    let accountProvider: AccountManager
-    var keychain: Keychain
+    typealias LocalizedStrings = Strings.Settings.General
+    
+    private let network: Network
+    private weak var defaultsProvider: Defaults!
+    private weak var iCloudProvider: ICloud!
+    private weak var accountProvider: AccountManager!
+    private weak var taskQueue: TaskQueueProvider!
+    private weak var failureTxProvider: FailureTxProtocol!
+    private weak var contactsProvider: ContactsProvider!
+    private var messageFetchProvider: MessageFetchProviderProtocol
+    private weak var userPaymentRequestProvider: UserPaymentRequestProtocol!
+    private weak var selfPaymentRequestProvider: SelfPaymentRequestProtocol!
+    private let keychain: Keychain
+    private let lockProvider: LockProvider
+    private let walletProvider: BPeerManager
+    private let rateQ: RateQueueProtocol
+    
+    private let ratesProvider: RateProviderProtocol
+    private let feeProvider: FeeProvider
+    
+    weak var delegate: SettingsVMDelegate?
+    
+    init(network: Network,
+         defaultsProvider: Defaults,
+         keychain: Keychain,
+         lockProvider: LockProvider,
+         iCloudProvider: ICloud,
+         accountProvider: AccountManager,
+         walletProvider: WalletProvider,
+         ratesProvider: RateProviderProtocol,
+         feeProvider: FeeProvider,
+         tastQueue: TaskQueueProvider,
+         failureTxProvider: FailureTxProtocol,
+         contactsProvider: ContactsProvider,
+         messageFetchProvider: MessageFetchProviderProtocol,
+         userPaymentRequestProvider: UserPaymentRequestProtocol,
+         selfPaymentRequestProvider: SelfPaymentRequestProtocol,
+         rateQ: RateQueueProtocol) {
+        
+        self.network = network
+        self.defaultsProvider = defaultsProvider
+        self.iCloudProvider = iCloudProvider
+        self.accountProvider = accountProvider
+        self.walletProvider = walletProvider
+        self.failureTxProvider = failureTxProvider
+        self.contactsProvider = contactsProvider
+        self.messageFetchProvider = messageFetchProvider
+        self.userPaymentRequestProvider = userPaymentRequestProvider
+        self.selfPaymentRequestProvider = selfPaymentRequestProvider
+        self.keychain = keychain
+        self.lockProvider = lockProvider
+        self.ratesProvider = ratesProvider
+        self.feeProvider = feeProvider
+        self.taskQueue = tastQueue
+        self.rateQ = rateQ
+    }
     
     var currencies: [Currency] {
         return defaultsProvider.currencies
     }
     
-    let ratesProvider: RatesProvider
-    let feeProvider: FeeProvider
-    
-    var commission: FeeSize {
-        return defaultsProvider.commission
-    }
-
     var mnemonic: String? {
         return accountProvider.getMnemonic()
     }
     
-    weak var delegate: SettingsVMDelegate?
-
-    init(defaultsProvider: Defaults, keychain: Keychain, iCloudProvider: ICloud, accountProvider: AccountManager, ratesProvider: RatesProvider, feeProvider: FeeProvider) {
-        self.defaultsProvider = defaultsProvider
-        self.iCloudProvider = iCloudProvider
-        self.accountProvider = accountProvider
-        self.keychain = keychain
-        self.ratesProvider = ratesProvider
-        self.feeProvider = feeProvider
-    }
-    
-    func saveConfig() {
-        do {
-            guard let walletDigest = accountProvider.currentWalletDigest else {
-                throw ICloud.ICloudError.couldntSave
-            }
-            
-            let iCloudConfig = ICloudConfig(walletDigest: walletDigest, userName: "User", currencies: currencies, feeSize: commission, version: Bundle.appVersion)
-            try iCloudProvider.backup(object: iCloudConfig)
-            
-        } catch {
-            // ICloud.ICloudError.couldntSave
-            Logger.error(error.localizedDescription)
+    var securityButtonText: String {
+        if Layout.model == .ten {
+            return LocalizedStrings.securityX
+        } else {
+            return LocalizedStrings.security
         }
     }
     
-    func clearAll() {
-        accountProvider.deleteWallet()
-        accountProvider.clearAccountKeychain()
-        defaultsProvider.clear()
-        keychain.pin = nil
-        keychain.isLocked = false
-        ratesProvider.stopTimer()
-        feeProvider.stopTimer()
+    func saveConfig() {
+        guard let walletDigest = accountProvider.getOrCreateWalletDigest() else {
+            Logger.error("Could not save to iCloud")
+            return
+        }
         
-        // TODO: refactor
-        let contactsProvider = ContactsProvider()
-        contactsProvider.deleteAllContacts()
+        let iCloudConfig = ICloudConfig(walletDigest: walletDigest,
+                                        userName: "User",
+                                        currencies: currencies,
+                                        feeSize: FeeSize.custom,
+                                        version: Bundle.appVersion)
+        let iCloud = iCloudProvider!
+        DispatchQueue.global().async {
+            do {
+                try iCloud.backup(object: iCloudConfig)
+            } catch let error {
+                // ICloud.ICloudError.couldntSave
+                Logger.error(error.localizedDescription)
+            }
+        }
+        
     }
     
+    func setIsLocked(_ value: Bool) {
+        if value {
+            lockProvider.lock()
+        } else {
+            lockProvider.unlock()
+        }
+    }
+    
+    func clearAll(clearCloud: Bool) {
+        network.stopAllOperations()
+        rateQ.cancelAll()
+        if clearCloud {
+            iCloudProvider.wipe()
+        }
+        
+        defaultsProvider.clear()
+        keychain.deleteAll()
+        feeProvider.stopTimer()
+        taskQueue.stop()
+        taskQueue.clear()
+        messageFetchProvider.stopFetching()
+        
+        contactsProvider.deleteAllContacts()
+        failureTxProvider.deleteAllFailureTxs {}
+        userPaymentRequestProvider.deleteAllUserPaymentRequest {}
+        selfPaymentRequestProvider.deleteAllSelfPaymentRequest {}
+        
+        accountProvider.clearAccountKeychain()
+        accountProvider.deleteWallet()
+    }
+    
+    func rescanBlockchain() {
+        walletProvider.rescan()
+    }
 }
 
 // MARK: - PasscodeOutputDelegate
 
 extension SettingsVM: PasscodeOutputDelegate {
     
-    func didUpdatePascode(_ passcode: String) {
+    func didUpdatePasscode(_ passcode: String) {
         
     }
     

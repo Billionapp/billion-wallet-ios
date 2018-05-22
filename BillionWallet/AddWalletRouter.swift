@@ -10,25 +10,37 @@ import Foundation
 
 class AddWalletRouter: Router {
     
-    let mainRouter: MainRouter
+    private weak var mainRouter: MainRouter!
+    private weak var app: Application!
     
-    init(mainRouter: MainRouter) {
+    init(mainRouter: MainRouter, app: Application) {
         self.mainRouter = mainRouter
+        self.app = app
     }
     
     func run() {
 
-        let viewModel = AddWalletVM(walletProvider:mainRouter.application.walletProvider, icloudProvider: mainRouter.application.iCloud, defaultsProvider: mainRouter.application.defaults, accountProvider: mainRouter.application.accountProvider, pcProvider: mainRouter.application.pcProvider, contactsProvider: mainRouter.application.contactsProvider, taskQueueProvider: mainRouter.application.taskQueueProvider)
+        let viewModel = AddWalletVM(walletProvider: app.walletProvider,
+                                    icloudProvider: app.iCloud,
+                                    defaultsProvider: app.defaults,
+                                    accountProvider: app.accountProvider,
+                                    pcProvider: app.pcProvider,
+                                    contactsProvider: app.contactsProvider,
+                                    taskQueueProvider: app.taskQueueProvider)
         let viewController = AddWalletViewController(viewModel: viewModel)
         viewController.router = self
-        mainRouter.navigationController.push(viewController: viewController)
+        mainRouter.navigationController.setViewControllers([viewController], animated: false)
     }
     
     func showNewWalletView(with info: SettingsRestoreVM.Info) {
-        mainRouter.showRestoreSettingsView(with: info)
+        mainRouter.showRestoreSettingsViewAsRoot(with: info, back: nil)
     }
     
     func showRestoreWalletView() {
-        mainRouter.showGeneralView()
+        mainRouter.showBiometricSetup()
+    }
+    
+    func showPrivacy() {
+        mainRouter.showPrivacyPolicy()
     }
 }

@@ -1,0 +1,24 @@
+
+/* Payment request title */
+"Receive.title" = "付款請求";
+
+/* Title above your balance */
+"Receive.yourAddress" = "你的地址";
+
+/* request which user want to amount */
+"Receive.amountRequest" = "要求金額";
+
+/* Alert shown than one-time use's Bitcoin address has been copied to clipboard */
+"ReceiveScreen.Notice.addressCopied" = "你的一次性比特幣地址已複製到剪貼版";
+
+/* Payment request has been copied to clipboard alert */
+"ReceiveScreen.Notice.paymentRequestCopied" = "付款請求已複製到剪貼板";
+
+/* copy address button */
+"Receive.copyAddress" = "複製地址";
+
+/* Copy payment request button */
+"Receive.copyRequest" = "複製付款請求";
+
+/* Payment request sent successfully alert */
+"Receive.requestSent" = "成功傳送付款請求";

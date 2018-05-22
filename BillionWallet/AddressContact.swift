@@ -17,11 +17,33 @@ struct AddressContact {
     var avatarData: Data?
     var isArchived: Bool
     var txHashes: Set<String>
+    var lastUsed: NSNumber
 }
 
 // MARK: - ContactProtocol
 
 extension AddressContact: ContactProtocol {
+
+    var notificationTxHash: String? {
+        get {
+            return nil
+        }
+        set {
+            notificationTxHash = nil
+        }
+    }
+    
+    func getReceiveAddresses() -> [String] {
+        return [String]()
+    }
+    
+    func getNotificationAddress() -> String? {
+        return nil
+    }
+    
+    func getSendAddresses() -> [String] {
+        return [String]()
+    }
     
     var isNotificationTxNeededToSend: Bool {
         return false
@@ -29,10 +51,6 @@ extension AddressContact: ContactProtocol {
     
     var uniqueValue: String {
         return address
-    }
-    
-    var description: (smart: String, full: String) {
-        return ("Address", "Address contact")
     }
     
     static var uniqueAttribute: String {
@@ -44,7 +62,12 @@ extension AddressContact: ContactProtocol {
                               displayName: defaultDisplayName,
                               avatarData: nil,
                               isArchived: false,
-                              txHashes: [])
+                              txHashes: [],
+                              lastUsed: NSNumber(value: Double(Date().timeIntervalSince1970)))
+    }
+    
+    func backup(using icloud: ICloud) throws {
+        try icloud.backup(object: self)
     }
     
     func save() {
@@ -55,17 +78,55 @@ extension AddressContact: ContactProtocol {
             object.avatarData = self.avatarData
             object.isArchived = self.isArchived
             object.txHashes = Set(self.txHashes)
+            object.lastUsed = self.lastUsed
+
             try? CoreDataObject.save()
+            NotificationCenter.default.post(name: contactsChangedAfterSaveNotification, object: nil)
         }
     }
     
-    func isContact(for transaction: BRTransaction) -> Bool {
-        let outputsAddresses = transaction.outputAddresses.flatMap { $0 as? String }
-        return outputsAddresses.contains(where: { $0 == address })
+    func getConnectedAddress(for transaction: Transaction) -> String? {
+        let outputsAddresses = transaction.outputAddresses
+        guard outputsAddresses.contains(where: { $0 == address }) else {
+            return nil
+        }
+        return address
     }
     
-    mutating func addressToSend() -> String? {
+    func addressToSend() -> String? {
         return address
+    }
+    
+    mutating func incrementFirstUnusedIndex() {
+        // Implemented in PaymentCodeContactProtocol, for AddressContact we do nothing
+    }
+    
+    mutating func generateSendAddresses() {
+        // Implemented in PaymentCodeContactProtocol, for AddressContact we do nothing
+    }
+    
+}
+
+// MARK: - ContactDisplayable
+
+extension AddressContact: ContactDisplayable {
+    
+    var description: (value: String, type: String) {
+        return ("Address", "Address contact")
+    }
+    
+    var givenName: String {
+        get {
+            return displayName
+        }
+        
+        set {
+            displayName = newValue
+        }
+    }
+    
+    var sharingString: String {
+        return "bitcoin://\(uniqueValue)"
     }
     
 }
@@ -81,7 +142,8 @@ extension AddressContact: PlainMappable {
                               displayName: object.displayName,
                               avatarData: object.avatarData,
                               isArchived: object.isArchived,
-                              txHashes: object.txHashes)
+                              txHashes: object.txHashes,
+                              lastUsed: object.lastUsed)
     }
     
 }

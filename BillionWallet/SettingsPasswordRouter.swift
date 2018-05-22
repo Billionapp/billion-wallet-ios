@@ -10,16 +10,21 @@ import UIKit
 
 class SettingsPasswordRouter: Router {
     
-    let mainRouter: MainRouter
+    private weak var mainRouter: MainRouter!
+    private weak var app: Application!
+    private let back: UIImage?
     
-    init(mainRouter: MainRouter) {
+    init(mainRouter: MainRouter, app: Application, back: UIImage?) {
         self.mainRouter = mainRouter
+        self.app = app
+        self.back = back
     }
     
     func run() {
-        let viewModel = SettingsPasswordVM(application: mainRouter.application)
+        let viewModel = SettingsPasswordVM(application: app)
         let viewController = SettingsPasswordViewController(viewModel: viewModel)
         viewController.router = mainRouter
+        viewController.backImage = back
         mainRouter.navigationController.push(viewController: viewController)
     }
 

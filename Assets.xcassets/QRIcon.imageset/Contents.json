@@ -2,6 +2,7 @@
   "images" : [
     {
       "idiom" : "universal",
+      "filename" : "QRIcon.png",
       "scale" : "1x"
     },
     {

@@ -8,7 +8,7 @@
 
 import UIKit
 
-class AsynchronousOperation: Operation {
+class AsynchronousOperation<T>: Operation {
     @objc class func keyPathsForValuesAffectingIsExecuting() -> Set<String> {
         return ["state"]
     }
@@ -24,11 +24,11 @@ class AsynchronousOperation: Operation {
         case finished
     }
     
-    let executeBlock: (@escaping (Result<String>) -> Void) -> Void
-    let completion: (Result<String>) -> Void
+    let executeBlock: (@escaping (Result<T>) -> Void) -> Void
+    let completion: (Result<T>) -> Void
     let queue: DispatchQueue
     
-    init(executeBlock: @escaping (@escaping (Result<String>) -> Void) -> Void, completion: @escaping (Result<String>) -> Void, queue: DispatchQueue) {
+    init(executeBlock: @escaping (@escaping (Result<T>) -> Void) -> Void, completion: @escaping (Result<T>) -> Void, queue: DispatchQueue) {
         self.executeBlock = executeBlock
         self.completion = completion
         self.queue = queue
@@ -79,10 +79,11 @@ class AsynchronousOperation: Operation {
             state = .finished
         } else {
             state = .executing
-            
             executeBlock { result in
-                self.queue.async {
-                    self.completion(result)
+                if !self.isCancelled {
+                    self.queue.async {
+                        self.completion(result)
+                    }
                 }
                 self.state = .finished
             }

@@ -26,16 +26,23 @@ class AddWalletVM {
     
     var recoveredSeed: String?
     
-    weak var delegate: AddWalletVMDelegate?
-    weak var walletProvider: WalletProvider?
-    weak var icloudProvider: ICloud?
-    weak var defaultsProvider: Defaults?
-    weak var accountProvider: AccountManager?
-    weak var contactsProvider: ContactsProvider?
-    weak var pcProvider: PaymentCodesProvider?
-    weak var taskQueueProvider: TaskQueueProvider?
+    weak var delegate: AddWalletVMDelegate!
+    weak var walletProvider: WalletProvider!
+    weak var icloudProvider: ICloud!
+    weak var defaultsProvider: Defaults!
+    weak var accountProvider: AccountManager!
+    weak var contactsProvider: ContactsProvider!
+    weak var pcProvider: PaymentCodesProvider!
+    weak var taskQueueProvider: TaskQueueProvider!
     
-    init(walletProvider:WalletProvider, icloudProvider: ICloud, defaultsProvider: Defaults, accountProvider: AccountManager, pcProvider: PaymentCodesProvider, contactsProvider: ContactsProvider, taskQueueProvider: TaskQueueProvider) {
+    init(walletProvider:WalletProvider,
+         icloudProvider: ICloud,
+         defaultsProvider: Defaults,
+         accountProvider: AccountManager,
+         pcProvider: PaymentCodesProvider,
+         contactsProvider: ContactsProvider,
+         taskQueueProvider: TaskQueueProvider) {
+        
         self.walletProvider = walletProvider
         self.icloudProvider = icloudProvider
         self.defaultsProvider = defaultsProvider
@@ -43,71 +50,72 @@ class AddWalletVM {
         self.contactsProvider = contactsProvider
         self.pcProvider = pcProvider
         self.taskQueueProvider = taskQueueProvider
+        taskQueueProvider.start()
+    }
+    
+    private func prepareString(_ str: String) -> String {
+        let components = str.components(separatedBy: NSCharacterSet.whitespacesAndNewlines)
+        return components.filter { !$0.isEmpty }.joined(separator: " ")
     }
     
     func generateWallet() {
+        self.setFirstEnterDateIfNeeded()
         
-        setFirstEnterDateIfNeeded()
-        
-        guard let provider = walletProvider else { return }
-        seedPhrase = provider.manager.generateRandomSeed()
-        if let seed = seedPhrase {
-            //Payment Code
+        guard let provider = self.walletProvider else { return }
+        self.seedPhrase = provider.generateRandomSeed()
+        if let seed = self.seedPhrase {
             
-            pcProvider?.generatePaymentCodes(seedPhrase: seed)
-            
-            guard let walletDigest = accountProvider?.createNewWalletDigest() else {
-                return
+            do {
+                try self.pcProvider.generatePaymentCodes(seedPhrase: seed)
+            } catch {
+                fatalError("PC generation failed with: \(error.localizedDescription)")
             }
+            self.defaultsProvider.isWalletJustCreated = true
             
-            taskQueueProvider?.addOperation(type: .registrationNew)
-            walletProvider?.manager.localCurrencyCode = CurrencyFactory.defaultCurrency.code
+            self.taskQueueProvider.addOperation(type: .register)
+            self.taskQueueProvider.addOperation(type: .pushConfig)
         }
     }
     
     fileprivate func setFirstEnterDateIfNeeded() {
-        if defaultsProvider?.fitstEnterDate == nil {
-            defaultsProvider?.fitstEnterDate = Date()
+        if defaultsProvider.firstLaunchDate == nil {
+            defaultsProvider.firstLaunchDate = Date()
         }
     }
+
 }
 
 // MARK: - InputTextViewDelegate
 extension AddWalletVM: InputTextViewDelegate {
     
     func didChange(value: String) {
-        recoveredSeed = value
+        recoveredSeed = value.lowercased()
     }
     
     func didConfirm() {
-        setFirstEnterDateIfNeeded()
+        self.setFirstEnterDateIfNeeded()
         
-        guard let seed = recoveredSeed else { return }
+        guard let seed = self.recoveredSeed else { return }
+        let preparedseed = self.prepareString(seed)
         do {
-            try walletProvider?.manager.recoverWallet(withPhrase: seed)
-            delegate?.phraseDidRecoved()
-            let walletDigest = accountProvider?.createNewWalletDigest()
-            
-            icloudProvider?.restoreConfig(walletProvider: walletProvider, defaults: defaultsProvider, currentWalletDigest: walletDigest!)
-            icloudProvider?.restoreContacts(contactsProvider: contactsProvider)
-            
-            pcProvider?.generatePaymentCodes(seedPhrase: seed)
-            
-            taskQueueProvider?.addOperation(type: .registrationRestore)
-
+            try self.walletProvider.recoverWallet(withPhrase: preparedseed)
+            try self.pcProvider.generatePaymentCodes(seedPhrase: preparedseed)
+            self.delegate?.phraseDidRecoved()
+            self.taskQueueProvider.addOperation(type: .register)
+            self.taskQueueProvider.addOperation(type: .pushConfig)
         } catch RecoverWalletError.invalidPhraseError {
-            showErrorPopupWithString(title: RecoverWalletError.invalidPhraseError.localizedDescription)
+            self.showErrorPopupWithString(title: RecoverWalletError.invalidPhraseError.localizedDescription)
         } catch RecoverWalletError.emptyMnemonicError {
-            showErrorPopupWithString(title: RecoverWalletError.emptyMnemonicError.localizedDescription)
+            self.showErrorPopupWithString(title: RecoverWalletError.emptyMnemonicError.localizedDescription)
         } catch RecoverWalletError.phraseNormalizationError {
-            showErrorPopupWithString(title: RecoverWalletError.phraseNormalizationError.localizedDescription)
+            self.showErrorPopupWithString(title: RecoverWalletError.phraseNormalizationError.localizedDescription)
         } catch {
-            showErrorPopupWithString(title: RecoverWalletError.unknownError.localizedDescription)
+            self.showErrorPopupWithString(title: RecoverWalletError.unknownError.localizedDescription)
         }
     }
     
     func showErrorPopupWithString(title: String) {
-        let popup = PopupView.init(type: .cancel, labelString: title)
+        let popup = PopupView(type: .cancel, labelString: title)
         UIApplication.shared.keyWindow?.addSubview(popup)
     }
     

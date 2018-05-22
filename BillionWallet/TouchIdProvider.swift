@@ -21,22 +21,22 @@ class TouchIdProvider: NSObject {
         self.defaults = defaults
     }
 
-    func authenticateWithBiometrics(completion: @escaping () -> Void) {
+    func authenticateWithBiometrics(reason: String?, completion: @escaping (Bool) -> Void) {
         
         guard isTouchIdEnabled else {
+            completion(false)
             return
         }
         
         let context = LAContext()
-        let reason = NSLocalizedString("Authentication required to proceed", comment: "")
+        var reason = reason ?? Strings.TouchId.authRequired
+        if reason == "" { reason = Strings.TouchId.authRequired }
         
-        context.localizedFallbackTitle = NSLocalizedString("Enter Passcode", comment: "")
+        context.localizedFallbackTitle = Strings.TouchId.enterPasscode
         
         context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, error in
             DispatchQueue.main.async {
-                if success {
-                    completion()
-                }
+                completion(success)
             }
         }
 

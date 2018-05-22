@@ -106,7 +106,7 @@ struct UInt256S {
         return u
     }
     
-    init(data: Data) {
+    init(data: Data = Data(repeating: 0x00, count: 32)) {
         self.uint256 = data.to(type: UInt256.self)
     }
     
@@ -120,6 +120,45 @@ struct UInt256S {
     
     var data: Data {
         return Data(from: self.uint256)
+    }
+}
+
+struct UInt160S {
+    var uint160: UInt160
+    
+    var u8: [UInt8] {
+        return [UInt8](data)
+    }
+    var u16: [UInt16] {
+        let u: [UInt16] = [
+            uint160.u16.0, uint160.u16.1, uint160.u16.2, uint160.u16.3,
+            uint160.u16.4, uint160.u16.5, uint160.u16.6, uint160.u16.7,
+            uint160.u16.8, uint160.u16.9
+        ]
+        return u
+    }
+    var u32: [UInt32] {
+        let u: [UInt32] = [
+            uint160.u32.0, uint160.u32.1, uint160.u32.2, uint160.u32.3,
+            uint160.u32.4
+        ]
+        return u
+    }
+    
+    init(data: Data) {
+        self.uint160 = data.to(type: UInt160.self)
+    }
+    
+    init(_ uint160: UInt160) {
+        self.uint160 = uint160
+    }
+    
+    init(bytes: [UInt8]) {
+        self.init(data: Data(bytes))
+    }
+    
+    var data: Data {
+        return Data(from: self.uint160)
     }
 }
 
@@ -186,9 +225,3 @@ extension Data {
     }
 }
 
-// MARK: VIP
-extension Data {
-    var hex: String {
-        return self.map { String(format: "%02hhx", $0) }.joined()
-    }
-}

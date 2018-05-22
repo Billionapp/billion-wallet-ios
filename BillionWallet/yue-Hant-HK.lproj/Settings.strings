@@ -1,0 +1,87 @@
+
+/* Settings title */
+"Settings.General.screenTitle" = "設定";
+
+/* Exit the wallet button */
+"Settings.General.exitWallet" = "離開錢包";
+
+/* Currency button */
+"Settings.General.currency" = "貨幣";
+
+/* Touch ID and Passcode button */
+"Settings.General.security" = "Touch ID與密碼";
+
+/* Face ID and Passcode button */
+"Settings.General.security" = "Face ID與密碼";
+
+/* Show Recovery Phrase button */
+"Settings.General.recovery" = "顯示私鑰";
+
+/* About Billion button */
+"Settings.General.about" = "關於Billion";
+
+/* Lock Billion now button */
+"Settings.General.lock" = "鎖上錢包";
+
+/* Rescan wallet button */
+"Settings.General.rescan" = "重新掃描錢包";
+
+/* Back button use by user when he want to go to the back screen */
+"Settings.General.recoveryPhraseScreenBackButton" = "返回";
+
+/* Recovery phrase title */
+"Settings.RestoreScreen.title" = "私鑰";
+
+/* Label talk that user need to save recovery phrase very well and don't show it to nobody */
+"Settings.RestoreScreen.alert" = "你的個人私鑰是獨一無二，無論多少人在使用比特幣，都不會產生與你一樣的私鑰。請你記下個人私鑰並妥善保管。如果你遺失了你的iPhone，使用私鑰是唯一方法把你的錢包復原。如你洩漏了私鑰，其他人能有機會盜取你的比特幣";
+
+/* Touch ID and Passcode title */
+"Settings.Passcode.title" = "Touch ID與密碼";
+
+/* Face ID and Passcode title */
+"Settings.Passcode.titleTen" = "Face ID與密碼";
+
+/* Set up Touch ID as authentication method or change your passcode title */
+"Settings.Passcode.subtitle" = "設定Touch ID或更改密碼";
+
+/* Set up Face ID as authentication method or change your passcode title */
+"Settings.Passcode.subtitleTen" = "設定Face ID或更改密碼";
+
+/* switch named Enable Touch ID */
+"Settings.Passcode.touchIdSwitch" = "啟用Touch ID";
+
+/* switch named Enable Face ID */
+"Settings.Passcode.faceIdSwitch" = "啟用Face ID";
+
+/* Change Passcode button */
+"Settings.Passcode.passwordChange" = "更改密碼";
+
+/* Back button */
+"Settings.Passcode.backButton" = "返回";
+
+/* assword successfully changed alert */
+"Settings.Passcode.passwordChanged" = "成功更改密碼";
+
+/* Currency title */
+"Settings.CurrencyScreen.title" = "貨幣";
+
+/* Select a currency in which you would like your balance to be displayed */
+"Settings.CurrencyScreen.subtitle" = "選擇顯示的貨幣";
+
+/* Done button */
+"Settings.CurrencyScreen.okButton" = "完成";
+
+/* Cancel */
+"Settings.CurrencyScreen.cancelButton" = "取消";
+
+/* About Billion */
+"Settings.AboutSrceen.title" = "關於Billion";
+
+/* Link to our twitter account */
+"Settings.AboutSrceen.twitter" = "追蹤Twitter";
+
+/* Wallet creation time. Seed is a master */
+"Settings.AboutSrceen.seedCreationTime" = "錢包創建時間:";
+
+/* build number */
+"Settings.AboutSrceen.about" = "%@ (%@), %@ distribution";

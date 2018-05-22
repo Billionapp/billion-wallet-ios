@@ -11,24 +11,26 @@ import UIKit
 final class ReceiveRouter: Router {
     
     // MARK: - Private
-    private weak var mainRouter: MainRouter?
+    private weak var mainRouter: MainRouter!
+    private weak var app: Application!
+    private let back: UIImage?
     
     // MARK: - Lifecycle
-    init(mainRouter: MainRouter) {
+    init(mainRouter: MainRouter, back: UIImage?, app: Application) {
         self.mainRouter = mainRouter
+        self.back = back
+        self.app = app
     }
     
     // MARK: - Start routing
     func run() {
-        guard let mainRouter = mainRouter else { return }
+        let viewModel = ReceiveVM(walletProvider: app.walletProvider,
+                                  ratesProvider: app.ratesProvider,
+                                  uriComposer: app.urlComposer,
+                                  defaults: app.defaults)
         
-        // MARK: Inject dependencies or address only from mainRouter?.application to viewModel
-        let localeIso = mainRouter.application.walletProvider.manager.localCurrencyCode
-        let walletProvider = mainRouter.application.walletProvider
-        let ratesProvider = mainRouter.application.ratesProvider
-        
-        let viewModel = ReceiveVM(walletProvider: walletProvider, localeIso: localeIso!, ratesProvider: ratesProvider)
         let receiveViewController = ReceiveViewController(viewModel: viewModel)
+        receiveViewController.backImage = back
         receiveViewController.mainRouter = mainRouter
         mainRouter.navigationController.push(viewController: receiveViewController)
     }

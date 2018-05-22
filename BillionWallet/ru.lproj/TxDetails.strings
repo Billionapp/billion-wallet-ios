@@ -1,0 +1,39 @@
+
+/* Incoming transaction title */
+"IncomingTxTitle" = "Входящая транзакция";
+
+/* Outgoing transaction title */
+"OutgoingTxTitle" = "Исходящая трансакция";
+
+/* byCurrentRate label */
+"TxDetails.byCurrentRate" = "по текущему курсу";
+
+/* Receiver address on incoming transaction */
+"IncomingTxSelfAddressLabel" = "Ваш адрес";
+
+/* Receiver address on outgoing transaction */
+"OutgoingTxRecipientAddressLabel" = "адрес получателя";
+
+/* Transcation fee label */
+"TxFeeLabel" = "комиссия сети";
+
+/* Transaction comment label */
+"CommentLabel" = "Заметка";
+
+/* Comment text if no comment provided */
+"NoComment" = "нет заметок";
+
+/* Format string for transaction fee in local currency */
+"FeeFormat" = "%@";
+
+/* Singular for confirmation (i.e. 1 confirmation) */
+"ConfirmationsTextSingle" = "подтверждение";
+
+/* Plural for confirmation (i.e. 6+ confirmations) */
+"ConfirmationsTextPlural" = "подтверждения";
+
+/* Alert displayed after txid is copied */
+"Alert.txidCopied" = "Txid скопирован в буфер обмена";
+
+/* Alert displayed after receiver address is copied */
+"Alert.addressCopied" = "Адрес скопирован в буфер обмена";

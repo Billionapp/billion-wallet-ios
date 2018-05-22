@@ -1,0 +1,30 @@
+
+/* Bitcoin Network fee title */
+"FeeScreen.title" = "Комиссия сети Bitcoin";
+
+/* Label shown when you choose network fee */
+"FeeScreen.subtitle" = "Выбор подходящей комиссии сети. Экономьте средства,\nесли транзакция не срочная.";
+
+/* Cancel button title */
+"FeeScreen.cancel" = "Отмена";
+
+/* Label shown how long transaction goes */
+"Fee.confirmationTimeLabel" = "время на подтв.";
+
+/* Label shown commission for transaction */
+"Fee.feeTotalAmountLabel" = "итого комиссия";
+
+/* Transaction preority in satoshi in byte */
+"Fee.feeSatPerByteFormat" = "%@/за байт";
+
+/* Label shown when transaction failed, also show the reason of failed */
+"Fee.transactionFailedFormat" = "Не удалось осуществить транзакцию, причина: %@";
+
+/* Receiver of the payment */
+"ChooseFee.receiver" = "получатель: %@";
+
+/* Send {amount to send} */
+"ChooseFee.sendAmount" = "Отправить %@";
+
+/* Transfer checkout format */
+"ChooseFee.reason" = "%@\n\n\nсумма: %@ (%@)\nкомиссия: %@ (%@)\nитого: %@ (%@)";

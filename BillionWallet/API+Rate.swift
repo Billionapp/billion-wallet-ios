@@ -9,29 +9,37 @@
 import Foundation
 
 extension API {
-    func getCurrenciesRate(completion: @escaping (Result<[Rate]>) -> Void) {
+    func getCurrenciesRate(supportedRates: [String], completion: @escaping (Result<[Rate]>) -> Void) {
         let request = NetworkRequest(method: .GET, path: "/rates")
         
-        network.makeRequest(request) {(result: Result<JSON>) in
+        network.makeRequest(request) { (result: Result<JSON>) in
             
             switch result {
             case .success(let json):
                 guard json["status"].stringValue == "success" else {
-                    let err = RatesRequestError.statusFailed
-                    completion(.failure(err))
+                    completion(.failure(RatesRequestError.statusFailed))
+                    return
+                }
+                guard let rates = json["data"].arrayValue.first?["data"].arrayValue else {
+                    completion(.failure(RatesRequestError.notFound))
                     return
                 }
                 
                 var outputArray = [Rate]()
-                let timestamp = json["data"][0]["timestamp"].int64Value
-                let ratesArray = json["data"][0]["data"].arrayValue
                 
-                for currency in ratesArray {
-                    let btcRate = currency["rate"].doubleValue
-                    let code = currency["code"].stringValue
-                    
-                    let rate = Rate(currencyCode: code, btc: btcRate, timestamp: timestamp)
-                    outputArray.append(rate)
+                for rate in rates {
+                    let code = rate["code"].stringValue
+                    let value = rate["rate"].doubleValue
+                    let timestamp = Int64(Date().timeIntervalSince1970)
+                    if supportedRates.contains(code) {
+                        let outputRate = Rate(currencyCode: code, btc: value, blockTimestamp: timestamp)
+                        outputArray.append(outputRate)
+                    }
+                }
+                
+                guard !outputArray.isEmpty else {
+                    completion(.failure(RatesRequestError.ratesArrayEmpty))
+                    return
                 }
                 
                 completion(.success(outputArray))
@@ -41,45 +49,62 @@ extension API {
         }
     }
     
-    func getCurrenciesRateHistory(from tx: BRTransaction, completion: @escaping (Result<[Rate]>) -> Void) {
-        
-        let timestampInt =  UInt64(tx.timestamp+NSTimeIntervalSince1970)
-        let randomFrom = UInt64(arc4random_uniform(300))
-        let randomTo = UInt64(arc4random_uniform(300))
-        let from = "\(timestampInt - randomFrom)"
-        let to = "\(timestampInt + randomTo)"
-        
+    func getCurrenciesRateFallback(supportedRates: [String], completion: @escaping (Result<[Rate]>) -> Void) {
+        let request = NetworkRequest(method: .GET, baseUrl: "https://bitpay.com/api", path: "/rates")
+        network.makeRequest(request) { (result: Result<JSON>) in
+            switch result {
+            case .success(let json):
+                var outputArray = [Rate]()
+                let ratesArray = json.arrayValue
+                for currency in ratesArray {
+                    let code = currency["code"].stringValue
+                    let value = currency["rate"].doubleValue
+                    let timestamp = Int64(Date().timeIntervalSince1970)
+                    if supportedRates.contains(code) {
+                        let outputRate = Rate(currencyCode: code, btc: value, blockTimestamp: timestamp)
+                        outputArray.append(outputRate)
+                    }
+                }
+                
+                completion(.success(outputArray))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    func getHistoricalRate(supportedRates: [String], timestamp: Int64, completion: @escaping (Result<[Rate]>) -> Void) {
+        let from = timestamp - 60
+        let to = timestamp + 40
         let request = NetworkRequest(method: .GET, path: "/rates/\(from)/\(to)")
         
-        network.makeRequest(request) {(result: Result<JSON>) in
-            
+        network.makeRequest(request) { (result: Result<JSON>) in
+        
             switch result {
             case .success(let json):
                 guard json["status"].stringValue == "success" else {
-                    let err = RatesRequestError.statusFailed
-                    completion(.failure(err))
+                    completion(.failure(RatesRequestError.statusFailed))
                     return
                 }
-                let historyArray = json["data"].arrayValue
-                var outputArray = [Rate]()
-                
-                var jsonStamps = [Int64]()
-                for i in historyArray.enumerated() {
-                    let stamp = json["data"][i.offset]["timestamp"].int64Value
-                    jsonStamps.append(stamp)
+                guard let rates = json["data"].arrayValue.first?["data"].arrayValue else {
+                    completion(.failure(RatesRequestError.notFound))
+                    return
                 }
                 
-                let minDelta = jsonStamps.map{ abs($0 - Int64(timestampInt)) }.min() ?? 0
-                let index = jsonStamps.index(of: Int64(timestampInt)-minDelta) ?? 0
+                var outputArray = [Rate]()
                 
-                let timestamp = json["data"][index]["timestamp"].int64Value
-                let ratesArray = json["data"][index]["data"].arrayValue
-                for currency in ratesArray {
-                    let btcRate = currency["rate"].doubleValue
-                    let code = currency["code"].stringValue
-                    
-                    let rate = Rate(currencyCode: code, btc: btcRate, timestamp: timestamp)
-                    outputArray.append(rate)
+                for rate in rates {
+                    let code = rate["code"].stringValue
+                    let value = rate["rate"].doubleValue
+                    if supportedRates.contains(code) {
+                        let outputRate = Rate(currencyCode: code, btc: value, blockTimestamp: timestamp)
+                        outputArray.append(outputRate)
+                    }
+                }
+                
+                guard !outputArray.isEmpty else {
+                    completion(.failure(RatesRequestError.ratesArrayEmpty))
+                    return
                 }
                 
                 completion(.success(outputArray))
@@ -88,10 +113,11 @@ extension API {
             }
         }
     }
-    
 }
 public enum RatesRequestError: Error {
     case statusFailed
+    case notFound
+    case ratesArrayEmpty
 }
 
 extension RatesRequestError: LocalizedError {
@@ -99,6 +125,10 @@ extension RatesRequestError: LocalizedError {
         switch self {
         case .statusFailed:
             return NSLocalizedString("Status is failed", comment: "")
+        case .notFound:
+            return NSLocalizedString("Rates not found", comment: "")
+        case .ratesArrayEmpty:
+            return NSLocalizedString("Rates array is empty", comment: "")
         }
     }
 }

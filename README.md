@@ -1,6 +1,5 @@
 ## Billion – Bitcoin Wallet
 
-
 **Billion** is an open-source Bitcoin wallet for iPhone that implements innovative features such as the system of social financial connections based on Reusable Payment Codes and gorgeous user interface that provides easier than ever access to the most advanced financial systems.
 
 ### Main Distinctive Features
@@ -11,17 +10,18 @@
 - Direct connection to Bitcoin network and [Simplified Payment Verification](https://en.bitcoin.it/wiki/Thin_Client_Security#Header-Only_Clients)
 - Bitcoin private keys are under user's control and stored using best in industry hardware encryption of iPhone
 - Custom fees
+- Payment requests
+- Secre friendship via Multipeer Connectivity framework
 
 ### Installation
 
-Billion is in open beta development stage. You can join by sending an email request to [info@billionapp.org](mailto:beta@billionapp.org?subject=Billion beta participation request&body=Just send this 📧 as it is  – we will reply you with an invitation soon 😎).
-
-`Beta – Stage 1. Starting November 3rd 2017`
+Download [on the AppStore](https://itunes.apple.com/us/app/billion-bitcoin-wallet/id1289435583?mt=8).  
+You can play with [tesnet version](https://itunes.apple.com/us/app/billion-wallet-testnet/id1309331129?mt=8) as well.
 
 ### Website
 
-[BillionApp.org](http://billionapp.org)
+[billionapp.org](http://billionapp.org)
 
 ### License
 
-**Billion** is and available under the terms of the MIT license.
+Take a look at the LICENSE file for details.

@@ -11,9 +11,13 @@ import Foundation
 import AVFoundation
 
 protocol ScanVMDelegate: class {
-    func codeDidFound(code: String)
+    func codeFound()
     func handleError(error: String)
     func torchWasToggled(torchOn: Bool)
+    func billionCodeDidFound()
+    func scanWrongSource(with failure: String)
+    func resetScan()
+    func cameraAccessDenied()
 }
 
 protocol PickVMDelegate: class {
@@ -21,18 +25,8 @@ protocol PickVMDelegate: class {
 }
 
 class ScanVM: NSObject, AVCaptureMetadataOutputObjectsDelegate {
-    private let scannerProvider: ScannerDataProvider
     
-    var code: String {
-        didSet {
-            guard scannerProvider.scannedString != "" else {
-                return
-            }
-            
-            delegate?.codeDidFound(code: code)
-            
-        }
-    }
+    typealias LocalizedStrings = Strings.Scan
     var torchOn: Bool {
         didSet {
             delegate?.torchWasToggled(torchOn: torchOn)
@@ -40,7 +34,8 @@ class ScanVM: NSObject, AVCaptureMetadataOutputObjectsDelegate {
     }
     weak var delegate: ScanVMDelegate?
     weak var pickDelegate: PickVMDelegate?
-    let photoLibrary = PhotoLibrary()
+    weak var accountProvider: AccountManager!
+    var qrResolver: QrResolver!
     var photos: [UIImage] = []
     var croppedPhotos: [UIImage] = [] {
         didSet {
@@ -52,26 +47,44 @@ class ScanVM: NSObject, AVCaptureMetadataOutputObjectsDelegate {
     var pickedImage: UIImage? {
         didSet {
             if let image = pickedImage {
-                performQRCodeDetection(image: CIImage(image:image)!, success: { (detectedString) in
-                    scannerProvider.scannedString = detectedString
-                    code = detectedString
+                performQRCodeDetection(image: CIImage(image: image)!, success: { (detectedString) in
+                    resolveInputFromGallery(sourceString: detectedString)
                 }) { (errorString) in
                     delegate?.handleError(error: errorString)
                 }
             }
         }
     }
-    
-    let captureDevice = AVCaptureDevice.default(for: AVMediaType.video)
+
+    let captureDevice = AVCaptureDevice.default(AVCaptureDevice.DeviceType.builtInWideAngleCamera, for: AVMediaType.metadata, position: .back)
     var captureSession = AVCaptureSession()
     var videoPreviewLayer = AVCaptureVideoPreviewLayer()
     let captureMetadataOutput = AVCaptureMetadataOutput()
     var rectOfInterest = CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
     
-    init(provider: ScannerDataProvider) {
-        self.code = ""
-        self.scannerProvider = provider
+    init(provider: ScannerDataProvider, accountProvider: AccountManager, qrResolver: QrResolver) {
+
         self.torchOn = false
+        self.accountProvider = accountProvider
+        self.qrResolver = qrResolver
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+        clearSessionInputsOutputs()
+        self.captureSession.stopRunning()
+        self.videoPreviewLayer.removeFromSuperlayer()
+    }
+    
+    func clearSessionInputsOutputs() {
+        if let inputs = captureSession.inputs as? [AVCaptureDeviceInput] {
+            for input in inputs {
+                captureSession.removeInput(input)
+            }
+        }
+        for output in captureSession.outputs {
+            captureSession.removeOutput(output)
+        }
     }
     
     func scanQrCode(view: UIView, rectOfInterest: CGRect) {
@@ -81,9 +94,11 @@ class ScanVM: NSObject, AVCaptureMetadataOutputObjectsDelegate {
         
         do {
             let input = try AVCaptureDeviceInput(device: captureDevice!)
-            captureSession = AVCaptureSession()
+            captureSession.sessionPreset = .photo
+            clearSessionInputsOutputs()
             captureSession.addInput(input)
-            self.videoPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
+            videoPreviewLayer.session = nil
+            videoPreviewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
             videoPreviewLayer.videoGravity = AVLayerVideoGravity.resizeAspectFill
             videoPreviewLayer.frame = view.layer.bounds
             view.layer.insertSublayer(videoPreviewLayer, at: 0)
@@ -94,11 +109,7 @@ class ScanVM: NSObject, AVCaptureMetadataOutputObjectsDelegate {
                 self.captureSession.startRunning()
             })
         } catch {
-            let bundleName: String = Bundle.main.infoDictionary?["CFBundleDisplayName"] as! String
-            let cameraAccessError = String(format: "%@ is not allowed to access the camera, allow camera access in Settings->Privacy->Camera->%@", bundleName, bundleName)
-            let popup = PopupView.init(type: .cancel, labelString: cameraAccessError)
-            UIApplication.shared.keyWindow?.addSubview(popup)
-            delegate?.codeDidFound(code: "")
+            delegate?.cameraAccessDenied()
             return
         }
     }
@@ -106,19 +117,16 @@ class ScanVM: NSObject, AVCaptureMetadataOutputObjectsDelegate {
     func addObserver() {
         NotificationCenter.default.addObserver(self, selector: #selector(avCaptureInputPortFormatDescriptionDidChangeNotification), name: NSNotification.Name.AVCaptureInputPortFormatDescriptionDidChange, object: nil)
     }
-    deinit {
-        NotificationCenter.default.removeObserver(self)
-        self.captureSession.stopRunning()
-        self.videoPreviewLayer.removeFromSuperlayer()
-    }
     
     @objc func avCaptureInputPortFormatDescriptionDidChangeNotification(notification: NSNotification) {
-        captureMetadataOutput.rectOfInterest = videoPreviewLayer.metadataOutputRectConverted(fromLayerRect: rectOfInterest)
+        let roi = videoPreviewLayer.metadataOutputRectConverted(fromLayerRect: rectOfInterest)
+        captureMetadataOutput.rectOfInterest = roi
     }
     
     // MARK: Capture delegate
     func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
         
+        delegate?.resetScan()
         if metadataObjects.count == 0 {
             return
         }
@@ -126,10 +134,7 @@ class ScanVM: NSObject, AVCaptureMetadataOutputObjectsDelegate {
         let metadataObj = metadataObjects[0] as! AVMetadataMachineReadableCodeObject
         if metadataObj.type == AVMetadataObject.ObjectType.qr {
             if let address = metadataObj.stringValue {
-                captureSession.stopRunning()
-                videoPreviewLayer.removeFromSuperlayer()
-                scannerProvider.scannedString = address
-                code = address
+                resolveInputFromCamera(sourceString: address)
             }
         }
     }
@@ -143,19 +148,48 @@ class ScanVM: NSObject, AVCaptureMetadataOutputObjectsDelegate {
                 device.torchMode = torchOn ? .on : .off
                 device.unlockForConfiguration()
             } catch {
-                print("error")
+                Logger.error("\(error)")
             }
         }
     }
-    
+
     // MARK: Picker Preparing
     func getPhotos() {
+        let photoLibrary = PhotoLibrary()
         DispatchQueue.global().async {
-            self.photos = self.photoLibrary.getPhotos(10)
+            self.photos = photoLibrary.getPhotos(10)
                 self.croppedPhotos = self.photos.map({ (image) in
                     let sizeMin: CGFloat = min(image.size.width, image.size.height)
                     return image.cropTo(size: CGSize(width: sizeMin, height: sizeMin)).resizeTo(newSize: CGSize(width: 168, height: 168))
                 })
+        }
+    }
+}
+
+//MARK: - Private methods
+extension ScanVM {
+    
+    fileprivate func resolveInputFromCamera(sourceString: String) {
+        do {
+            let callback = try qrResolver.resolveQr(sourceString)
+            captureSession.stopRunning()
+            videoPreviewLayer.removeFromSuperlayer()
+            delegate?.codeFound()
+            callback(sourceString)
+        } catch {
+            delegate?.scanWrongSource(with: error.localizedDescription)
+        }
+    }
+    
+    fileprivate func resolveInputFromGallery(sourceString: String) {
+        
+        do {
+            let callback = try qrResolver.resolveQr(sourceString)
+            delegate?.codeFound()
+            callback(sourceString)
+            return
+        } catch {
+            delegate?.handleError(error: error.localizedDescription)
         }
     }
 }

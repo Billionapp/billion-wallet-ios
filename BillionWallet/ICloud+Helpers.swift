@@ -18,6 +18,25 @@ extension ICloud {
         case noAppVersion
         case incompatableBackup
         case restoringFromJsonError
+        
+        var errorDescription: String? {
+            switch self {
+            case .invalidObjectName:
+                return "Invalid object name"
+            case .invalidData:
+                return "Invalid data"
+            case .contentParsingError:
+                return "Content parsing error"
+            case .couldntSave:
+                return "Couldn't save"
+            case .noAppVersion:
+                return "No app version"
+            case .incompatableBackup:
+                return "Incompatable backup"
+            case .restoringFromJsonError:
+                return "Error restoring from json"
+            }
+        }
     }
     
     struct BackupDestination {
@@ -27,52 +46,54 @@ extension ICloud {
     
     // MARK: - Restore Config
     
-    func restoreConfig(walletProvider: WalletProvider?, defaults: Defaults?, currentWalletDigest: String) {
+    func restoreConfig(walletProvider: WalletProvider, defaults: Defaults, currentWalletDigest: String) {
         
         let configs = restoreObjectsFromBackup(ICloudConfig.self)
 
         guard let icloudConfig = configs.first, icloudConfig.walletDigest == currentWalletDigest else {
-            let newIcloudConfig = ICloudConfig(walletDigest: currentWalletDigest, userName: "User", currencies: [CurrencyFactory.defaultCurrency], feeSize: FeeSize.normal, version: Bundle.appVersion)
+            let newIcloudConfig = ICloudConfig(walletDigest: currentWalletDigest,
+                                               userName: "User",
+                                               currencies: [CurrencyFactory.defaultCurrency],
+                                               feeSize: FeeSize.custom,
+                                               version: Bundle.appVersion)
             try? backup(object: newIcloudConfig)
-            walletProvider?.manager.localCurrencyCode = CurrencyFactory.defaultCurrency.code
             return
         }
         
-        defaults?.commission = icloudConfig.feeSize
-        defaults?.currencies = icloudConfig.currencies
-        defaults?.userName = icloudConfig.userName
-        walletProvider?.manager.localCurrencyCode = icloudConfig.currencies.first?.code
+        defaults.currencies = icloudConfig.currencies
+        defaults.userName = icloudConfig.userName
     }
     
     // MARK: - Restore Contacts
     
-    func restoreContacts(contactsProvider: ContactsProvider?) {
+    func restoreContacts(contactsProvider: ContactsProvider) {
         DispatchQueue.global().async { [unowned self] in
             let addrContacts = self.restoreObjectsFromBackup(AddressContact.self) as [ContactProtocol]
             let pcContacts = self.restoreObjectsFromBackup(PaymentCodeContact.self) as [ContactProtocol]
             let friendContacts = self.restoreObjectsFromBackup(FriendContact.self) as [ContactProtocol]
                         
             for contact in [addrContacts, pcContacts, friendContacts].joined() {
-                try? contactsProvider?.save(contact)
+                contactsProvider.save(contact)
             }
             
             DispatchQueue.main.async {
-                NotificationCenter.default.post(name: Notification.Name.iCloudContactsDidFinishSyncronizationNotitfication, object: nil)
+                NotificationCenter.default.post(name: .iCloudContactsDidFinishSyncronizationNotitfication, object: nil)
             }
         }
     }
     
     // MARK: - Restore Comments
     
-    func restoreComments(walletProvider: WalletProvider?) {
+    func restoreComments(walletProvider: WalletProvider) {
+        guard let wallet = try? walletProvider.getWallet() else { return }
         let userNotes = restoreObjectsFromBackup(ICloudUserNote.self)
         for userNote in userNotes {
             let unHexed = userNote.txHash.unHexed
             let uint256S = UInt256S(bytes: unHexed)
             
-            if let transaction = walletProvider?.manager.wallet?.transaction(forHash: uint256S.uint256) {
-                let transactionNoteProvider = TransactionNotesProvider(tx: transaction)
-                transactionNoteProvider.setUserNote(with: userNote.userNote)
+            if wallet.transaction(forHash: uint256S.uint256) != nil {
+               let transactionNoteProvider = TransactionNotesProvider()
+                transactionNoteProvider.setUserNote(with: userNote.userNote, for: uint256S)
             }
         }
     }
@@ -89,8 +110,11 @@ extension ICloud {
         
         let string = String(data: jsonData, encoding: .utf8)
         
-        var url =  Object.onlyLocal ? ICloud.DocumentsDirectory.localDocumentsURL : getDocumentDiretoryURL()
-        url.appendPathComponent(Object.folderWithAccount)
+        var url = Object.onlyLocal ? ICloud.DocumentsDirectory.localDocumentsURL : getDocumentDiretoryURL()
+        url.appendPathComponent(accountFolder)
+        if let folder = Object.folder {
+            url.appendPathComponent(folder)
+        }
         url.appendPathComponent(object.destination + ".json")
         
         try? FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true, attributes: nil)
@@ -119,22 +143,24 @@ extension ICloud {
             }
         }
     }
-    
 }
 
 // MARK: - Private methods
 
 extension ICloud {
     
+    // TODO: Perform in background
     func restoreObjectsFromBackup<Object: ICloudBackupProtocol>(_ type: Object.Type) -> [Object] {
         
         var url =  type.onlyLocal ? ICloud.DocumentsDirectory.localDocumentsURL : getDocumentDiretoryURL()
-        url.appendPathComponent(type.folderWithAccount)
+        url.appendPathComponent(accountFolder)
+        if let folder = Object.folder {
+            url.appendPathComponent(folder)
+        }
         
         var restoredObjects = [Object]()
         
         do {
-            
             let directoryContents = try FileManager.default.contentsOfDirectory(at: url, includingPropertiesForKeys: nil, options: [])
                         
             for content in directoryContents {
@@ -153,19 +179,17 @@ extension ICloud {
                 restoredObjects.append(try Object(from: jsonDict, with: attachData))
             }
             
-        } catch {
-            print(error.localizedDescription)
+        } catch let error {
+            Logger.error(error.localizedDescription)
         }
         
         return restoredObjects
     }
     
     fileprivate func data(at url: URL) throws -> Data {
-        
         var newUrl: URL?
         coordinator.coordinate(readingItemAt: sourceUrl(from: url), options: [], error: nil) { restoredUrl in
             newUrl = restoredUrl
-//            try? FileManager.default.removeItem(at: restoredUrl)
         }
         
         guard let fileUrl = newUrl else {
@@ -177,11 +201,9 @@ extension ICloud {
     
     
     fileprivate func json(at url: URL) throws -> [String: Any] {
-        
         var newUrl: URL?
         coordinator.coordinate(readingItemAt: url, options: [], error: nil) { restoredUrl in
             newUrl = restoredUrl
-//            try? FileManager.default.removeItem(at: restoredUrl)
         }
         
         guard let fileUrl = newUrl, let jsonString = try? String(contentsOf: sourceUrl(from: fileUrl)), let data = jsonString.data(using: .utf8) else {
@@ -193,11 +215,9 @@ extension ICloud {
         }
         
         return jsonObject
-        
     }
     
     fileprivate func sourceUrl(from url: URL) -> URL {
-        
         if !url.absoluteString.contains(".icloud") {
             return url
         }

@@ -1,0 +1,87 @@
+
+/* Settings title */
+"Settings.General.screenTitle" = "Настройки";
+
+/* Exit the wallet button */
+"Settings.General.exitWallet" = "Выйти из кошелька";
+
+/* Currency button */
+"Settings.General.currency" = "Валюта";
+
+/* Touch ID and Passcode button */
+"Settings.General.security" = "Код доступа и Touch ID";
+
+/* Face ID and Passcode button */
+"Settings.General.security" = "Код доступа и Face ID";
+
+/* Show Recovery Phrase button */
+"Settings.General.recovery" = "Показать фразу восстановления";
+
+/* About Billion button */
+"Settings.General.about" = "О приложении";
+
+/* Lock Billion now button */
+"Settings.General.lock" = "Заблокировать Billion";
+
+/* Rescan wallet button */
+"Settings.General.rescan" = "Синхронизация с блокчейн";
+
+/* Back button use by user when he want to go to the back screen */
+"Settings.General.recoveryPhraseScreenBackButton" = "Назад";
+
+/* Recovery phrase title */
+"Settings.RestoreScreen.title" = "Фраза восстановления";
+
+/* Label talk that user need to save recovery phrase very well and don't show it to nobody */
+"Settings.RestoreScreen.alert" = "Фраза восстановления - это уникальная комбинация слов. Не имеет значения, сколько людей пользуются биткоином -  никогда не будет двух одинаковых фраз. \nЗапишите ее и храните в надежном месте. Если Вы потеряете доступ к этому устройству, фраза восстановления будет единственным способом восстановления доступа к Вашим средствам. Если кто-то ее узнает, он получит доступ к Вашему кошельку.";
+
+/* Touch ID and Passcode title */
+"Settings.Passcode.title" = "Код доступа и Touch ID";
+
+/* Face ID and Passcode title */
+"Settings.Passcode.titleTen" = "Код доступа и Face ID";
+
+/* Set up Touch ID as authentication method or change your passcode title */
+"Settings.Passcode.subtitle" = "Выбрать Touch ID для разблокировки или изменить код";
+
+/* Set up Face ID as authentication method or change your passcode title */
+"Settings.Passcode.subtitleTen" = "Выбрать Face ID для разблокировки или изменить код";
+
+/* switch named Enable Touch ID */
+"Settings.Passcode.touchIdSwitch" = "Использовать Touch ID";
+
+/* switch named Enable Face ID */
+"Settings.Passcode.faceIdSwitch" = "Использовать Face ID";
+
+/* Change Passcode button */
+"Settings.Passcode.passwordChange" = "Изменить код";
+
+/* Back button */
+"Settings.Passcode.backButton" = "Назад";
+
+/* assword successfully changed alert */
+"Settings.Passcode.passwordChanged" = "Код успешно изменен";
+
+/* Currency title */
+"Settings.CurrencyScreen.title" = "Валюта";
+
+/* Select a currency in which you would like your balance to be displayed */
+"Settings.CurrencyScreen.subtitle" = "Выберите валюту для отображения баланса.";
+
+/* Done button */
+"Settings.CurrencyScreen.okButton" = "Ок";
+
+/* Cancel */
+"Settings.CurrencyScreen.cancelButton" = "Отмена";
+
+/* About Billion */
+"Settings.AboutSrceen.title" = "О приложении";
+
+/* Link to our twitter account */
+"Settings.AboutSrceen.twitter" = "Подпишись в Twitter";
+
+/* Wallet creation time. Seed is a master */
+"Settings.AboutSrceen.seedCreationTime" = "Время создания кошелька:";
+
+/* build number */
+"Settings.AboutSrceen.about" = "%@ (%@), %@";

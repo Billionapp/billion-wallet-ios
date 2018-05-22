@@ -1,0 +1,48 @@
+
+/* Scan title */
+"Scan.title" = "Сканировать";
+
+/* Extract QR code from picture button title */
+"Scan.extractButton" = "Извлечь QR-код \nиз картинки";
+
+/* label shown that image which user scaned */
+"Scan.Notice.incorrectPC" = "Это не Billion код";
+
+/* Scan the QR title */
+"Scan.directionHint" = "Сканировать QR-код";
+
+/* Label shown that user need to allow access to to camera in Settings */
+"Scan.Notice.cameraAccessError" = "Приложение не имеет доступа к камере. Разрешите доступ к камере в Настройках.";
+
+/* Label shown that user need to allow access to to photo library in Settings */
+"Scan.Notice.photoLibrary" = "Приложение не имеет доступа к галерее. Разрешите доступ к фото в Настройках.";
+
+/* Label mean that user scaned his own Billion code */
+"Scan.Notice.selfPC" = "Это Ваш собственный Billion-код";
+
+/* Invalid QR code title */
+"Scan.Notice.invalidQr" = "Недействительный QR-код";
+
+/* This is your own address title */
+"Scan.Notice.selfAddress" = "Это Ваш собственный адрес";
+
+/* Open iOS Gallery app to select photo */
+"Scan.galeryButton" = "Открыть галерею";
+
+/* Cancel button title */
+"Scan.cancelButton" = "Отмена";
+
+/* Label shown that app need some permission in setting of device */
+"Scan.Notice.permissionRequired" = "Необходим доступ";
+
+/* Settings */
+"Scan.Notice.openSettings" = "Настройки";
+
+/* Cancel */
+"Scan.Notice.cancel" = "Отмена";
+
+/* Extract QR-code title */
+"Scan.title.extractQR" = "Извлечь QR-код";
+
+/* Select an image with QR-code title */
+"Scan.subtitle.selectImageWithQR" = "Выберите изображение, содержащее QR-код";

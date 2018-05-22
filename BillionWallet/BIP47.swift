@@ -33,12 +33,12 @@ struct BIP47 {
     ///   - secretPoint: secret point S = bA = aB = abG
     ///   - outpoint: notification transaction outpoint, existent or planning
     /// - Returns: 512 bit of blinding factor in form of XPriv
-    static func blindingFactor(_ secretPoint: Pub, outpoint: TXOutpointS) -> XPriv {
+    static func blindingFactor(_ secretPoint: Pub, outpoint: TXOutpointS) throws -> XPriv {
         let x = xFromPub(secretPoint)
         let xData = x.data
         let oData = outpoint.data
-        let hmac = try! HMAC(key: oData.bytes, variant: .sha512).authenticate(xData.bytes)
-        return XPriv(hmac)
+        let hmac = try HMAC(key: oData.bytes, variant: .sha512).authenticate(xData.bytes)
+        return try XPriv(hmac)
     }
     
     /// Calculates secret point S = aB = Ab

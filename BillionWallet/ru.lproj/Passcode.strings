@@ -1,0 +1,33 @@
+
+/* Create Passcode title */
+"PasscodeScreen.createPasscode" = "Установить код";
+
+/* Change Passcode title */
+"PasscodeScreen.changePasscode" = "Сменить код";
+
+/* Label shown that the wallet is locked */
+"PasscodeScreen.accountLocked" = "Кошелек заблокирован";
+
+/* Enter Passcode title */
+"PasscodeScreen.enterPasswordFirstPrompt" = "Ввести код";
+
+/* Repeat Passcode title */
+"PasscodeScreen.enterPasswordSecondPrompt" = "Повторить ввод";
+
+/* Enter current Passcode title */
+"PasscodeScreen.updateOldPasswordFirstPrompt" = "Ввести действующий код";
+
+/* Enter new Passcode title */
+"PasscodeScreen.updateOldPasswordSecondPrompt" = "Ввести новый код";
+
+/* Repeat new Passcode title */
+"PasscodeScreen.updateOldPasswordThirdPrompt" = "Повторить ввод";
+
+/* Enter Passcode title */
+"PasscodeScreen.enterPasscode" = "Ввести код";
+
+/* Delete last character */
+"PasscodeScreen.delete" = "Удалить";
+
+/* Cancel passcode entering */
+"PasscodeScreen.cancel" = "Отмена";

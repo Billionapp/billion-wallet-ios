@@ -1,0 +1,12 @@
+
+/* Label shown that after searching app can't find contact */
+"SearchContact.Notice.notFound" = "Контакт не найден";
+
+/* Search failed title */
+"SearchContact.Notice.failed" = "Поиск не дал результатов";
+
+/* Add contact title */
+"SearchContact.titleAddContact" = "Добавить контакт";
+
+/* Searching Billion users nearby title */
+"SearchContact.subtitleSearchMode" = "Поиск пользователей Billion поблизости";

@@ -15,12 +15,36 @@ class AccountManager {
     private let curve = Curve25519()
     private var authIDXPriv: String?
     var timestamp: Int?
-    
-    var currentWalletDigest: String? {
-        return BRWalletManager.sharedInstance()?.getKeychainWalletDigest(forAccount: currentAccountNumber)
-    }
 	
+    
+    private var _currentPCObj: PaymentCode?
+    private var _notificationAddress: String?
+    var notificationAddress: String? {
+        if let notfiAddr = self._notificationAddress {
+            return notfiAddr
+        }
+        
+        if let pcObj = currentPCObj {
+            self._notificationAddress = pcObj.notificationAddress
+            return self._notificationAddress
+        }
+        
+        return nil
+    }
+    var currentPCObj: PaymentCode? {
+        if let pcObj = _currentPCObj {
+            return pcObj
+        }
+        
+        let pcString = getSelfPCString()
+        guard let pc = try? PaymentCode(with: pcString) else {
+            return nil
+        }
+        _currentPCObj = pc
+        return pc
+    }
 	var currentUdid: String? {
+        
 		guard let udid = BRWalletManager.getKeyChainUdid(forAccountNumber: currentAccountNumber) else {
             return nil
         }
@@ -28,29 +52,25 @@ class AccountManager {
         return udid
     }
     
-    var currentSecret: Data {
-        guard let secret = BRWalletManager.getKeyChainSecretDH(forAccount: currentAccountNumber) else {
-            let newSecret = Crypto.Random.data(32)
-            BRWalletManager.setKeyChainSecretDHForAccount(currentAccountNumber, secret: newSecret)
-            return newSecret
-        }
-        
-        return secret
+    func generateNewSecret() -> Data {
+        let newSecret = Crypto.Random.data(32)
+        return newSecret
     }
     
     var sharedPubKey: Data? {
         return BRWalletManager.getKeyChainSharedPubDH(forAccount: currentAccountNumber)
     }
     
-    func createNewWalletDigest() -> String? {
+    func getOrCreateWalletDigest() -> String? {
+        // TODO: Remove static calls
         if let walDig = BRWalletManager.sharedInstance()?.getKeychainWalletDigest(forAccount: currentAccountNumber) {
             return walDig
         }
         
         var data = Data()
-        guard let seedPhrase = BRWalletManager.getMnemonicKeychainString() else {return nil}
-        guard let seed = BRBIP39Mnemonic().deriveKey(fromPhrase: seedPhrase, withPassphrase: nil) else {return nil}
-        guard let authIdXPriv = BIP44Sequence.deriveMnemonicAuthIdXPrivateKey(forAccountNumber: currentAccountNumber, fromSeed: seed) else {return nil}
+        guard let seedPhrase = BRWalletManager.getMnemonicKeychainString() else { return nil }
+        guard let seed = BRBIP39Mnemonic().deriveKey(fromPhrase: seedPhrase, withPassphrase: nil) else { return nil }
+        guard let authIdXPriv = BIP44Sequence.deriveMnemonicAuthIdXPrivateKey(forAccountNumber: currentAccountNumber, fromSeed: seed) else { return nil }
 
         BRWalletManager.sharedInstance()?.setKeychainAuthIDXPrivForAccount(currentAccountNumber, andAuthIdXPriv: authIdXPriv)
         data = BRWalletManager.getKeychainAuthIdXPriv(forAccount: currentAccountNumber)!
@@ -68,8 +88,8 @@ class AccountManager {
             return authId
         }
         
-        guard let seedPhrase = BRWalletManager.getMnemonicKeychainString() else {return nil}
-        guard let seed = BRBIP39Mnemonic().deriveKey(fromPhrase: seedPhrase, withPassphrase: nil) else {return nil}
+        guard let seedPhrase = BRWalletManager.getMnemonicKeychainString() else { return nil }
+        guard let seed = BRBIP39Mnemonic().deriveKey(fromPhrase: seedPhrase, withPassphrase: nil) else { return nil }
         let authIdPub = BIP44Sequence.deriveMnemonicAuthIDPubKey(forAccount: currentAccountNumber, fromSeed: seed)
         BRWalletManager.sharedInstance()?.setKeychainAuthIDXPubForAccount(currentAccountNumber, andAuthIdPub: authIdPub)
         return authIdPub
@@ -110,8 +130,11 @@ class AccountManager {
         BRWalletManager.clearKeyChain(withKey: ACCOUNT_ROOT_PUB_KEY)
         BRWalletManager.setKeychainDictionary(nil, andKey: MNEMONIC_AUTH_ID_PUB)
         BRWalletManager.setKeychainDictionary(nil, andKey: MNEMONIC_AUTH_ID_XPRIV)
+        
+        self._currentPCObj = nil
+        self._notificationAddress = nil
     }
-    
+
     func deleteWallet() {
         guard let seed = BRWalletManager.sharedInstance()?.seedPhrase else {
             return
@@ -128,9 +151,9 @@ class AccountManager {
         if let authID = BRWalletManager.getKeychainAuthIdXPriv(forAccount: currentAccountNumber) {
             return authID
         } else {
-            guard let seedPhrase = BRWalletManager.getMnemonicKeychainString() else {return nil}
-            guard let seed = BRBIP39Mnemonic().deriveKey(fromPhrase: seedPhrase, withPassphrase: nil) else {return nil}
-            guard let authIdXPriv = BIP44Sequence.deriveMnemonicAuthIDPubKey(forAccount: currentAccountNumber, fromSeed: seed) else {return nil}
+            guard let seedPhrase = BRWalletManager.getMnemonicKeychainString() else { return nil }
+            guard let seed = BRBIP39Mnemonic().deriveKey(fromPhrase: seedPhrase, withPassphrase: nil) else { return nil }
+            guard let authIdXPriv = BIP44Sequence.deriveMnemonicAuthIDPubKey(forAccount: currentAccountNumber, fromSeed: seed) else { return nil }
             
             BRWalletManager.sharedInstance()?.setKeychainAuthIDXPrivForAccount(currentAccountNumber, andAuthIdXPriv: authIdXPriv)
             return BRWalletManager.getKeychainAuthIdXPriv(forAccount: currentAccountNumber)!
@@ -143,6 +166,8 @@ class AccountManager {
     
     func saveSelfPCPriv(paymentCodePriv: Data) {
         BRWalletManager.setKeyChainPaymentCodePrivForAccount(currentAccountNumber, andPaymentCodePriv: paymentCodePriv)
+        let keychain = Keychain()
+        keychain.selfPCPriv = paymentCodePriv
     }
     
     func saveNotificationIdVer1(notificationId: String) {
@@ -155,6 +180,10 @@ class AccountManager {
     
     func getSelfCPPriv() -> Data {
         return BRWalletManager.getKeychainPaymentCodePriv(forAccount: currentAccountNumber)
+    }
+    
+    func getSelfPCString() -> String {
+        return BRWalletManager.getKeychainPaymentCode(forAccount: currentAccountNumber)
     }
 }
 
@@ -169,7 +198,7 @@ extension AccountManager {
         let secretUInt = UInt256S(data: mnemonicAuthIdPriv)
         guard let key = BRKey.init(secret: secretUInt.uint256, compressed: true) else { return nil }
         
-        guard let data = message.data(using: .utf8)?.sha256().sha256() else {return nil}
+        guard let data = message.data(using: .utf8)?.sha256().sha256() else { return nil }
         let uint = UInt256S(data: data)
         guard let s = key.sign(uint.uint256) else {return nil}
         return  s

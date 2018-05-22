@@ -1,0 +1,42 @@
+
+/* Receive button */
+"General.receive" = "Получить";
+
+/* Send button */
+"General.send" = "Отправить";
+
+/* Add Contact button title */
+"General.addContact" = "Добавить контакт";
+
+/* unspecified error, to be depricated or specified */
+"TxStatus.pending" = "Ожидает";
+
+/* unspecified error, to be depricated or specified */
+"TxStatus.invalid" = "Ошибка";
+
+/* transaction is in Bitcoin network mempool */
+"TxStatus.unverified" = "ожидает подтверждения";
+
+/* number of transaction confirmations */
+"TxStatus.numberOfConfirmationsPlural" = "%ld подтверждений";
+
+/* number of transaction confirmations */
+"TxStatus.confirmationsSingle" = "%ld подтверждение";
+
+/* transaction has been confirmed by Bitcoin network */
+"TxStatus.sent" = "Отправка";
+
+/* transaction has been confirmed by Bitcoin network */
+"TxStatus.received" = "Получение";
+
+/* concatenated with 'Unlock' string when Touch ID is disabled */
+"AppLockType.pinLocked" = "с помощью кода";
+
+/* concatenated with 'Unlock' string when Touch ID is enabled */
+"AppLockType.touchIdLocked" = "с помощью Touch ID";
+
+/* concatenated with 'Unlock' string when Face ID is enabled */
+"AppLockType.faceIdLocked" = "с помощью Face ID";
+
+/* Notice is shown while device is not connected to Internet */
+"General.Notice.noInternetConnection" = "Ваше устройстов не подключено к сети Интернет. Проверьте соединение и откройте Billion заново.";

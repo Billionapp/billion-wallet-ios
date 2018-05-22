@@ -1,0 +1,6 @@
+
+/* Label mean that you can delete contact you choose */
+"ContactCard.deleteLabel" = "刪除聯絡人 %@？";
+
+/* Label shown alies or name */
+"ContactCard.namePlaceholder" = "你的名字";

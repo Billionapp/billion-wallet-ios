@@ -8,13 +8,22 @@
 
 import UIKit
 
-struct SettingsAboutRouter: Router {
+class SettingsAboutRouter: Router {
     
-    let mainRouter: MainRouter
+    private let mainRouter: MainRouter
+    private let back: UIImage?
+    private let walletManager: BWalletManager
+    
+    init(mainRouter: MainRouter, backImage: UIImage?, walletManager: BWalletManager) {
+        self.mainRouter = mainRouter
+        self.back = backImage
+        self.walletManager = walletManager
+    }
     
     func run() {
-        let viewModel = SettingsAboutVM()
+        let viewModel = SettingsAboutVM(walletManager: walletManager)
         let viewController = SettingsAboutViewController(viewModel: viewModel)
+        viewController.backImage = back
         mainRouter.navigationController.push(viewController: viewController)
     }
 

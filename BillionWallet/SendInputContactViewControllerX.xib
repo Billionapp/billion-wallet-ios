@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina5_9" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="SendInputContactViewController" customModule="BillionWallet">
+            <connections>
+                <outlet property="amountBackgroundView" destination="mhu-dG-qb8" id="uQI-pw-u4N"/>
+                <outlet property="amountLeftConstraint" destination="le5-AA-Exa" id="DFU-T2-CP4"/>
+                <outlet property="amountPrefix" destination="RH7-Su-aZ3" id="y94-7B-4Ah"/>
+                <outlet property="amountTextField" destination="Ngr-Me-nFh" id="HAM-xZ-9Uv"/>
+                <outlet property="amountView" destination="DYx-X6-u4l" id="A2j-YM-I6u"/>
+                <outlet property="amountViewLabel" destination="5HP-9l-3X3" id="OlM-Wb-Xgg"/>
+                <outlet property="balanceViewContainer" destination="qLF-JN-iX0" id="O89-h8-WyI"/>
+                <outlet property="clearAmountButton" destination="l72-3b-ede" id="R2R-zW-IGF"/>
+                <outlet property="contactNotLoadedIndicator" destination="ygp-jo-fTM" id="sjT-wI-t8A"/>
+                <outlet property="keyboardheight" destination="dax-x1-Xe7" id="h7k-4k-uJw"/>
+                <outlet property="nextButton" destination="pn9-uA-J3W" id="LEC-Y0-8jz"/>
+                <outlet property="receiverImageView" destination="ko9-k7-DKV" id="axc-U3-NTF"/>
+                <outlet property="sendFromFieldButton" destination="vds-00-EgY" id="4Q5-Vv-nFe"/>
+                <outlet property="view" destination="Fhq-8f-1Tl" id="kAm-QP-kce"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="Fhq-8f-1Tl">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="15B-sQ-Tfi" customClass="KeyboardGradientView" customModule="BillionWallet" customModuleProvider="target">
+                    <rect key="frame" x="0.0" y="402" width="375" height="119"/>
+                    <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                    <userDefinedRuntimeAttributes>
+                        <userDefinedRuntimeAttribute type="color" keyPath="startColor">
+                            <color key="value" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        </userDefinedRuntimeAttribute>
+                        <userDefinedRuntimeAttribute type="color" keyPath="endColor">
+                            <color key="value" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        </userDefinedRuntimeAttribute>
+                    </userDefinedRuntimeAttributes>
+                </view>
+                <view opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="qLF-JN-iX0">
+                    <rect key="frame" x="87" y="402" width="201" height="59"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="201" id="C5t-Sh-XnH"/>
+                        <constraint firstAttribute="height" constant="59" id="tbs-pD-Fis"/>
+                    </constraints>
+                </view>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mhu-dG-qb8">
+                    <rect key="frame" x="68" y="475" width="291" height="36"/>
+                    <subviews>
+                        <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" placeholder="Amount request" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="Ngr-Me-nFh">
+                            <rect key="frame" x="0.0" y="0.0" width="256" height="36"/>
+                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <color key="tintColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                            <constraints>
+                                <constraint firstAttribute="height" constant="36" id="B70-Vm-ahr"/>
+                            </constraints>
+                            <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                            <textInputTraits key="textInputTraits" keyboardType="decimalPad" keyboardAppearance="alert" returnKeyType="send"/>
+                        </textField>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text=" $ " textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="RH7-Su-aZ3">
+                            <rect key="frame" x="2" y="4" width="38" height="28"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                            <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                        <view hidden="YES" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="DYx-X6-u4l">
+                            <rect key="frame" x="4" y="4" width="53.5" height="28"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <subviews>
+                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="$0" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5HP-9l-3X3">
+                                    <rect key="frame" x="6" y="4" width="22" height="21"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                    <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                    <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    <nil key="highlightedColor"/>
+                                </label>
+                                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="l72-3b-ede">
+                                    <rect key="frame" x="32" y="6" width="16" height="16"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
+                                    <state key="normal" image="CloseSmall"/>
+                                    <connections>
+                                        <action selector="clearAmountAction" destination="-1" eventType="touchUpInside" id="nye-Jg-QQI"/>
+                                    </connections>
+                                </button>
+                            </subviews>
+                            <color key="backgroundColor" red="0.4549019608" green="0.4823529412" blue="0.5450980392" alpha="0.50376870600000001" colorSpace="custom" customColorSpace="displayP3"/>
+                        </view>
+                        <view hidden="YES" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="vds-00-EgY" customClass="TouchButtonView" customModule="BillionWallet" customModuleProvider="target">
+                            <rect key="frame" x="259" y="4" width="28" height="28"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <subviews>
+                                <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="Send" translatesAutoresizingMaskIntoConstraints="NO" id="4Fj-tG-09A">
+                                    <rect key="frame" x="0.0" y="0.0" width="28" height="28"/>
+                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                </imageView>
+                            </subviews>
+                        </view>
+                    </subviews>
+                    <constraints>
+                        <constraint firstItem="Ngr-Me-nFh" firstAttribute="top" secondItem="mhu-dG-qb8" secondAttribute="top" id="d1v-xw-jmJ"/>
+                        <constraint firstAttribute="bottom" secondItem="Ngr-Me-nFh" secondAttribute="bottom" id="dxw-Xa-69l"/>
+                        <constraint firstItem="Ngr-Me-nFh" firstAttribute="leading" secondItem="mhu-dG-qb8" secondAttribute="leading" id="le5-AA-Exa"/>
+                        <constraint firstAttribute="height" constant="36" id="vpQ-Eb-uON"/>
+                        <constraint firstAttribute="trailing" secondItem="Ngr-Me-nFh" secondAttribute="trailing" constant="35" id="zdM-Oa-S4M"/>
+                    </constraints>
+                </view>
+                <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pn9-uA-J3W">
+                    <rect key="frame" x="318" y="471" width="44" height="44"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                    <state key="normal" image="Next"/>
+                    <connections>
+                        <action selector="nextAction" destination="-1" eventType="touchUpInside" id="xlh-Sv-N34"/>
+                    </connections>
+                </button>
+                <imageView contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="ko9-k7-DKV" customClass="UserAvatarSmallImageView" customModule="BillionWallet" customModuleProvider="target">
+                    <rect key="frame" x="16" y="473" width="40" height="40"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="40" id="JtJ-mD-gGc"/>
+                        <constraint firstAttribute="height" constant="40" id="YmV-lY-97Y"/>
+                    </constraints>
+                    <userDefinedRuntimeAttributes>
+                        <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                            <integer key="value" value="20"/>
+                        </userDefinedRuntimeAttribute>
+                    </userDefinedRuntimeAttributes>
+                </imageView>
+                <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" fixedFrame="YES" style="white" translatesAutoresizingMaskIntoConstraints="NO" id="ygp-jo-fTM">
+                    <rect key="frame" x="26" y="483" width="20" height="20"/>
+                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                </activityIndicatorView>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Qg1-8o-e6F">
+                    <rect key="frame" x="0.0" y="521" width="375" height="291"/>
+                    <color key="backgroundColor" cocoaTouchSystemColor="darkTextColor"/>
+                </view>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
+            <constraints>
+                <constraint firstItem="qLF-JN-iX0" firstAttribute="centerX" secondItem="Ral-Di-2Tr" secondAttribute="centerX" id="2gX-do-T0Y"/>
+                <constraint firstItem="Qg1-8o-e6F" firstAttribute="top" secondItem="15B-sQ-Tfi" secondAttribute="bottom" id="EVw-l1-X68"/>
+                <constraint firstItem="ko9-k7-DKV" firstAttribute="top" secondItem="qLF-JN-iX0" secondAttribute="bottom" constant="12" id="FTH-SE-reG"/>
+                <constraint firstItem="Ral-Di-2Tr" firstAttribute="trailing" secondItem="mhu-dG-qb8" secondAttribute="trailing" constant="16" id="Lwx-Kl-qzW"/>
+                <constraint firstAttribute="trailing" secondItem="Qg1-8o-e6F" secondAttribute="trailing" id="LxN-yq-9Nx"/>
+                <constraint firstItem="Qg1-8o-e6F" firstAttribute="leading" secondItem="Fhq-8f-1Tl" secondAttribute="leading" id="MsG-jm-NP6"/>
+                <constraint firstItem="ko9-k7-DKV" firstAttribute="leading" secondItem="Fhq-8f-1Tl" secondAttribute="leading" constant="16" id="Pp4-FD-VKs"/>
+                <constraint firstItem="15B-sQ-Tfi" firstAttribute="leading" secondItem="Fhq-8f-1Tl" secondAttribute="leading" id="Pv4-4E-Myq"/>
+                <constraint firstAttribute="trailing" secondItem="15B-sQ-Tfi" secondAttribute="trailing" id="Qay-TZ-p7l"/>
+                <constraint firstItem="mhu-dG-qb8" firstAttribute="bottom" secondItem="ko9-k7-DKV" secondAttribute="bottom" constant="-2" id="Wzf-ib-c6W"/>
+                <constraint firstItem="Qg1-8o-e6F" firstAttribute="top" secondItem="Ngr-Me-nFh" secondAttribute="bottom" constant="10" id="XSy-N5-9wW"/>
+                <constraint firstItem="qLF-JN-iX0" firstAttribute="top" secondItem="15B-sQ-Tfi" secondAttribute="top" id="d8O-pA-71w"/>
+                <constraint firstAttribute="bottom" secondItem="mhu-dG-qb8" secondAttribute="bottom" constant="301" id="dax-x1-Xe7"/>
+                <constraint firstAttribute="bottom" secondItem="Qg1-8o-e6F" secondAttribute="bottom" id="lfo-ce-UBU"/>
+                <constraint firstItem="mhu-dG-qb8" firstAttribute="leading" secondItem="ko9-k7-DKV" secondAttribute="trailing" constant="12" id="nCs-c6-foq"/>
+            </constraints>
+            <nil key="simulatedStatusBarMetrics"/>
+            <nil key="simulatedTopBarMetrics"/>
+            <nil key="simulatedBottomBarMetrics"/>
+            <viewLayoutGuide key="safeArea" id="Ral-Di-2Tr"/>
+            <point key="canvasLocation" x="33.5" y="54"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="CloseSmall" width="16" height="16"/>
+        <image name="Next" width="28" height="28"/>
+        <image name="Send" width="28" height="28"/>
+    </resources>
+</document>

@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13527"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="BillionKeyboardView" customModule="BillionWallet" customModuleProvider="target">
+            <connections>
+                <outlet property="commaLabel" destination="yAV-JL-M6W" id="9o4-PW-Xp8"/>
+                <outlet property="currencySymbolButton" destination="30G-UF-idj" id="qCm-SH-fTN"/>
+                <outlet property="deleteButton" destination="iIw-bC-twu" id="mx6-ii-L4i"/>
+                <outlet property="view" destination="ztN-xn-WdJ" id="RUz-5A-ihw"/>
+                <outlet property="zeroButton" destination="JCu-qK-R6m" id="ke2-xK-Efi"/>
+                <outlet property="zeroDigitLabel" destination="Ah6-WF-9Gb" id="pfR-Dn-ZnW"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view alpha="0.89999997615814209" contentMode="scaleToFill" id="ztN-xn-WdJ">
+            <rect key="frame" x="0.0" y="0.0" width="414" height="291"/>
+            <autoresizingMask key="autoresizingMask" flexibleMinY="YES"/>
+            <subviews>
+                <view alpha="0.10000000149011612" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="mZ5-jd-bjo">
+                    <rect key="frame" x="0.0" y="0.0" width="414" height="291"/>
+                    <color key="backgroundColor" white="0.0" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                </view>
+                <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="7" translatesAutoresizingMaskIntoConstraints="NO" id="3Th-iC-S6s">
+                    <rect key="frame" x="6" y="6" width="402" height="242"/>
+                    <subviews>
+                        <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="PlE-de-a7Y">
+                            <rect key="frame" x="0.0" y="0.0" width="402" height="55.5"/>
+                            <subviews>
+                                <button opaque="NO" tag="1" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="nlO-QI-qbL" customClass="NumberKeyButton" customModule="BillionWallet" customModuleProvider="target">
+                                    <rect key="frame" x="0.0" y="0.0" width="130" height="55.5"/>
+                                    <color key="backgroundColor" red="0.84708750249999998" green="0.8470692635" blue="0.84707283970000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                    <state key="normal" title="1"/>
+                                    <connections>
+                                        <action selector="numberTapped:" destination="-1" eventType="touchUpInside" id="Xz5-w4-sZ7"/>
+                                    </connections>
+                                </button>
+                                <button opaque="NO" tag="2" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="yzF-be-4QO" customClass="NumberKeyButton" customModule="BillionWallet" customModuleProvider="target">
+                                    <rect key="frame" x="136" y="0.0" width="130" height="55.5"/>
+                                    <color key="backgroundColor" red="0.84708750249999998" green="0.8470692635" blue="0.84707283970000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                    <state key="normal" title="2"/>
+                                    <connections>
+                                        <action selector="numberTapped:" destination="-1" eventType="touchUpInside" id="xBh-5u-dRH"/>
+                                    </connections>
+                                </button>
+                                <button opaque="NO" tag="3" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zJj-bJ-zQA" customClass="NumberKeyButton" customModule="BillionWallet" customModuleProvider="target">
+                                    <rect key="frame" x="272" y="0.0" width="130" height="55.5"/>
+                                    <color key="backgroundColor" red="0.35303303600000002" green="0.35302475090000002" blue="0.35302636030000001" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                    <fontDescription key="fontDescription" name=".SFNSText" family=".SF NS Text" pointSize="28"/>
+                                    <state key="normal" title="3">
+                                        <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                    </state>
+                                    <connections>
+                                        <action selector="numberTapped:" destination="-1" eventType="touchUpInside" id="OHk-1r-di8"/>
+                                    </connections>
+                                </button>
+                            </subviews>
+                        </stackView>
+                        <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="R7Q-YW-pZb">
+                            <rect key="frame" x="0.0" y="62.5" width="402" height="55"/>
+                            <subviews>
+                                <button opaque="NO" tag="4" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Ogd-ts-4iM" customClass="NumberKeyButton" customModule="BillionWallet" customModuleProvider="target">
+                                    <rect key="frame" x="0.0" y="0.0" width="130" height="55"/>
+                                    <color key="backgroundColor" red="0.84708750249999998" green="0.8470692635" blue="0.84707283970000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                    <state key="normal" title="4"/>
+                                    <connections>
+                                        <action selector="numberTapped:" destination="-1" eventType="touchUpInside" id="c8o-Zq-h9p"/>
+                                    </connections>
+                                </button>
+                                <button opaque="NO" tag="5" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="XpJ-zu-ryE" customClass="NumberKeyButton" customModule="BillionWallet" customModuleProvider="target">
+                                    <rect key="frame" x="136" y="0.0" width="130" height="55"/>
+                                    <color key="backgroundColor" red="0.84708750249999998" green="0.8470692635" blue="0.84707283970000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                    <state key="normal" title="5"/>
+                                    <connections>
+                                        <action selector="numberTapped:" destination="-1" eventType="touchUpInside" id="tUV-xM-Lvo"/>
+                                    </connections>
+                                </button>
+                                <button opaque="NO" tag="6" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Lag-tT-StX" customClass="NumberKeyButton" customModule="BillionWallet" customModuleProvider="target">
+                                    <rect key="frame" x="272" y="0.0" width="130" height="55"/>
+                                    <color key="backgroundColor" red="0.84708750249999998" green="0.8470692635" blue="0.84707283970000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                    <state key="normal" title="6"/>
+                                    <connections>
+                                        <action selector="numberTapped:" destination="-1" eventType="touchUpInside" id="u0d-8e-Pas"/>
+                                    </connections>
+                                </button>
+                            </subviews>
+                        </stackView>
+                        <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="s2E-kZ-qfI">
+                            <rect key="frame" x="0.0" y="124.5" width="402" height="55.5"/>
+                            <subviews>
+                                <button opaque="NO" tag="7" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="gBO-6s-ORh" customClass="NumberKeyButton" customModule="BillionWallet" customModuleProvider="target">
+                                    <rect key="frame" x="0.0" y="0.0" width="130" height="55.5"/>
+                                    <color key="backgroundColor" red="0.84708750249999998" green="0.8470692635" blue="0.84707283970000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                    <state key="normal" title="7"/>
+                                    <connections>
+                                        <action selector="numberTapped:" destination="-1" eventType="touchUpInside" id="kh5-wd-uoH"/>
+                                    </connections>
+                                </button>
+                                <button opaque="NO" tag="8" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="k3F-sO-Guf" customClass="NumberKeyButton" customModule="BillionWallet" customModuleProvider="target">
+                                    <rect key="frame" x="136" y="0.0" width="130" height="55.5"/>
+                                    <color key="backgroundColor" red="0.84708750249999998" green="0.8470692635" blue="0.84707283970000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                    <state key="normal" title="8"/>
+                                    <connections>
+                                        <action selector="numberTapped:" destination="-1" eventType="touchUpInside" id="lgD-uy-7EB"/>
+                                    </connections>
+                                </button>
+                                <button opaque="NO" tag="9" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Uhn-Oe-hzf" customClass="NumberKeyButton" customModule="BillionWallet" customModuleProvider="target">
+                                    <rect key="frame" x="272" y="0.0" width="130" height="55.5"/>
+                                    <color key="backgroundColor" red="0.84708750249999998" green="0.8470692635" blue="0.84707283970000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                    <state key="normal" title="9"/>
+                                    <connections>
+                                        <action selector="numberTapped:" destination="-1" eventType="touchUpInside" id="0TM-e8-hrz"/>
+                                    </connections>
+                                </button>
+                            </subviews>
+                        </stackView>
+                        <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="eTI-Tw-U6I">
+                            <rect key="frame" x="0.0" y="187" width="402" height="55"/>
+                            <subviews>
+                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="30G-UF-idj" customClass="ChangeCurrencyButton" customModule="BillionWallet" customModuleProvider="target">
+                                    <rect key="frame" x="0.0" y="0.0" width="130" height="55"/>
+                                    <connections>
+                                        <action selector="changeCurrencyTapped:" destination="-1" eventType="touchUpInside" id="iee-vm-aYa"/>
+                                    </connections>
+                                </button>
+                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JCu-qK-R6m" customClass="NumberKeyButton" customModule="BillionWallet" customModuleProvider="target">
+                                    <rect key="frame" x="136" y="0.0" width="130" height="55"/>
+                                    <color key="backgroundColor" red="0.84708750249999998" green="0.8470692635" blue="0.84707283970000002" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                                    <connections>
+                                        <action selector="numberTapped:" destination="-1" eventType="touchUpInside" id="rZM-pT-bay"/>
+                                    </connections>
+                                </button>
+                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="iIw-bC-twu">
+                                    <rect key="frame" x="272" y="0.0" width="130" height="55"/>
+                                    <state key="normal" image="Delete-1"/>
+                                    <connections>
+                                        <action selector="deleteTapped:" destination="-1" eventType="touchUpInside" id="fdV-ag-Qnh"/>
+                                    </connections>
+                                </button>
+                            </subviews>
+                        </stackView>
+                    </subviews>
+                </stackView>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="0" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Ah6-WF-9Gb">
+                    <rect key="frame" x="142" y="197" width="130" height="30"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="25"/>
+                    <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="," textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="yAV-JL-M6W">
+                    <rect key="frame" x="142" y="220.5" width="130" height="20.5"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                    <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    <nil key="highlightedColor"/>
+                </label>
+            </subviews>
+            <color key="backgroundColor" cocoaTouchSystemColor="darkTextColor"/>
+            <constraints>
+                <constraint firstItem="Ah6-WF-9Gb" firstAttribute="leading" secondItem="JCu-qK-R6m" secondAttribute="leading" id="Bec-Gi-YGj"/>
+                <constraint firstItem="Ah6-WF-9Gb" firstAttribute="trailing" secondItem="JCu-qK-R6m" secondAttribute="trailing" id="Byy-Nd-fIc"/>
+                <constraint firstItem="Ah6-WF-9Gb" firstAttribute="top" secondItem="JCu-qK-R6m" secondAttribute="top" constant="4" id="DBx-Sy-dsl"/>
+                <constraint firstItem="3Th-iC-S6s" firstAttribute="leading" secondItem="ztN-xn-WdJ" secondAttribute="leading" constant="6" id="Hf8-dL-tvC"/>
+                <constraint firstItem="mZ5-jd-bjo" firstAttribute="leading" secondItem="ztN-xn-WdJ" secondAttribute="leading" id="IgV-oc-OfD"/>
+                <constraint firstItem="yAV-JL-M6W" firstAttribute="trailing" secondItem="JCu-qK-R6m" secondAttribute="trailing" id="K4e-Os-KQe"/>
+                <constraint firstItem="mZ5-jd-bjo" firstAttribute="top" secondItem="ztN-xn-WdJ" secondAttribute="top" id="O1e-2X-iY1"/>
+                <constraint firstAttribute="trailing" secondItem="3Th-iC-S6s" secondAttribute="trailing" constant="6" id="bTy-lH-zxx"/>
+                <constraint firstItem="3Th-iC-S6s" firstAttribute="top" secondItem="ztN-xn-WdJ" secondAttribute="top" constant="6" id="d3J-pE-7YU"/>
+                <constraint firstAttribute="trailing" secondItem="mZ5-jd-bjo" secondAttribute="trailing" id="elq-HO-snO"/>
+                <constraint firstItem="vJA-3a-PmP" firstAttribute="bottom" secondItem="mZ5-jd-bjo" secondAttribute="bottom" id="gMK-vP-bij"/>
+                <constraint firstItem="vJA-3a-PmP" firstAttribute="bottom" secondItem="3Th-iC-S6s" secondAttribute="bottom" constant="43" id="hlU-fq-YKn"/>
+                <constraint firstItem="yAV-JL-M6W" firstAttribute="bottom" secondItem="JCu-qK-R6m" secondAttribute="bottom" constant="-7" id="xzg-QE-xRX"/>
+                <constraint firstItem="yAV-JL-M6W" firstAttribute="leading" secondItem="JCu-qK-R6m" secondAttribute="leading" id="zx7-B0-we8"/>
+            </constraints>
+            <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+            <viewLayoutGuide key="safeArea" id="vJA-3a-PmP"/>
+            <point key="canvasLocation" x="-103" y="-635"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="Delete-1" width="28" height="20"/>
+    </resources>
+</document>

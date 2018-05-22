@@ -1,0 +1,24 @@
+
+/* Payment request title */
+"Receive.title" = "Запрос на получение";
+
+/* Title above your balance */
+"Receive.yourAddress" = "Ваш адрес";
+
+/* request which user want to amount */
+"Receive.amountRequest" = "Запрос суммы";
+
+/* Alert shown than one-time use's Bitcoin address has been copied to clipboard */
+"ReceiveScreen.Notice.addressCopied" = "Ваш одноразовый биткоин-адрес скопирован в буфер обмена";
+
+/* Payment request has been copied to clipboard alert */
+"ReceiveScreen.Notice.paymentRequestCopied" = "Запрос на получение скопирован в буфер обмена";
+
+/* copy address button */
+"Receive.copyAddress" = "Скопировать адрес";
+
+/* Copy payment request button */
+"Receive.copyRequest" = "Скопировать запрос ";
+
+/* Payment request sent successfully alert */
+"Receive.requestSent" = "Запрос на получение успешно отправлен";

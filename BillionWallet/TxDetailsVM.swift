@@ -10,55 +10,103 @@ import Foundation
 import UIKit
 
 protocol TxDetailsVMDelegate: class {
-    func addressTitleDidSet(title: String?)
-    func avatarDidSet(image: UIImage)
+    func transactionUpdated()
+    func didReceiveNote(note: String)
 }
 
 class TxDetailsVM {
     
-    let transaction: Transaction
+    typealias LocalizedStrings = Strings.TxDetails
+    
+    var direction: Transaction.Direction = .received
+    var txSubtitle: String = ""
+    var avatarImage: UIImage?
+    var recipientText: String = ""
+    var satoshiBalance: String = ""
     weak var delegate: TxDetailsVMDelegate?
-    weak var walletProvider: WalletProvider?
-    var address: String? {
-        didSet {
-            delegate?.addressTitleDidSet(title: address)
-        }
-    }
+    weak var walletProvider: BWalletManager!
+    weak var notesProvider: TransactionNotesProvider!
+    weak var urlHelper: UrlHelper!
     
-    init(transaction: Transaction, walletProvider: WalletProvider) {
-        self.transaction = transaction
+    init(displayer: TransactionDisplayer,
+         walletProvider: WalletProvider,
+         notesProvider: TransactionNotesProvider,
+         urlHelper: UrlHelper) {
+        
+        self.displayer = displayer
         self.walletProvider = walletProvider
+        self.notesProvider = notesProvider
+        self.urlHelper = urlHelper
+        
+        let txStatusNotify = Notification.Name(rawValue: "BRPeerManagerTxStatusNotification")
+        NotificationCenter.default.addObserver(self, selector: #selector(self.setupTransaction), name: txStatusNotify, object: nil)
     }
     
-    func setAddressTitleAndAvatar() {
-        if let contact = transaction.contact {
-            delegate?.addressTitleDidSet(title: contact.uniqueValue)
-            delegate?.avatarDidSet(image: contact.avatarImage)
-        } else {
-            // TODO: Refactor
-            if transaction.isReceived {
-                address = myAddress()
-            } else {
-                address = partnerAddress()
-            }
+    var displayer: TransactionDisplayer {
+        didSet {
+            setupTransaction()
         }
     }
     
-    func myAddress() -> String? {
-        let outputsAddresses = transaction.brTransaction.outputAddresses.filter { $0 is NSString }.map { $0 as! String}
-        let arrayOfAddress = outputsAddresses.filter { (walletProvider?.manager.wallet?.containsAddress($0))! }
-        return arrayOfAddress.first
+    var txStatus: String {
+        return displayer.statusText
     }
     
-    func partnerAddress() -> String? {
-        if transaction.isReceived {
-            return transaction.brTransaction.inputAddresses.first as? String
+    var transactionHash: String {
+        return displayer.txHashString
+    }
+    
+    var confirmationsFormat:  String {
+        if displayer.confirmations == 1 {
+            return LocalizedStrings.confirmationsTextSingle
         } else {
-            let outputsAddresses = transaction.brTransaction.outputAddresses.flatMap { $0 as? String}
-            let addressSet: Set<String> = Set(outputsAddresses)
-            let changeSet = walletProvider?.manager.wallet?.allChangeAddresses as! Set<String>
-            let intersection = addressSet.subtracting(changeSet)
-            return intersection.first
+            return LocalizedStrings.confirmationTextPlural
+        }
+    }
+    
+    var note: String? {
+        didSet {
+            guard let note = note else { return }
+            delegate?.didReceiveNote(note: note)
+        }
+    }
+    
+    private func isTransactionToFriend() -> Bool {
+        if let _ = displayer.connection {
+            return true
+        } else {
+            return false
+        }
+    }
+    
+    @objc
+    func setupTransaction() {
+        direction = displayer.isReceived ? .received : .sent
+        if let contact = displayer.connection {
+            txSubtitle = contact.givenName
+            avatarImage = contact.avatarImage
+            recipientText = displayer.partnerAddress!
+        } else if direction == .received {
+            txSubtitle = displayer.myAddress!
+            recipientText = displayer.myAddress!
+        } else {
+            //FIXME: CRUSH
+            txSubtitle = displayer.partnerAddress!
+            recipientText = displayer.partnerAddress!
+        }
+        self.delegate?.transactionUpdated()
+    }
+    
+    func getUserNoteIfNeeded() {
+        if !displayer.isReceived {
+            note = notesProvider.getUserNote(for: displayer.txHash)
+        }
+    }
+    
+    func gotoWebLink() {
+        let url = urlHelper.urlForTxhash(hash: displayer.txHashString, isTestnet: walletProvider.isTestnet)
+        if UIApplication.shared.canOpenURL(url) {
+            UIApplication.shared.open(url, completionHandler: nil)
         }
     }
 }

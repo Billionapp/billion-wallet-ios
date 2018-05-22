@@ -1,0 +1,50 @@
+
+/* Confifmation Time in example 10 minutes */
+"Formatter.confifmationTime" = "≈%@";
+
+/* Label shown when app is waiting for network */
+"BitcoinNetworkConectionStatus.connecting" = "Ожидание сети";
+
+/* Label shown when app is syncing with blockchain */
+"BitcoinNetworkConectionStatus.syncing" = "Синхронизация с блокчейн";
+
+/* Label shown when app was synced with blockchain */
+"BitcoinNetworkConectionStatus.synced" = "Синхронизировано";
+
+/* Account balance after current transaction */
+"Balance.balanceAfter" = "Баланс после транзакции";
+
+/* Unlock wallet */
+"Balance.unlockText" = "Разблокировать";
+
+/* Billion product name */
+"Balance.billionText" = "Billion";
+
+/* 'Unlock' message tail when Touch ID/Face ID is disabled */
+"Balance.unlockWithPin" = "с помощью кода";
+
+/* 'Unlock' message tail when Touch ID is enabled */
+"Balance.unlockWithTouchId" = "с помощью Touch ID";
+
+/* 'Unlock' message tail when Face ID is enabled (iPhone X only) */
+"Balance.unlockWithFaceId" = "с помощью Face ID";
+
+/* Your balance */
+"Balance.yourBalanceText" = "Ваш баланс";
+
+/* Label shown when something with transaction went wrong and she failed */
+"TxFailure.header" = "Транзакция не удалась";
+
+/* Label shown when app can't recognize QR-code in provided image */
+"QRErrors.noQrInPhoto" = "Выбранное изображение не содержит QR код.";
+
+/* Label shown when selected image does not contain Bitcoin address */
+"QRErrors.noBitcoinAddress" = "Выбранное изображение не содержит действующего Биткоин-адреса.";
+
+/* This label shown when you unlock app with face id */
+"Authentication.faceIDAuthReason" = "Использовать Face ID для разблокировки";
+
+/* Fee provider did not yet finished loading. */
+"OtherErrors.Fee.notLoaded" = "Сервис предоставления комиссии пока не загрузил данные";
+
+"DEBUG" = "ДЕБУГ";

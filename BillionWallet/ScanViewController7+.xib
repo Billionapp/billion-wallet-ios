@@ -1,18 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13196" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" colorMatched="YES">
-    <device id="retina4_7" orientation="portrait">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina5_5" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13173"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="ScanViewController" customModule="BillionWallet" customModuleProvider="target">
             <connections>
+                <outlet property="addressAlertLabel" destination="eOI-Pr-4gy" id="mYI-bb-ZfE"/>
                 <outlet property="aimView" destination="Pcn-9Q-Z6r" id="884-ls-kUc"/>
+                <outlet property="extractBottomConstraint" destination="a5r-0p-OBU" id="voT-HU-zAK"/>
                 <outlet property="extractButton" destination="Nmr-0h-5Rm" id="1TX-pV-4J3"/>
+                <outlet property="extractHeightConstraint" destination="Ob3-Nk-Aa7" id="2cO-U1-tAy"/>
+                <outlet property="flashBottomConstraint" destination="KPw-NF-Apd" id="gxS-ft-X8D"/>
                 <outlet property="flashButton" destination="qZj-UE-hKu" id="UFG-AG-VGf"/>
                 <outlet property="gradientView" destination="d2i-U0-xXC" id="uBz-A1-Qg1"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
@@ -20,28 +25,22 @@
         </placeholder>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
         <view clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="i5M-Pr-FkT">
-            <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+            <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="d2i-U0-xXC" customClass="RadialGradientView" customModule="BillionWallet" customModuleProvider="target">
-                    <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                    <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                     <subviews>
-                        <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qZj-UE-hKu">
-                            <rect key="frame" x="8" y="595" width="64" height="64"/>
-                            <constraints>
-                                <constraint firstAttribute="width" constant="64" id="Blr-JD-rCb"/>
-                                <constraint firstAttribute="height" constant="64" id="lR9-oe-0f5"/>
-                            </constraints>
-                            <state key="normal" image="FlashOff"/>
-                            <connections>
-                                <action selector="flashAction" destination="-1" eventType="touchUpInside" id="UVk-Vv-OoO"/>
-                            </connections>
-                        </button>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eOI-Pr-4gy">
+                            <rect key="frame" x="184" y="497" width="46" height="21"/>
+                            <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="18"/>
+                            <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            <nil key="highlightedColor"/>
+                        </label>
                     </subviews>
                     <color key="backgroundColor" white="1" alpha="0.0" colorSpace="calibratedWhite"/>
                     <constraints>
-                        <constraint firstItem="qZj-UE-hKu" firstAttribute="leading" secondItem="d2i-U0-xXC" secondAttribute="leading" constant="8" id="CdE-ci-Q3j"/>
-                        <constraint firstAttribute="bottom" secondItem="qZj-UE-hKu" secondAttribute="bottom" constant="8" id="jIc-eh-jfh"/>
+                        <constraint firstItem="eOI-Pr-4gy" firstAttribute="centerX" secondItem="d2i-U0-xXC" secondAttribute="centerX" id="zdB-4J-fuI"/>
                     </constraints>
                     <userDefinedRuntimeAttributes>
                         <userDefinedRuntimeAttribute type="color" keyPath="OutsideColor">
@@ -50,42 +49,19 @@
                         <userDefinedRuntimeAttribute type="color" keyPath="InsideColor">
                             <color key="value" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                         </userDefinedRuntimeAttribute>
+                        <userDefinedRuntimeAttribute type="number" keyPath="innerDiameter">
+                            <real key="value" value="218"/>
+                        </userDefinedRuntimeAttribute>
+                        <userDefinedRuntimeAttribute type="number" keyPath="outerDiameter">
+                            <real key="value" value="670"/>
+                        </userDefinedRuntimeAttribute>
                     </userDefinedRuntimeAttributes>
                 </view>
-                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DEW-MS-ED2">
-                    <rect key="frame" x="311" y="35" width="44" height="44"/>
-                    <constraints>
-                        <constraint firstAttribute="height" constant="44" id="rQj-nI-8vE"/>
-                        <constraint firstAttribute="width" constant="44" id="zrd-32-7dA"/>
-                    </constraints>
-                    <state key="normal" image="Close"/>
-                    <connections>
-                        <action selector="closeAction" destination="-1" eventType="touchUpInside" id="Aqm-Ih-ESo"/>
-                    </connections>
-                </button>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Scan" lineBreakMode="wordWrap" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="pmo-Qg-kxH">
-                    <rect key="frame" x="20" y="20" width="275" height="80"/>
-                    <constraints>
-                        <constraint firstAttribute="height" constant="80" id="HaI-AH-5YW"/>
-                    </constraints>
-                    <fontDescription key="fontDescription" type="boldSystem" pointSize="32"/>
-                    <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                    <nil key="highlightedColor"/>
-                </label>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Place QR-code to frame" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="BWx-cZ-kBs">
-                    <rect key="frame" x="20" y="100" width="275" height="24"/>
-                    <constraints>
-                        <constraint firstAttribute="height" constant="24" id="8EF-uz-bbR"/>
-                    </constraints>
-                    <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="12"/>
-                    <color key="textColor" white="1" alpha="0.5" colorSpace="calibratedWhite"/>
-                    <nil key="highlightedColor"/>
-                </label>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Pcn-9Q-Z6r">
-                    <rect key="frame" x="70.5" y="216.5" width="234" height="234"/>
+                    <rect key="frame" x="98" y="259" width="218" height="218"/>
                     <constraints>
-                        <constraint firstAttribute="height" constant="234" id="Mbc-az-35p"/>
-                        <constraint firstAttribute="width" constant="234" id="obj-iS-OwE"/>
+                        <constraint firstAttribute="height" constant="218" id="Mbc-az-35p"/>
+                        <constraint firstAttribute="width" constant="218" id="obj-iS-OwE"/>
                     </constraints>
                     <userDefinedRuntimeAttributes>
                         <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
@@ -96,21 +72,27 @@
                         </userDefinedRuntimeAttribute>
                     </userDefinedRuntimeAttributes>
                 </view>
-                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="Nmr-0h-5Rm">
-                    <rect key="frame" x="98" y="585" width="179" height="62"/>
-                    <color key="backgroundColor" red="0.22352941179999999" green="0.2470588235" blue="0.30980392159999998" alpha="1" colorSpace="custom" customColorSpace="displayP3"/>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qZj-UE-hKu">
+                    <rect key="frame" x="185" y="594" width="44" height="44"/>
                     <constraints>
+                        <constraint firstAttribute="width" constant="44" id="Blr-JD-rCb"/>
+                        <constraint firstAttribute="height" constant="44" id="lR9-oe-0f5"/>
+                    </constraints>
+                    <state key="normal" image="FlashOff"/>
+                    <connections>
+                        <action selector="flashAction" destination="-1" eventType="touchUpInside" id="UVk-Vv-OoO"/>
+                    </connections>
+                </button>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="Nmr-0h-5Rm" customClass="GradientButton" customModule="BillionWallet" customModuleProvider="target">
+                    <rect key="frame" x="98" y="654" width="218" height="62"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="218" id="E8c-cU-wUV"/>
                         <constraint firstAttribute="height" constant="62" id="Ob3-Nk-Aa7"/>
                     </constraints>
                     <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="15"/>
                     <state key="normal" title="Extract  QR-code  from  picture">
                         <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </state>
-                    <userDefinedRuntimeAttributes>
-                        <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
-                            <integer key="value" value="20"/>
-                        </userDefinedRuntimeAttribute>
-                    </userDefinedRuntimeAttributes>
                     <connections>
                         <action selector="extractQrFromImageAction" destination="-1" eventType="touchUpInside" id="6pE-UF-Ugi"/>
                     </connections>
@@ -118,28 +100,22 @@
             </subviews>
             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
             <constraints>
-                <constraint firstAttribute="trailing" secondItem="Nmr-0h-5Rm" secondAttribute="trailing" constant="98" id="25B-Gz-1w0"/>
-                <constraint firstItem="pmo-Qg-kxH" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" constant="20" id="ECi-mY-pch"/>
-                <constraint firstAttribute="trailing" secondItem="d2i-U0-xXC" secondAttribute="trailing" id="H4j-O1-MwG"/>
-                <constraint firstAttribute="trailing" secondItem="DEW-MS-ED2" secondAttribute="trailing" constant="20" id="MMg-nf-xHn"/>
-                <constraint firstItem="Nmr-0h-5Rm" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" constant="98" id="QHv-1X-s4o"/>
+                <constraint firstItem="eOI-Pr-4gy" firstAttribute="top" secondItem="Pcn-9Q-Z6r" secondAttribute="bottom" constant="20" id="6It-c4-sKJ"/>
+                <constraint firstItem="A1U-73-dEg" firstAttribute="trailing" secondItem="d2i-U0-xXC" secondAttribute="trailing" id="H4j-O1-MwG"/>
+                <constraint firstItem="Nmr-0h-5Rm" firstAttribute="top" secondItem="qZj-UE-hKu" secondAttribute="bottom" constant="16" id="KPw-NF-Apd"/>
+                <constraint firstItem="Nmr-0h-5Rm" firstAttribute="centerX" secondItem="i5M-Pr-FkT" secondAttribute="centerX" id="R6O-25-ao1"/>
                 <constraint firstItem="Pcn-9Q-Z6r" firstAttribute="centerY" secondItem="i5M-Pr-FkT" secondAttribute="centerY" id="WBD-Nj-AIY"/>
-                <constraint firstItem="BWx-cZ-kBs" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" constant="20" id="WD1-h7-6PY"/>
-                <constraint firstItem="BWx-cZ-kBs" firstAttribute="top" secondItem="pmo-Qg-kxH" secondAttribute="bottom" id="Wfh-7p-26s"/>
-                <constraint firstItem="Pcn-9Q-Z6r" firstAttribute="centerX" secondItem="i5M-Pr-FkT" secondAttribute="centerX" id="XIQ-0V-p76"/>
-                <constraint firstAttribute="trailing" secondItem="BWx-cZ-kBs" secondAttribute="trailing" constant="80" id="ZdI-Ht-95n"/>
+                <constraint firstItem="Pcn-9Q-Z6r" firstAttribute="centerX" secondItem="A1U-73-dEg" secondAttribute="centerX" id="XIQ-0V-p76"/>
                 <constraint firstAttribute="bottom" secondItem="d2i-U0-xXC" secondAttribute="bottom" id="ZdN-N9-Qc4"/>
-                <constraint firstItem="DEW-MS-ED2" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" constant="35" id="ZdZ-8Y-SPq"/>
-                <constraint firstAttribute="bottom" secondItem="Nmr-0h-5Rm" secondAttribute="bottom" constant="20" id="a5r-0p-OBU"/>
-                <constraint firstItem="pmo-Qg-kxH" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" constant="20" id="f0q-ca-TLZ"/>
-                <constraint firstItem="DEW-MS-ED2" firstAttribute="leading" secondItem="pmo-Qg-kxH" secondAttribute="trailing" constant="16" id="g2u-7m-FOG"/>
+                <constraint firstItem="A1U-73-dEg" firstAttribute="bottom" secondItem="Nmr-0h-5Rm" secondAttribute="bottom" constant="20" id="a5r-0p-OBU"/>
+                <constraint firstItem="qZj-UE-hKu" firstAttribute="centerX" secondItem="i5M-Pr-FkT" secondAttribute="centerX" id="mDy-Yf-R1K"/>
                 <constraint firstItem="d2i-U0-xXC" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" id="mta-8A-Ezq"/>
-                <constraint firstItem="d2i-U0-xXC" firstAttribute="leading" secondItem="i5M-Pr-FkT" secondAttribute="leading" id="y3Q-Mt-taI"/>
+                <constraint firstItem="d2i-U0-xXC" firstAttribute="leading" secondItem="A1U-73-dEg" secondAttribute="leading" id="y3Q-Mt-taI"/>
             </constraints>
+            <viewLayoutGuide key="safeArea" id="A1U-73-dEg"/>
         </view>
     </objects>
     <resources>
-        <image name="Close" width="44" height="44"/>
         <image name="FlashOff" width="64" height="64"/>
     </resources>
 </document>

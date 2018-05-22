@@ -25,21 +25,25 @@ extension UIView {
     func rotate360Degrees(duration: CFTimeInterval = 3) {
         let rotateAnimation = CABasicAnimation(keyPath: "transform.rotation")
         rotateAnimation.fromValue = 0.0
-        rotateAnimation.toValue = CGFloat(Double.pi * 2)
+        rotateAnimation.toValue = CGFloat(-Double.pi * 2)
         rotateAnimation.isRemovedOnCompletion = false
         rotateAnimation.duration = duration
         rotateAnimation.repeatCount=Float.infinity
         self.layer.add(rotateAnimation, forKey: nil)
     }
     
-}
-
-extension UIImageView{
-    func addBlackGradientLayer(frame: CGRect = CGRect(x: 0, y: UIScreen.main.bounds.size.width - 120, width: UIScreen.main.bounds.size.width, height: 120)) {
-        let gradient = CAGradientLayer()
-        gradient.frame = frame
-        gradient.colors = [UIColor.clear.cgColor, UIColor.black.cgColor]
-        gradient.locations = [0.0, 0.5]
-        self.layer.addSublayer(gradient)
+    func applyGradient(colours: [UIColor]) -> Void {
+        let gradient = applyGradient(colours, locations: nil)
+        layer.insertSublayer(gradient, at: 0)
     }
+    
+    @discardableResult
+    func applyGradient(_ colours: [UIColor], locations: [NSNumber]?) -> CALayer {
+        let gradient: CAGradientLayer = CAGradientLayer()
+        gradient.frame = self.bounds
+        gradient.colors = colours.map { $0.cgColor }
+        gradient.locations = locations
+        return gradient
+    }
+    
 }

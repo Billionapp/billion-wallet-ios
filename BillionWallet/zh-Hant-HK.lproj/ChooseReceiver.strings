@@ -1,0 +1,24 @@
+
+/*  */
+"SendScreen.Notice.cannotProcess" = "Cannot process message: \"%@\"";
+
+/* Label shown which contact will be receiver */
+"SendScreen.toTitle" = "給";
+
+/* Label mean that you'll scan address in QR-code */
+"SendScreen.scanButton" = "掃描地址";
+
+/* Label shown that Address of  receiver is in clipboard */
+"SendScreen.sendToAddress" = "發送至剪貼板中的地址";
+
+/* Label mean that you can add new contact */
+"SendScreen.addButton" = "加至聯絡人";
+
+/* Send title */
+"SendScreen.title" = "發送";
+
+/* Label shown us different ways to send your money */
+"Send.chooseRecipientSubtitle" = "發送至聯絡人的地址或剪貼板中的地址或掃描二維碼";
+
+/* Empty clipboard alert message */
+"Send.Notice.noStringInClipboard" = "沒有地址在剪貼板";

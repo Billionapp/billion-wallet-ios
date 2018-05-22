@@ -1,0 +1,15 @@
+
+/* Label Add Contact */
+"AddContactScreen.title" = "Добавить контакт";
+
+/* Label Air Connectivity */
+"AddContactScreen.subtitle" = "Air Connectivity";
+
+/* Main title. Signals that contacts are being searched for. */
+"AddContact.finding" = "Поиск контактов поблизости";
+
+/* Hint label */
+"AddContact.hint" = "Для добавления этот режим должен быть включен на обоих устройствах";
+
+/* Scan Billion card button title */
+"AddContact.scanButton" = "Сканировать\nBillionCard";

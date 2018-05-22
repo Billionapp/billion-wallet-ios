@@ -19,20 +19,20 @@ class FiatConverterTests: XCTestCase {
             case "RUB":
                 return Rate(currencyCode: "RUB",
                             btc: 267576.63475,
-                            timestamp: 1507550182)
+                            blockTimestamp: 1507550182)
             case "CNY":
                 return Rate(currencyCode: "CNY",
                             btc: 30373.2294,
-                            timestamp: 1507550182)
+                            blockTimestamp: 1507550182)
             case "JPY":
                 return Rate(currencyCode: "JPY",
                             btc: 516393.03705,
-                            timestamp: 1507550182)
+                            blockTimestamp: 1507550182)
                 
             default:
                 return Rate(currencyCode: "USD",
                             btc: 4584.5,
-                            timestamp: 1507550182)
+                            blockTimestamp: 1507550182)
             }
         }
     }

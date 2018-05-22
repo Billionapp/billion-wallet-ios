@@ -1,0 +1,42 @@
+
+/* Receive button */
+"General.receive" = "接收";
+
+/* Send button */
+"General.send" = "發送";
+
+/* Add Contact button title */
+"General.addContact" = "新增聯絡人";
+
+/* unspecified error, to be depricated or specified */
+"TxStatus.pending" = "等待中";
+
+/* unspecified error, to be depricated or specified */
+"TxStatus.invalid" = "非有效";
+
+/* transaction is in Bitcoin network mempool */
+"TxStatus.unverified" = "等待確認中";
+
+/* number of transaction confirmations */
+"TxStatus.numberOfConfirmationsPlural" = "%ld 確認";
+
+/* number of transaction confirmations */
+"TxStatus.confirmationsSingle" = "%ld 確認";
+
+/* transaction has been confirmed by Bitcoin network */
+"TxStatus.sent" = "已發送";
+
+/* transaction has been confirmed by Bitcoin network */
+"TxStatus.received" = "已接收";
+
+/* concatenated with 'Unlock' string when Touch ID is disabled */
+"AppLockType.pinLocked" = "使用密碼";
+
+/* concatenated with 'Unlock' string when Touch ID is enabled */
+"AppLockType.touchIdLocked" = "使用 Touch ID";
+
+/* concatenated with 'Unlock' string when Face ID is enabled */
+"AppLockType.faceIdLocked" = "使用 Face ID";
+
+/* Notice is shown while device is not connected to Internet */
+"General.Notice.noInternetConnection" = "沒有可用網路，請連接Wi-Fi或流動數據並重啟Billion";

@@ -6,15 +6,6 @@
 //  Copyright © 2017 Evolution Group Ltd. All rights reserved.
 //
 
-/*
-private(set) lazy var image: UIImage? = self.imageCache.cachedImage(
-    url: self.friend.image_large,
-    or: self.imageCache.cachedImage(
-        url: self.friend.image_small,
-        or: UIImage(named: "default")
-    )
-)*/
-
 import UIKit
 
 class ImageCacheProvider: ImageCache {

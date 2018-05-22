@@ -1,0 +1,12 @@
+
+/* Add wallet title */
+"AddWallet.title" = "新增錢包";
+
+/* Label shown when you can to  create a new wallet */
+"AddWallet.createWallet" = "創建新錢包";
+
+/* Label shown when you already have a wallet and you can use it */
+"AddWallet.restoreWallet" = "回復錢包";
+
+/* Label shown when you need to continue the process of creating new wallet */
+"AddWallet.nextButton" = "下一步";

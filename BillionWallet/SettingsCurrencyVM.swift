@@ -27,11 +27,8 @@ class SettingsCurrencyVM {
     
     func save() {
         defaultsProvider.currencies = selectedCurrencies
-        walletProvider?.manager.localCurrencyCode = selectedCurrencies.first?.code
-    }
-    
-    fileprivate func filteredCurrencies() -> [Currency] {
-        return CurrencyFactory.allCurrencies().filter { !defaultsProvider.currencies.contains($0) }
+        NotificationCenter.default.post(name: .walletSwitchCurrencyNotificationName,
+                                        object: nil)
     }
     
 }

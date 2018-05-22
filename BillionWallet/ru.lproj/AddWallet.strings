@@ -1,0 +1,12 @@
+
+/* Add wallet title */
+"AddWallet.title" = "Добавить кошелек";
+
+/* Label shown when you can to  create a new wallet */
+"AddWallet.createWallet" = "Создать новый";
+
+/* Label shown when you already have a wallet and you can use it */
+"AddWallet.restoreWallet" = "Восстановить";
+
+/* Label shown when you need to continue the process of creating new wallet */
+"AddWallet.nextButton" = "Далее";

@@ -44,10 +44,6 @@
 + (void) setKeyChainSharedPubDHForAccount: (uint32_t) accountNumber key: (NSData *_Nullable) key;
 + (NSData *_Nullable) getKeyChainSharedPubDHForAccount: (uint32_t) accountNumber;
 
-// Secret DHA
-+ (void) setKeyChainSecretDHForAccount: (uint32_t) number secret: (NSData *_Nullable) secret;
-+ (NSData *_Nullable) getKeyChainSecretDHForAccount: (uint32_t) number;
-
 // Password
 + (void) setKeyChainPassword: (NSString *_Nullable) password;
 + (NSString *_Nullable) getKeyChainPassword;

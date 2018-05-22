@@ -8,13 +8,17 @@
 
 import UIKit
 
+
 class BaseViewController<T>: UIViewController, UINavigationControllerDelegate  {
     
-    private(set) var viewModel:T
+    private(set) var viewModel: T
+    
+    var backImage: UIImage?
     
     init(viewModel: T) {
         self.viewModel = viewModel
-        super.init(nibName: String(describing: type(of: self)).nibName(), bundle: nil)
+        let className = "\(type(of: self))"
+        super.init(nibName: className.xibName(), bundle: nil)
         configure(viewModel: viewModel)
     }
     
@@ -22,13 +26,39 @@ class BaseViewController<T>: UIViewController, UINavigationControllerDelegate  {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func configure(viewModel:T) {}
+    func configure(viewModel: T) { }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationController?.disableBackSwipe()
         navigationController?.addSwipeDown()
         navigationController?.delegate = self
+        setupBackImageIfNeeded()
+    }
+    
+    fileprivate func setupBackImageIfNeeded() {
+        if let backImage = backImage {
+            let imageView = UIImageView(image: backImage)
+            view.insertSubview(imageView, at: 0)
+        }
+    }
+    
+    func removeSwipeDownGesture() {
+        if let gestures = self.view.gestureRecognizers {
+            for gesture in gestures {
+                if let swipeDown = gesture as? UISwipeGestureRecognizer {
+                    self.view.removeGestureRecognizer(swipeDown)
+                }
+            }
+        }
+    }
+    
+    func addGradientOnTop() {
+        let gradient = CAGradientLayer()
+        gradient.frame = CGRect(x: 0, y: 0, width: UIScreen.main.bounds.size.width, height: 40)
+        gradient.zPosition = 1
+        gradient.colors = [UIColor.black.cgColor, UIColor.black.cgColor, UIColor.clear.cgColor]
+        view.layer.addSublayer(gradient)
     }
     
     func navigationController(_ navigationController: UINavigationController, animationControllerFor operation: UINavigationControllerOperation, from fromVC: UIViewController, to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
@@ -38,34 +68,14 @@ class BaseViewController<T>: UIViewController, UINavigationControllerDelegate  {
     }
 }
 
-extension String {
-    func nibName() -> String {
-        let width = UIScreen.main.bounds.size.width
-        let height = UIScreen.main.bounds.size.height
-        if width == 375 {
-            return "\(self)7+"
-        } else if width == 414 {
-            return "\(self)7+"
-        } else if height == 568 {
-            return "\(self)7+"
+fileprivate extension String {
+    func xibName() -> String {
+        let name = nibName()
+        if let _ = Bundle.main.path(forResource: name, ofType: "nib") {
+            return name
         } else {
             return "\(self)7+"
         }
     }
 }
 
-extension String {
-    func nibNameForCell() -> String {
-        let width = UIScreen.main.bounds.size.width
-        let height = UIScreen.main.bounds.size.height
-        if width == 375 {
-            return "\(self)7+"
-        } else if width == 414 {
-            return "\(self)7"
-        } else if height == 568 {
-            return "\(self)5"
-        } else {
-            return "\(self)5"
-        }
-    }
-}

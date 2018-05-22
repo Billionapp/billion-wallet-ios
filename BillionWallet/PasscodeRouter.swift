@@ -8,28 +8,61 @@
 
 import Foundation
 
-class PasscodeRouter: Router {
+class PasscodeRouter {
     
-    let mainRouter: MainRouter
-    let passcodeCase: PasscodeCase!
-    weak var lockDelegate: LockDelegate?
-    weak var output: PasscodeOutputDelegate?
+    private weak var mainRouter: MainRouter!
+    private let passcodeCase: PasscodeCase
+    private let reason: String?
+    private var output: PasscodeOutputDelegate?
+    private weak var app: Application!
     
-    init(mainRouter: MainRouter, passcodeCase: PasscodeCase, output: PasscodeOutputDelegate?, lockDelegate: LockDelegate) {
+    init(mainRouter: MainRouter,
+         passcodeCase: PasscodeCase,
+         output: PasscodeOutputDelegate?,
+         app: Application,
+         reason: String?) {
+        
         self.mainRouter = mainRouter
         self.passcodeCase = passcodeCase
         self.output = output
-        self.lockDelegate = lockDelegate
+        self.app = app
+        self.reason = reason
     }
     
-    func run() {
-        let viewModel = PasscodeVM(touchIdProvider: mainRouter.application.touchId, passcodeCase: passcodeCase, output: output)
-        viewModel.lockListener = lockDelegate
+    func run(pinSize: Int = 6) {
+        let viewModel = UniversalPinVM(touchIdProvider: app.touchId,
+                                       passcodeCase: passcodeCase,
+                                       output: output,
+                                       lockProvider: app.lockProvider,
+                                       reason: reason,
+                                       pinSize: pinSize)
+        
         let viewController = PasscodeViewController(viewModel: viewModel)
         viewModel.delegate = viewController
         viewController.router = mainRouter
         viewController.modalPresentationStyle = .overCurrentContext
         viewController.modalTransitionStyle = .crossDissolve
-        mainRouter.navigationController.modal(viewController: viewController)
+        viewModel.showTouchIdIfNeeded(withFallback: {
+            self.mainRouter.navigationController.modal(viewController: viewController)
+        })
     }
+    
+    func run(pinSize: Int, output: PasscodeOutputDelegate) {
+        let viewModel = UniversalPinVM(touchIdProvider: app.touchId,
+                                       passcodeCase: passcodeCase,
+                                       output: output,
+                                       lockProvider: app.lockProvider,
+                                       reason: reason,
+                                       pinSize: pinSize)
+        
+        let viewController = PasscodeViewController(viewModel: viewModel)
+        viewModel.delegate = viewController
+        viewController.router = mainRouter
+        viewController.modalPresentationStyle = .overCurrentContext
+        viewController.modalTransitionStyle = .crossDissolve
+        viewModel.showTouchIdIfNeeded(withFallback: {
+            self.mainRouter.navigationController.modal(viewController: viewController)
+        })
+    }
+    
 }

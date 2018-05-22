@@ -1,0 +1,15 @@
+
+/* Label shown when you already have a wallet and you can use it */
+"Modal.restoreWalletTitle" = "復原錢包";
+
+/* Phrase which you enter if you want restore wallet */
+"Modal.recoveryPhrasePlaceholder" = "輸入私密金鑰";
+
+/* Done */
+"Modal.buttonOk" = "完成";
+
+/* Delete */
+"Modal.deleteButton" = "刪除";
+
+/* Cancel */
+"Modal.cancelButton" = "取消";

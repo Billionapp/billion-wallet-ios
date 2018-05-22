@@ -1,0 +1,33 @@
+
+/* Create Passcode title */
+"PasscodeScreen.createPasscode" = "設定密碼";
+
+/* Change Passcode title */
+"PasscodeScreen.changePasscode" = "更改密碼";
+
+/* Label shown that the wallet is locked */
+"PasscodeScreen.accountLocked" = "鎖住錢包";
+
+/* Enter Passcode title */
+"PasscodeScreen.enterPasswordFirstPrompt" = "輸入密碼";
+
+/* Repeat Passcode title */
+"PasscodeScreen.enterPasswordSecondPrompt" = "重複輸入密碼";
+
+/* Enter current Passcode title */
+"PasscodeScreen.updateOldPasswordFirstPrompt" = "輸入當前密碼";
+
+/* Enter new Passcode title */
+"PasscodeScreen.updateOldPasswordSecondPrompt" = "輸入新密碼";
+
+/* Repeat new Passcode title */
+"PasscodeScreen.updateOldPasswordThirdPrompt" = "重複輸入新密碼";
+
+/* Enter Passcode title */
+"PasscodeScreen.enterPasscode" = "輸入密碼";
+
+/* Delete last character */
+"PasscodeScreen.delete" = "刪除";
+
+/* Cancel passcode entering */
+"PasscodeScreen.cancel" = "取消";

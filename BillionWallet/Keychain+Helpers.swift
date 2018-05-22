@@ -6,9 +6,12 @@
 //  Copyright © 2017 Evolution Group Ltd. All rights reserved.
 //
 
+import Foundation
+
 enum KeychainKeys: String {
     case pin
     case isLocked
+    case selfPCPriv
 }
 
 extension Keychain {
@@ -30,15 +33,18 @@ extension Keychain {
         get {
             return getBool(for: .isLocked)
         }
-        
         set {
             setBool(newValue, for: .isLocked)
-            NotificationCenter.default.post(name: .didUpdateLockStatus, object: newValue)
+        }
+    }
+  
+    var selfPCPriv: Data? {
+        get {
+            return getData(forKey: KeychainKeys.selfPCPriv.rawValue)
+        }
+        set {
+            setData(newValue, forKey: KeychainKeys.selfPCPriv.rawValue)
         }
     }
     
-}
-
-extension Notification.Name {
-    static let didUpdateLockStatus = Notification.Name("didUpdateLockStatus")
 }

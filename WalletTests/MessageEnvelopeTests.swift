@@ -34,12 +34,12 @@ class MessageEnvelopeTests: XCTestCase {
         
         XCTAssert(i == envelope2.i, "\(i) != \(envelope2.i)")
         XCTAssert(j == envelope2.j, "\(j) != \(envelope2.j)")
-        XCTAssert(c == envelope2.c, "\(c.toHexString()) != \(envelope2.c.toHexString())")
-        XCTAssert(d == envelope2.d, "\(d.toHexString()) != \(envelope2.d.toHexString())")
+        XCTAssert(c == envelope2.c, "\(c.hex) != \(envelope2.c.hex)")
+        XCTAssert(d == envelope2.d, "\(d.hex) != \(envelope2.d.hex)")
         XCTAssert(envelope.i == envelope2.i, "\(envelope.i) != \(envelope2.i)")
         XCTAssert(envelope.j == envelope2.j, "\(envelope.j) != \(envelope2.j)")
-        XCTAssert(envelope.c == envelope2.c, "\(envelope.c.toHexString()) != \(envelope2.c.toHexString())")
-        XCTAssert(envelope.d == envelope2.d, "\(envelope.d.toHexString()) != \(envelope2.d.toHexString())")
+        XCTAssert(envelope.c == envelope2.c, "\(envelope.c.hex) != \(envelope2.c.hex)")
+        XCTAssert(envelope.d == envelope2.d, "\(envelope.d.hex) != \(envelope2.d.hex)")
     }
     
     func testSerializationSpeed() {

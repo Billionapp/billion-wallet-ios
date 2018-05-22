@@ -1,0 +1,15 @@
+
+/* Exit alert title */
+"Exit.title" = "Выйти из кошелька?";
+
+/* Exit alert subtitle */
+"Exit.hint" = "Если не записать фразу восстановления Вы не сможете\nвосстановить кошелек и потеряете средства";
+
+/* Clear iCloud switcher title */
+"Exit.clearIcloud" = "Очистить данные в iCloud";
+
+/* Exit button title */
+"Exit.exitButton" = "Выйти из кошелька";
+
+/* Cancel button title */
+"Exit.cancelButton" = "Отмена";

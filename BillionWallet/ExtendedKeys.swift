@@ -31,8 +31,11 @@ struct XPriv {
     
     /// Initialize xPriv with data
     ///
-    /// - Parameter data: data containing xPriv (64 bytes long)
-    init(_ data: Data) {
+    /// - Parameter data: any data (function is crash safe)
+    init(_ data: Data) throws {
+        guard data.count == 64 else {
+            throw ExtendedKeysError.invalidData
+        }
         let xData = data.subdata(in: Range<Data.Index>(0..<32))
         let cData = data.subdata(in: Range<Data.Index>(32..<64))
         x = UInt256S(data: xData)
@@ -42,8 +45,8 @@ struct XPriv {
     /// Initialize xPriv with bytes array
     ///
     /// - Parameter bytes: bytes array representing xPriv (64 bytes long)
-    init(_ bytes: [UInt8]) {
-        self.init(Data(bytes))
+    init(_ bytes: [UInt8]) throws {
+        try self.init(Data(bytes))
     }
 }
 

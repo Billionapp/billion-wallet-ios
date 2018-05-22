@@ -1,0 +1,39 @@
+
+/* Incoming transaction title */
+"IncomingTxTitle" = "已收到的交易";
+
+/* Outgoing transaction title */
+"OutgoingTxTitle" = "已發送的交易";
+
+/* byCurrentRate label */
+"TxDetails.byCurrentRate" = "現時匯率";
+
+/* Receiver address on incoming transaction */
+"IncomingTxSelfAddressLabel" = "你的地址";
+
+/* Receiver address on outgoing transaction */
+"OutgoingTxRecipientAddressLabel" = "收款人地址";
+
+/* Transcation fee label */
+"TxFeeLabel" = "手續費";
+
+/* Transaction comment label */
+"CommentLabel" = "附言";
+
+/* Comment text if no comment provided */
+"NoComment" = "沒有附言";
+
+/* Format string for transaction fee in local currency */
+"FeeFormat" = "%@";
+
+/* Singular for confirmation (i.e. 1 confirmation) */
+"ConfirmationsTextSingle" = "確認";
+
+/* Plural for confirmation (i.e. 6+ confirmations) */
+"ConfirmationsTextPlural" = "確認";
+
+/* Alert displayed after txid is copied */
+"Alert.txidCopied" = "Txid已複製到剪貼板";
+
+/* Alert displayed after receiver address is copied */
+"Alert.addressCopied" = "地址已複製到剪貼板";

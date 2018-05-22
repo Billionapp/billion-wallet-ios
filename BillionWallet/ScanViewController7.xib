@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="ScanViewController" customModule="BillionWallet" customModuleProvider="target">
+            <connections>
+                <outlet property="addressAlertLabel" destination="eOI-Pr-4gy" id="mYI-bb-ZfE"/>
+                <outlet property="aimView" destination="Pcn-9Q-Z6r" id="884-ls-kUc"/>
+                <outlet property="extractBottomConstraint" destination="a5r-0p-OBU" id="voT-HU-zAK"/>
+                <outlet property="extractButton" destination="Nmr-0h-5Rm" id="1TX-pV-4J3"/>
+                <outlet property="extractHeightConstraint" destination="Ob3-Nk-Aa7" id="2cO-U1-tAy"/>
+                <outlet property="flashBottomConstraint" destination="KPw-NF-Apd" id="gxS-ft-X8D"/>
+                <outlet property="flashButton" destination="qZj-UE-hKu" id="UFG-AG-VGf"/>
+                <outlet property="gradientView" destination="d2i-U0-xXC" id="uBz-A1-Qg1"/>
+                <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
+            </connections>
+        </placeholder>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <view clearsContextBeforeDrawing="NO" contentMode="scaleToFill" id="i5M-Pr-FkT">
+            <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+            <subviews>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="d2i-U0-xXC" customClass="RadialGradientView" customModule="BillionWallet" customModuleProvider="target">
+                    <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                    <subviews>
+                        <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="eOI-Pr-4gy">
+                            <rect key="frame" x="164.5" y="454.5" width="46" height="21"/>
+                            <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="18"/>
+                            <color key="textColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            <nil key="highlightedColor"/>
+                        </label>
+                    </subviews>
+                    <color key="backgroundColor" white="1" alpha="0.0" colorSpace="calibratedWhite"/>
+                    <constraints>
+                        <constraint firstItem="eOI-Pr-4gy" firstAttribute="centerX" secondItem="d2i-U0-xXC" secondAttribute="centerX" id="zdB-4J-fuI"/>
+                    </constraints>
+                    <userDefinedRuntimeAttributes>
+                        <userDefinedRuntimeAttribute type="color" keyPath="OutsideColor">
+                            <color key="value" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                        </userDefinedRuntimeAttribute>
+                        <userDefinedRuntimeAttribute type="color" keyPath="InsideColor">
+                            <color key="value" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+                        </userDefinedRuntimeAttribute>
+                        <userDefinedRuntimeAttribute type="number" keyPath="innerDiameter">
+                            <real key="value" value="218"/>
+                        </userDefinedRuntimeAttribute>
+                        <userDefinedRuntimeAttribute type="number" keyPath="outerDiameter">
+                            <real key="value" value="607"/>
+                        </userDefinedRuntimeAttribute>
+                    </userDefinedRuntimeAttributes>
+                </view>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Pcn-9Q-Z6r">
+                    <rect key="frame" x="78.5" y="224.5" width="218" height="218"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="218" id="Mbc-az-35p"/>
+                        <constraint firstAttribute="width" constant="218" id="obj-iS-OwE"/>
+                    </constraints>
+                    <userDefinedRuntimeAttributes>
+                        <userDefinedRuntimeAttribute type="number" keyPath="layer.cornerRadius">
+                            <integer key="value" value="15"/>
+                        </userDefinedRuntimeAttribute>
+                        <userDefinedRuntimeAttribute type="number" keyPath="layer.borderWidth">
+                            <integer key="value" value="3"/>
+                        </userDefinedRuntimeAttribute>
+                    </userDefinedRuntimeAttributes>
+                </view>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qZj-UE-hKu">
+                    <rect key="frame" x="165.5" y="536" width="44" height="44"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="44" id="Blr-JD-rCb"/>
+                        <constraint firstAttribute="height" constant="44" id="lR9-oe-0f5"/>
+                    </constraints>
+                    <state key="normal" image="FlashOff"/>
+                    <connections>
+                        <action selector="flashAction" destination="-1" eventType="touchUpInside" id="UVk-Vv-OoO"/>
+                    </connections>
+                </button>
+                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="wordWrap" translatesAutoresizingMaskIntoConstraints="NO" id="Nmr-0h-5Rm" customClass="GradientButton" customModule="BillionWallet" customModuleProvider="target">
+                    <rect key="frame" x="78.5" y="592" width="218" height="59"/>
+                    <constraints>
+                        <constraint firstAttribute="width" constant="218" id="E8c-cU-wUV"/>
+                        <constraint firstAttribute="height" constant="59" id="Ob3-Nk-Aa7"/>
+                    </constraints>
+                    <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="15"/>
+                    <state key="normal" title="Extract  QR-code  from  picture">
+                        <color key="titleColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </state>
+                    <connections>
+                        <action selector="extractQrFromImageAction" destination="-1" eventType="touchUpInside" id="6pE-UF-Ugi"/>
+                    </connections>
+                </button>
+            </subviews>
+            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
+            <constraints>
+                <constraint firstItem="eOI-Pr-4gy" firstAttribute="top" secondItem="Pcn-9Q-Z6r" secondAttribute="bottom" constant="12" id="6It-c4-sKJ"/>
+                <constraint firstItem="A1U-73-dEg" firstAttribute="trailing" secondItem="d2i-U0-xXC" secondAttribute="trailing" id="H4j-O1-MwG"/>
+                <constraint firstItem="Nmr-0h-5Rm" firstAttribute="top" secondItem="qZj-UE-hKu" secondAttribute="bottom" constant="12" id="KPw-NF-Apd"/>
+                <constraint firstItem="Nmr-0h-5Rm" firstAttribute="centerX" secondItem="i5M-Pr-FkT" secondAttribute="centerX" id="R6O-25-ao1"/>
+                <constraint firstItem="Pcn-9Q-Z6r" firstAttribute="centerY" secondItem="i5M-Pr-FkT" secondAttribute="centerY" id="WBD-Nj-AIY"/>
+                <constraint firstItem="Pcn-9Q-Z6r" firstAttribute="centerX" secondItem="A1U-73-dEg" secondAttribute="centerX" id="XIQ-0V-p76"/>
+                <constraint firstAttribute="bottom" secondItem="d2i-U0-xXC" secondAttribute="bottom" id="ZdN-N9-Qc4"/>
+                <constraint firstItem="A1U-73-dEg" firstAttribute="bottom" secondItem="Nmr-0h-5Rm" secondAttribute="bottom" constant="16" id="a5r-0p-OBU"/>
+                <constraint firstItem="qZj-UE-hKu" firstAttribute="centerX" secondItem="i5M-Pr-FkT" secondAttribute="centerX" id="mDy-Yf-R1K"/>
+                <constraint firstItem="d2i-U0-xXC" firstAttribute="top" secondItem="i5M-Pr-FkT" secondAttribute="top" id="mta-8A-Ezq"/>
+                <constraint firstItem="d2i-U0-xXC" firstAttribute="leading" secondItem="A1U-73-dEg" secondAttribute="leading" id="y3Q-Mt-taI"/>
+            </constraints>
+            <viewLayoutGuide key="safeArea" id="A1U-73-dEg"/>
+        </view>
+    </objects>
+    <resources>
+        <image name="FlashOff" width="64" height="64"/>
+    </resources>
+</document>

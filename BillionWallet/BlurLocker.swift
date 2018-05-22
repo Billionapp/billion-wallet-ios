@@ -8,54 +8,49 @@
 
 import Foundation
 
-struct BlurLocker {
+extension UIView {
+    func findFirstResponder() -> UIResponder? {
+        if self.isFirstResponder {
+            return self
+        }
+        for view in subviews {
+            if let responder = view.findFirstResponder() {
+                return responder
+            }
+        }
+        return nil
+    }
+}
+
+class BlurLocker {
     let window: UIWindow
+    weak var blurEffectView: UIView! = nil
+    weak var firstResponder: UIResponder? = nil
+    
+    init(window: UIWindow) {
+        self.window = window
+    }
     
     func addBlur() {
-        let blurEffect = UIBlurEffect(style: UIBlurEffectStyle.dark)
-        let blurEffectView = UIVisualEffectView(effect: blurEffect)
-        blurEffectView.frame = window.frame
-        blurEffectView.tag = 11
-        blurEffectView.alpha = 0
+        let screen = captureScreen(view: window)
+        let imageView = UIImageView(frame: window.frame)
+        imageView.image = screen
+        self.firstResponder = self.window.findFirstResponder()
         self.window.endEditing(true)
-        self.window.addSubview(blurEffectView)
+        self.window.addSubview(imageView)
         UIView.animate(withDuration: 0.2) {
-            blurEffectView.alpha = 1.0
+            imageView.alpha = 1.0
         }
+        self.blurEffectView = imageView
     }
     
     func removeBlur() {
-        guard let view = self.window.viewWithTag(11) else {return}
-        showKeyboardIfNeeded()
+        guard let view = blurEffectView else { return }
+        firstResponder?.becomeFirstResponder()
         UIView.animate(withDuration: 0.2, animations: {
             view.alpha = 0
         }) { _ in
             view.removeFromSuperview()
         }
-    }
-}
-
-//MARK: - Private methods - 
-extension BlurLocker {
-    fileprivate func showKeyboardIfNeeded() {
-        guard let topVC = UIApplication.topViewController() else {return}
-        for subview in topVC.view.subviews {
-            if let textField = subview as? UITextField {
-                textField.becomeFirstResponder()
-            }
-        }
-    }
-}
-
-extension UIApplication {
-    class func topViewController(controller: UIViewController? = UIApplication.shared.keyWindow?.rootViewController) -> UIViewController? {
-        if let navigationController = controller as? UINavigationController {
-            return topViewController(controller: navigationController.visibleViewController)
-        }
-        
-        if let presented = controller?.presentedViewController {
-            return topViewController(controller: presented)
-        }
-        return controller
     }
 }

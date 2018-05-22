@@ -10,6 +10,8 @@ import UIKit
 
 class SettingsPasswordViewController: BaseViewController<SettingsPasswordVM> {
     
+    typealias LocalizedStrings = Strings.Settings.Password
+    
     weak var router: MainRouter?
     
     fileprivate var dataManager: StackViewDataManager!
@@ -22,10 +24,16 @@ class SettingsPasswordViewController: BaseViewController<SettingsPasswordVM> {
         viewModel.delegate = self
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        removeSwipeDownGesture()
+        navigationController?.addSwipeDownPop()
+    }
+    
     fileprivate func setupMenuStackView() {
         titledView = TitledView()
-        titledView.title = "Touch ID and password"
-        titledView.subtitle = "Set up using the Touch ID and password to sign in to the application"
+        titledView.title = viewModel.title
+        titledView.subtitle = viewModel.subtitle
         view.addSubview(titledView)
         
         menuStackView = MenuStackView()
@@ -36,17 +44,19 @@ class SettingsPasswordViewController: BaseViewController<SettingsPasswordVM> {
     
     fileprivate func show(isTouchIdEnabled: Bool) {
         
+        let title = viewModel.securityButtonTitle
+        
         dataManager.clear()
         
         dataManager.append(container:
             ViewContainer<SectionView>(item: [
-                ViewContainer<SwitchSheetView>(item: (title: "Use Touch ID", isOn: isTouchIdEnabled), actions: [touchIdAction()]),
-                ViewContainer<ButtonSheetView>(item: .filetree(title: "Change password"), actions: [changePasswordAction()])
+                ViewContainer<SwitchSheetView>(item: (title: title, isOn: isTouchIdEnabled), actions: [touchIdAction()]),
+                ViewContainer<ButtonSheetView>(item: .filetree(title: LocalizedStrings.passwordChange), actions: [changePasswordAction()])
                 ]))
         
         dataManager.append(container:
             ViewContainer<SectionView>(item: [
-                ViewContainer<ButtonSheetView>(item: .default(title: "Back"), actions: [dismissAction()])
+                ViewContainer<ButtonSheetView>(item: .default(title: LocalizedStrings.back), actions: [dismissAction()])
                 ]))
         menuStackView.resize(in: view)
     }
@@ -72,6 +82,11 @@ extension SettingsPasswordViewController: SettingsPasswordVMDelegate {
     
     func didEnableTouchId(_ isOn: Bool) {
         show(isTouchIdEnabled: isOn)
+    }
+    
+    func didPasswordChanged() {
+        let popup = PopupView(type: .ok, labelString: LocalizedStrings.passwordChanged)
+        UIApplication.shared.keyWindow?.addSubview(popup)
     }
     
 }

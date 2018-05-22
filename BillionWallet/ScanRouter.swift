@@ -16,20 +16,25 @@ enum ScanKey {
 final class ScanRouter: Router {
     
     // MARK: - Private
-    private weak var mainRouter: MainRouter?
+    private weak var mainRouter: MainRouter!
+    private weak var app: Application!
+    private var qrResolver: QrResolver
+    
     
     // MARK: - Lifecycle
-    init(mainRouter: MainRouter) {
+    init(mainRouter: MainRouter, app: Application, qrResolver: QrResolver) {
         self.mainRouter = mainRouter
+        self.app = app
+        self.qrResolver = qrResolver
     }
     
     // MARK: - Start routing
     func run() {
-        guard let router = mainRouter else { return }
-        
-        // MARK: Inject dependencies or address only from mainRouter?.application to viewModel
-        let viewModel = ScanVM(provider: router.application.scannerProvider)
+        let viewModel = ScanVM(provider: app.scannerProvider,
+                               accountProvider: app.accountProvider,
+                               qrResolver: qrResolver)
         let scanViewController = ScanViewController(viewModel: viewModel)
-        mainRouter?.navigationController.push(viewController: scanViewController)
+        scanViewController.mainRouter = mainRouter
+        mainRouter.navigationController.push(viewController: scanViewController)
     }
 }

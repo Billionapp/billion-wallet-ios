@@ -66,7 +66,8 @@ typedef struct _BRUTXO {
 @property (nonatomic, readonly) NSSet * _Nonnull allReceiveAddresses;
 
 // all previously generated internal addresses
-@property (nonatomic, readonly) NSSet * _Nonnull allChangeAddresses;
+@property (nonatomic, readonly) NSSet<NSString *> * _Nonnull allChangeAddresses;
+@property (nonatomic, readonly) NSArray<NSString *> * _Nonnull allChangeAddressesArray;
 
 // NSValue objects containing UTXO structs
 @property (nonatomic, readonly) NSArray * _Nonnull unspentOutputs;
@@ -171,6 +172,10 @@ typedef struct _BRUTXO {
 - (uint64_t)feeForTxSize:(NSUInteger)size;
 
 // add addresses imediately after Notification transaction received
-- (void)addAddressesAfterNotificationTxImediately;
+- (void)addAddressesAfterNotificationTxImediately: (uint32_t) txBlockHeight;
+
+- (NSDictionary<NSValue*, BRTransaction*> * _Nonnull)getAllTxs;
+- (NSString * _Nullable)privateKeyForAddress:(NSString * _Nonnull) address;
+- (NSString * _Nullable)partnerAddressFromArray:(NSArray<NSString *> * _Nonnull)addresses;
 
 @end

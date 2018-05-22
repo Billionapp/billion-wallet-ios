@@ -18,7 +18,7 @@ extension LocalCrypto {
     
     /// Key derivation function. Bread C variant.
     struct pbkdf2 {
-        static func deriveKey(_ entropy: Data, salt saltData: Data) -> Data {
+        static func deriveKey(_ entropy: Data, salt saltData: Data) throws -> Data {
             let derivedKeySize = 512/8
             
             let dk = UnsafeMutableRawPointer.allocate(bytes: derivedKeySize, alignedTo: 1)

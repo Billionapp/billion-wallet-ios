@@ -1,0 +1,18 @@
+
+/* Enter amount title */
+"ReceiveRequest.amountPlaceholder" = "輸入金額";
+
+/* Label show balance of the user */
+"ReceiveRequest.balanceTitle" = "你的餘額";
+
+/* This field not translating */
+"ReceiveRequest.viewLabelFormat" = "  %@  ";
+
+/* placeholder for a local transaction note */
+"ReceiveRequest.commentPlaceholder" = "附言";
+
+/* Payment request title */
+"ReceiveRequest.receiveTitle" = "付款請求";
+
+/* Label shown an amount of payment request */
+"ReceiveRequest.receiveTitleAmountFormat" = "付款請求\n%@";

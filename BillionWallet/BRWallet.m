@@ -54,13 +54,14 @@ static NSUInteger txAddressIndex(BRTransaction *tx, NSArray *chain) {
 
 @property (nonatomic, strong) id<BRKeySequence> sequence;
 @property (nonatomic, strong) NSData *masterPublicKey;
-@property (nonatomic, strong) NSMutableArray *internalAddresses, *externalAddresses;
+@property (nonatomic, strong) NSMutableSet<NSString *> *internalAddressesSet;
+@property (nonatomic, strong) NSMutableArray<NSString *> *internalAddresses, *externalAddresses;
 @property (nonatomic, strong) NSMutableSet *allAddresses, *usedAddresses;
 @property (nonatomic, strong) NSSet *spentOutputs, *invalidTx, *pendingTx;
 @property (nonatomic, strong) NSMutableOrderedSet *transactions;
 @property (nonatomic, strong) NSOrderedSet *utxos;
 @property (nonatomic, strong) NSMutableDictionary *allTx;
-@property (nonatomic, strong) NSArray *balanceHistory;
+@property (nonatomic, strong) NSArray<NSNumber *>* balanceHistory;
 @property (nonatomic, assign) uint32_t bestBlockHeight;
 @property (nonatomic, strong) NSData *(^seed)(NSString *authprompt, uint64_t amount);
 @property (nonatomic, strong) NSManagedObjectContext *moc;
@@ -82,6 +83,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     self.seed = seed;
     self.allTx = [NSMutableDictionary dictionary];
     self.transactions = [NSMutableOrderedSet orderedSet];
+    self.internalAddressesSet = [NSMutableSet set];
     self.internalAddresses = [NSMutableArray array];
     self.externalAddresses = [NSMutableArray array];
     self.allAddresses = [NSMutableSet set];
@@ -98,7 +100,12 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         NSArray *entities = [ForeignPaymentCodeEntity.allObjects arrayByAddingObjectsFromArray:ForeignFriendEntity.allObjects];
         
         if (entities.count != 0) {
+            // TODO: Need to research
             for (ForeignPaymentCodeEntity *ent in entities) {
+                [receiveAddresses addObjectsFromArray:ent.receiveAddresses];
+            }
+            
+            for (ForeignFriendEntity *ent in entities) {
                 [receiveAddresses addObjectsFromArray:ent.receiveAddresses];
             }
             
@@ -113,6 +120,9 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
                 
                 while (e.index >= a.count) [a addObject:[NSNull null]];
                 a[e.index] = e.address;
+                if (e.internal) {
+                    [self.internalAddressesSet addObject:e.address];
+                }
                 [self.allAddresses addObject:e.address];
             }
         }
@@ -230,7 +240,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
             NSString *addr = [BRKey keyWithPublicKey:pubKey].address;
         
             if (! addr) {
-                NSLog(@"error generating keys");
+                NSLog(@"[ERROR] Error generating address for key: %@", pubKey);
                 return nil;
             }
 
@@ -244,6 +254,9 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 
             [self.allAddresses addObject:addr];
             [(internal) ? self.internalAddresses : self.externalAddresses addObject:addr];
+            if (internal) {
+                [self.internalAddressesSet addObject:addr];
+            }
             [a addObject:addr];
             n++;
         }
@@ -336,9 +349,18 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
                         tx.lockTime > now) pending = YES; // future locktime
                 }
             
-                for (NSNumber *amount in tx.outputAmounts) { // check that no outputs are dust
-                    if (amount.unsignedLongLongValue < TX_MIN_OUTPUT_AMOUNT) pending = YES;
+                for (NSUInteger i = 0; i < tx.outputAmounts.count; ++i) {
+                    unsigned long long amount = [tx.outputAmounts[i] unsignedLongLongValue];
+                    id address = tx.outputAddresses[i];
+                    if (amount < TX_MIN_OUTPUT_AMOUNT && ![address isEqual:[NSNull null]]) pending = YES;
                 }
+                
+                // NOTE: This is and old logic regarding "pending" transaction status
+                // It will mark all transactions with OP_RETURN script to be marked as "pending"
+                // NotificationTransaction to PaymentCode contains OP_RETURN, so we needed to rework this
+//                for (NSNumber *amount in tx.outputAmounts) { // check that no outputs are dust
+//                    if (amount.unsignedLongLongValue < TX_MIN_OUTPUT_AMOUNT) pending = YES;
+//                }
                 
                 if (pending || [inputs intersectsSet:pendingTx]) {
                     [pendingTx addObject:uint256_obj(tx.txHash)];
@@ -431,7 +453,12 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 // all previously generated external addresses
 - (NSSet *)allChangeAddresses
 {
-    return [NSSet setWithArray:self.internalAddresses];;
+    return self.internalAddressesSet;
+}
+
+- (NSArray *)allChangeAddressesArray
+{
+    return self.internalAddresses;
 }
 
 // NSData objects containing serialized UTXOs
@@ -510,7 +537,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         
             // check for sufficient total funds before building a smaller transaction
             if (self.balance < amount + [self feeForTxSize:txSize + cpfpSize]) {
-                NSLog(@"Insufficient funds. %llu is less than transaction amount:%llu", self.balance,
+                NSLog(@"[ERROR] Insufficient funds. %llu is less than transaction amount:%llu", self.balance,
                       amount + [self feeForTxSize:txSize + cpfpSize]);
                 return nil;
             }
@@ -543,7 +570,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     }
     
     if (balance < amount + feeAmount) { // insufficient funds
-        NSLog(@"Insufficient funds. %llu is less than transaction amount:%llu", balance, amount + feeAmount);
+        NSLog(@"[ERROR] Insufficient funds. %llu is less than transaction amount:%llu", balance, amount + feeAmount);
         return nil;
     }
     
@@ -585,7 +612,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
             
             // check for sufficient total funds before building a smaller transaction
             if (self.balance < amount + [self feeForTxSize:txSize + cpfpSize]) {
-                NSLog(@"Insufficient funds. %llu is less than transaction amount:%llu", self.balance,
+                NSLog(@"[ERROR] Insufficient funds. %llu is less than transaction amount:%llu", self.balance,
                       amount + [self feeForTxSize:txSize + cpfpSize]);
                 return nil;
             }
@@ -609,8 +636,6 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         if (tx.blockHeight == TX_UNCONFIRMED && tx.inputHashes.count <= 10 && tx.outputAmounts.count <= 10 &&
             [self amountSentByTransaction:tx] == 0) cpfpSize += tx.size;
         
-        
-//        feeAmount = [self feeForTxSize:transaction.size + 34 + cpfpSize]; // assume we will add a change output
         feeAmount = [self feeForTransactionSize:(transaction.size + 34 + cpfpSize) andSatPerByte:satPerByte];
         if (self.balance > amount) feeAmount += (self.balance - amount) % 100; // round off balance to 100 satoshi
         
@@ -618,7 +643,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     }
     
     if (balance < amount + feeAmount) { // insufficient funds
-        NSLog(@"Insufficient funds. %llu is less than transaction amount:%llu", balance, amount + feeAmount);
+        NSLog(@"[ERROR] Insufficient funds. %llu is less than transaction amount:%llu", balance, amount + feeAmount);
         return nil;
     }
     
@@ -679,10 +704,6 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     for (NSString *address in transaction.outputAddresses) {
         if ((![address isEqual:[NSNull null]]) && ([address isEqualToString:notificationAddress])) {
             transaction.isNotification = YES;
-            dispatch_async(dispatch_get_main_queue(), ^{
-                AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication]delegate];
-                [appDelegate.app.pcProvider handleInputNotificationTransactionWithTransaction:transaction];
-            });
             return YES;
         }
     }
@@ -695,10 +716,6 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
             for (id elem in elements) {
                 if([elem isKindOfClass:NSData.class] && [(NSData*)elem isEqual:pcID]) {
                     transaction.isNotification = YES;
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication]delegate];
-                        [appDelegate.app.pcProvider handleInputNotificationTransactionWithTransaction:transaction];
-                    });
                     return YES;
                 }
             }
@@ -726,17 +743,54 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
     if (uint256_is_zero(txHash)) return NO;
 
     if (! [self containsTransaction:transaction]) {
-        if (transaction.blockHeight == TX_UNCONFIRMED) self.allTx[hash] = transaction;
+        if (transaction.blockHeight == TX_UNCONFIRMED) {
+            self.allTx[hash] = transaction;
+        }
         return NO;
     }
-
-    if (self.allTx[hash] != nil) return YES;
+    
+    
+    // Already registered
+    if (self.allTx[hash] != nil) {
+        NSLog(@"[DEBUG] received seen transaction %@", transaction);
+        return YES;
+    }
 
     //TODO: handle tx replacement with input sequence numbers (now replacements appear invalid until confirmation)
-    NSLog(@"[BRWallet] received unseen transaction %@", transaction);
+    NSLog(@"[INFO] received unseen transaction %@", transaction);
     
     self.allTx[hash] = transaction;
     [self.transactions insertObject:transaction atIndex:0];
+    AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+    ContactsProvider *contactsProvider = appDelegate.app.contactsProvider;
+    WalletProvider *wallet = appDelegate.app.walletProvider;
+
+    Transaction *btx = [[Transaction alloc] initWithBrTransaction: transaction walletProvider: wallet];
+    
+    BOOL isRescanNeeded = false;
+    
+    /// Retain receive address count if needed, updating bloom filter and rescan
+    NSArray *newPregeneratedReceiveAddresses = [contactsProvider getNewPregeneratedReceiveAddressesFor: btx];
+    if (newPregeneratedReceiveAddresses.count != 0) {
+        [self.allAddresses addObjectsFromArray:newPregeneratedReceiveAddresses];
+        [contactsProvider connectTransactionToContact:btx];
+        isRescanNeeded = true;
+    }
+    
+    /// Retain send address count if needed and rescan
+    NSArray *newPregeneratedSendAddresses = [contactsProvider getNewPregeneratedSendAddressesFor:btx];
+    if (newPregeneratedSendAddresses.count != 0) {
+        [contactsProvider connectTransactionToContact:btx];
+        isRescanNeeded = true;
+    }
+    
+    if (isRescanNeeded) {
+        UInt32 last = BRPeerManager.sharedInstance.lastBlockHeight;
+        [BRPeerManager.sharedInstance rescanFrom:last];
+    }
+    
+    [contactsProvider connectTransactionToContact:btx];
+    
     [self.usedAddresses addObjectsFromArray:transaction.inputAddresses];
     [self.usedAddresses addObjectsFromArray:transaction.outputAddresses];
     [self updateBalance];
@@ -757,7 +811,23 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         }
     }];
     
+    //Add addresses and rescan notification tx
+    if (transaction.isNotification) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+            [appDelegate.app.pcProvider handleInputNotificationTransactionWithTransaction:btx];
+        });
+    }
+    
     return YES;
+}
+
+- (void)updateRatesNotification:(NSTimeInterval)timestamp
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSDictionary *info = @{@"timestamp": @(timestamp)};
+        [[NSNotificationCenter defaultCenter] postNotificationName:BRPeerManagerNewBlockNotification object:nil userInfo:info];
+    });
 }
 
 // removes a transaction from the wallet along with any transactions that depend on its outputs
@@ -882,7 +952,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         if (! tx || (tx.blockHeight == height && tx.timestamp == timestamp)) continue;
         tx.blockHeight = height;
         tx.timestamp = timestamp;
-
+        
         if ([self containsTransaction:tx]) {
             [hash getValue:&h];
             [hashes addObject:[NSData dataWithBytes:&h length:sizeof(h)]];
@@ -891,13 +961,21 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         }
         else if (height != TX_UNCONFIRMED) [self.allTx removeObjectForKey:hash]; // remove confirmed non-wallet tx
     }
-
+    
     if (hashes.count > 0) {
         if (needsUpdate) {
             [self sortTransactions];
             [self updateBalance];
         }
-
+        
+        if(height != TX_UNCONFIRMED) {
+            for (NSData* hash in hashes) {
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"TransactionInBlock"
+                                                                    object:self
+                                                                  userInfo:@{@"TxHash" : [hash reverse]}];
+            }
+        }
+        
         [self.moc performBlockAndWait:^{
             @autoreleasepool {
                 NSMutableSet *entities = [NSMutableSet set];
@@ -932,6 +1010,10 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
                 }
             }
         }];
+    }
+    
+    if (txHashes.count != 0 && timestamp != 0) {
+        [self updateRatesNotification:timestamp];
     }
     
     return updated;
@@ -980,7 +1062,9 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
         BRTransaction *tx = self.allTx[hash];
         uint32_t n = [transaction.inputIndexes[i++] unsignedIntValue];
 
-        if (n >= tx.outputAmounts.count) return UINT64_MAX;
+        if (n >= tx.outputAmounts.count) {
+            return 0;
+        }
         amount += [tx.outputAmounts[n] unsignedLongLongValue];
     }
 
@@ -996,7 +1080,7 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 {
     NSUInteger i = [self.transactions indexOfObject:transaction];
     
-    return (i < self.balanceHistory.count) ? [self.balanceHistory[i] unsignedLongLongValue] : self.balance;
+    return (i < self.balanceHistory.count) ? (uint64_t)[self.balanceHistory[i] unsignedLongLongValue] : self.balance;
 }
 
 // Returns the block height after which the transaction is likely to be processed without including a fee. This is based
@@ -1072,26 +1156,70 @@ masterPublicKey:(NSData *)masterPublicKey seed:(NSData *(^)(NSString *authprompt
 }
 
 //Add addresses imediately after Notification transaction received
-- (void)addAddressesAfterNotificationTxImediately {
+- (void)addAddressesAfterNotificationTxImediately:(uint32_t) txBlockHeight {
     [self.moc performBlockAndWait:^{
         [ForeignPaymentCodeEntity setContext:self.moc];
+        [ForeignFriendEntity setContext:self.moc];
         
         NSMutableArray *receiveAddresses = [NSMutableArray new];
-        NSArray *entities = ForeignPaymentCodeEntity.allObjects;
         
-        if (entities.count != 0) {
-            for (ForeignPaymentCodeEntity *ent in entities) {
-                [receiveAddresses addObjectsFromArray:ent.receiveAddresses];
-            }
-            
-            for (NSString *addr in receiveAddresses) {
-                [self.allAddresses addObject: addr];
-            }
+        NSArray *entitiesPC = ForeignPaymentCodeEntity.allObjects;
+        for (ForeignPaymentCodeEntity *ent in entitiesPC) {
+            [receiveAddresses addObjectsFromArray:ent.receiveAddresses];
         }
-        
-        UInt32 last = BRPeerManager.sharedInstance.lastBlockHeight;
-        [BRPeerManager.sharedInstance rescanFrom:last-3];
+            
+        NSArray *entitiesFriend = ForeignFriendEntity.allObjects;
+        for (ForeignFriendEntity *ent in entitiesFriend) {
+            [receiveAddresses addObjectsFromArray:ent.receiveAddresses];
+        }
+            
+        for (NSString *addr in receiveAddresses) {
+            [self.allAddresses addObject: addr];
+        }
     }];
+    UInt32 last = txBlockHeight;
+    if (last == BLOCK_UNKNOWN_HEIGHT) {
+        last = BRPeerManager.sharedInstance.lastBlockHeight;
+    }
+    [BRPeerManager.sharedInstance rescanFrom:last-3];
 }
-     
+
+- (NSDictionary *)getAllTxs
+{
+    return self.allTx;
+}
+
+- (NSString *)privateKeyForAddress:(NSString *) address
+{
+    NSString *privKey = @"";
+    NSData *seed = self.seed(nil, 0);
+    
+    NSUInteger index = [self.internalAddresses indexOfObject:address];
+    if (index != NSNotFound) {
+        privKey = [self.sequence privateKey:(uint32_t)index internal:YES fromSeed:seed];
+        return privKey;
+    } else {
+        index = [self.externalAddresses indexOfObject:address];
+    }
+    
+    if (index != NSNotFound) {
+        privKey = [self.sequence privateKey:(uint32_t)index internal:NO fromSeed:seed];
+        return privKey;
+    } else {
+        AppDelegate *appDelegate = (AppDelegate *)[[UIApplication sharedApplication]delegate];
+        privKey = [appDelegate.app.pcProvider getPrivateKeyForPCContactWithAddress:address];
+        return privKey;
+    }
+}
+
+- (NSString *) partnerAddressFromArray:(NSArray<NSString *> *)addresses
+{
+    for (NSString * address in addresses) {
+        if (![_internalAddressesSet containsObject:address]) {
+            return address;
+        }
+    }
+    return nil;
+}
+
 @end

@@ -27,6 +27,3 @@ enum FeeSize: String, Equatable {
     }
     
 }
-
-
-

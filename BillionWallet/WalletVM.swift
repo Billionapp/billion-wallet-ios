@@ -22,13 +22,14 @@ class WalletVM {
     weak var feeProvider: FeeProvider?
     
     var balance: UInt64  {
-        guard let wallet = walletProvider?.manager.wallet else {return 0}
+        guard
+            let walletProvider = self.walletProvider,
+            let wallet = try? walletProvider.getWallet() else { return 0 }
         return wallet.balance
     }
     
     var stringBalance: String {
-        guard let provider = walletProvider else {return ""}
-        return provider.manager.string(forAmount: Int64(balance))
+        return Satoshi.amount(UInt64(balance))
     }
     
     var localCurrency: String {

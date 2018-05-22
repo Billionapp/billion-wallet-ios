@@ -1,0 +1,15 @@
+
+/* Label Add Contact */
+"AddContactScreen.title" = "新增聯絡人";
+
+/* Label Air Connectivity */
+"AddContactScreen.subtitle" = "Air Connectivity";
+
+/* Main title. Signals that contacts are being searched for. */
+"AddContact.finding" = "尋找附近聯絡人…";
+
+/* Hint label */
+"AddContact.hint" = "應開啟這模式";
+
+/* Scan Billion card button title */
+"AddContact.scanButton" = "掃描\nBillionCard";

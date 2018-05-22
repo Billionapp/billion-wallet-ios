@@ -8,6 +8,10 @@
 
 import UIKit
 
+// FIXME: Global functions
+
+fileprivate typealias LocalizedStrings = Strings.QRErrors
+
 func createQRFromString(_ str: String, size: CGSize, inverseColor: Bool = false) -> UIImage? {
     let data = str.data(using: String.Encoding.utf8)
     if let filter = CIFilter(name: "CIQRCodeGenerator") {
@@ -19,27 +23,26 @@ func createQRFromString(_ str: String, size: CGSize, inverseColor: Bool = false)
         colorFilter.setValue(filter.outputImage, forKey: "inputImage")
         
         if inverseColor {
-            colorFilter.setValue(CIColor.clear, forKey: "inputColor1")
-            colorFilter.setValue(CIColor.white, forKey: "inputColor0")
+            colorFilter.setValue(CIColor.white, forKey: "inputColor1")
+            colorFilter.setValue(CIColor.clear, forKey: "inputColor0")
         }
         
         guard let qrCodeImage = colorFilter.outputImage else {
             return nil
         }
+        
 
         let scaleX = size.width / qrCodeImage.extent.size.width
         let scaleY = size.height / qrCodeImage.extent.size.height
         let transform = CGAffineTransform(scaleX: scaleX, y: scaleY)
         
-        if let output = filter.outputImage?.transformed(by: transform) {
-            guard let filteredImage = reduceBrightness(ciImage: output) else {return nil}
+        if let output = colorFilter.outputImage?.transformed(by: transform) {
+            let filteredImage = UIImage(ciImage: output)
             return filteredImage
         }
     }
     return nil
 }
-
-
 
 func performQRCodeDetection(image: CIImage, success: (String) -> Void, failure: (String) -> Void) {
     var detector: CIDetector?
@@ -49,7 +52,7 @@ func performQRCodeDetection(image: CIImage, success: (String) -> Void, failure: 
     if let det = detector  {
         let features = det.features(in: image) as! [CIQRCodeFeature]
         if features.count == 0 {
-            failure("Photo does not contain QRcode")
+            failure(LocalizedStrings.noQrInPhoto)
         } else {
             for feature in features {
                 decode = feature.messageString!
@@ -59,7 +62,7 @@ func performQRCodeDetection(image: CIImage, success: (String) -> Void, failure: 
             } else if let pc = try? PaymentCode.init(with: decode) {
                 success(pc.serializedString)
             } else {
-                failure("It's not a bitcoin address")
+                failure(LocalizedStrings.noBitcoinAddress)
             }
         }
     }
@@ -87,7 +90,7 @@ fileprivate func reduceBrightness(ciImage: CIImage) -> UIImage? {
     guard let brightnessfilter = CIFilter(name: "CIColorControls") else {return nil}
     
     brightnessfilter.setValue(ciImage, forKey: "inputImage")
-    brightnessfilter.setValue(0.3 as Float, forKey: "inputBrightness")
+    brightnessfilter.setValue(0.1 as Float, forKey: "inputBrightness")
     
     guard let outputImage = brightnessfilter.outputImage else {return nil}
     guard let imageRef = context.createCGImage(outputImage, from: outputImage.extent) else {

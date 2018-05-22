@@ -1,0 +1,30 @@
+
+/* Screen title for failure transcation details */
+"TxFailureDetails.title" = "Отправка не удалась";
+
+/* Outgoing transaction title */
+"OutgoingTxTitle" = "Исходящая транзакция";
+
+/* Retry transaction */
+"TxFailureDetails.retry" = "Повторить";
+
+/* Delete transaction */
+"TxFailureDetails.delete" = "Удалить";
+
+/* byCurrentRate label */
+"TxFailureDetails.byCurrentRate" = "по текущему курсу";
+
+/* static text below fee label */
+"FeeLabel" = "комиссия сети";
+
+/* Transaction fee format string in local currency (i.e. 9000 HK$ (100000 sat)) */
+"FeeValueFormat" = "%@ (%@)";
+
+/* Receiver address on outgoing transaction */
+"AddressTitle" = "адрес получателя";
+
+/* Confirmations count label */
+"TxFailureDetails.confirmations" = "Подтверждения";
+
+/* Alert displayed after receiver address is copied */
+"Alert.addressCopied" = "Адрес скопирован в буфер обмена";

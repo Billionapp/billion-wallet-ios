@@ -1,0 +1,50 @@
+
+/* Confifmation Time in example 10 minutes */
+"Formatter.confifmationTime" = "≈%@";
+
+/* Label shown when app is waiting for network */
+"BitcoinNetworkConectionStatus.connecting" = "等待網路中";
+
+/* Label shown when app is syncing with blockchain */
+"BitcoinNetworkConectionStatus.syncing" = "掃描區塊鏈中";
+
+/* Label shown when app was synced with blockchain */
+"BitcoinNetworkConectionStatus.synced" = "已掃瞄";
+
+/* Account balance after current transaction */
+"Balance.balanceAfter" = "交易後餘額";
+
+/* Unlock wallet */
+"Balance.unlockText" = "解鎖";
+
+/* Billion product name */
+"Balance.billionText" = "Billion";
+
+/* 'Unlock' message tail when Touch ID/Face ID is disabled */
+"Balance.unlockWithPin" = "使用密碼";
+
+/* 'Unlock' message tail when Touch ID is enabled */
+"Balance.unlockWithTouchId" = "使用Touch ID";
+
+/* 'Unlock' message tail when Face ID is enabled (iPhone X only) */
+"Balance.unlockWithFaceId" = "使用Face ID";
+
+/* Your balance */
+"Balance.yourBalanceText" = "你的餘額";
+
+/* Label shown when something with transaction went wrong and she failed */
+"TxFailure.header" = "交易失敗";
+
+/* Label shown when app can't recognize QR-code in provided image */
+"QRErrors.noQrInPhoto" = "相片中沒有可用的二維碼";
+
+/* Label shown when selected image does not contain Bitcoin address */
+"QRErrors.noBitcoinAddress" = "相片中沒有有效的比特幣地址";
+
+/* This label shown when you unlock app with face id */
+"Authentication.faceIDAuthReason" = "使用Face ID作出認證";
+
+/* Fee provider did not yet finished loading. */
+"OtherErrors.Fee.notLoaded" = "FeeProvider 沒有讀取手續費資料";
+
+"DEBUG" = "測試";

@@ -12,6 +12,7 @@ public enum PaymentCodeError: LocalizedError {
     case unsupportedVersion
     case binaryDeserialization
     case invalidPaymentCode(String)
+    case keyNotMatchesInput
     
     public var errorDescription: String? {
         switch self {
@@ -21,6 +22,8 @@ public enum PaymentCodeError: LocalizedError {
             return String(format: NSLocalizedString("Payment code %@ is invalid", comment: ""), pc)
         case .binaryDeserialization:
             return NSLocalizedString("Binary deserialization failed", comment: "")
+        case .keyNotMatchesInput:
+            return NSLocalizedString("Key not matches 0th input of transaction", comment: "")
         }
     }
 }
@@ -32,23 +35,6 @@ public enum PaymentCodeError: LocalizedError {
 fileprivate func binaryDeserialize(_ data: Data) -> XPub {
     let d = data.subdata(in: Range<Int>(2...66))
     return XPub(d)
-}
-
-/// Check if given private key matches 0th input of transaction
-///
-/// - Parameters:
-///   - key: private key to check
-///   - transaction: transaction to check against
-/// - Returns: true if key matches, false otherwize
-fileprivate func isKey(_ key: Priv, matches transaction: BRTransaction) -> Bool {
-    guard let address = transaction.inputAddresses.first! as? NSString else { return false }
-    guard let keyAddress = BRKey(secret: key.uint256, compressed: true)?.address else { return false }
-    if address as String == keyAddress {
-        return true
-    } else {
-        guard let uncompressedAddress = BRKey(secret: key.uint256, compressed: false)?.address else { return false }
-        return address as String == uncompressedAddress
-    }
 }
 
 /// Simply xor data to mask/unmask payment code
@@ -72,48 +58,13 @@ fileprivate func xorData(_ data: Data, with blindingFactor: XPriv) -> Data {
 ///
 /// - Parameter payload: 80-byte payload
 /// - Returns: OP_RETURN transaction script
-fileprivate func opReturnScript(with payload: Data) -> Data {
+func opReturnScript(with payload: Data) -> Data {
     var script = Data()
     script.append(0x6a as UInt8) // OP_RETURN
     script.append(0x4c as UInt8) // OP_PUSHDATA1
     script.append(0x50 as UInt8) // length 80
     script.append(payload)
     return script
-}
-
-/// Recover payload from OP_RETURN transaction script
-///
-/// - Parameter script: OP_RETURN transaction script
-/// - Returns: payload data or nil on fail data
-fileprivate func getOpReturnPayload(from script: Data) -> Data? {
-    guard isOpReturnScript(script) else { return nil }
-    return script.subdata(in: Range<Int>(3..<83))
-}
-
-/// Check if given data looks like OP_RETURN transaction script
-///
-/// - Parameter script: possobly OP_RETURN transaction script
-/// - Returns: true if data lookls like valid OP_RETURN script
-fileprivate func isOpReturnScript(_ script: Data) -> Bool {
-    return script[0] == 0x6a &&
-        script[1] == 0x4c &&
-        script[2] == 0x50
-}
-
-/// Exctract 0th input outpoint from transaction
-///
-/// - Parameter transaction: bitcoin transaction with inputs
-/// - Returns: 0th outpoint structure
-func extractDesignatedOutpoint(from transaction: BRTransaction) -> TXOutpointS {
-    let dIHashValue = transaction.inputHashes.first! as! NSValue
-    var dIHash: UInt256 = UInt256()
-    dIHashValue.getValue(&dIHash)
-    let dIIndex = transaction.inputIndexes.first! as! UInt32
-    
-    let d = NSMutableData()
-    d.append( UInt256S(dIHash).data )
-    d.append( dIIndex )
-    return TXOutpointS(data: d as Data)
 }
 
 class PaymentCode {
@@ -126,13 +77,13 @@ class PaymentCode {
     var networkPrefix: NetworkPrefix = .main
     
     /// Payment code public key
-    var xPub: XPub
+    let xPub: XPub
     
     /// Public key for Notification address (PC/0)
-    var notificationKey: Pub {
+    lazy var notificationKey: Pub = {
         let pub0Data = BIP44Sequence().publicKey(0, forPaymentCodePub: xPub.data)
         return Pub(data: pub0Data)
-    }
+    }()
     
     /// Binary serialized
     var binaryForm: Data {
@@ -157,7 +108,7 @@ class PaymentCode {
     }
     
     /// false for unowned payment codes
-    var isInternal: Bool = false
+    var isInternal: Bool { return false }
     
     init() { xPub = XPub(Data(repeating: 0x00, count: 65)) }
     
@@ -246,11 +197,11 @@ class PaymentCode {
     ///   - outpoint: Designated outpoint of the notification transaction
     ///   - key: Designated Private key of the notification transaction
     /// - Returns: Notification payload
-    func notificationPayload(for paymentCode: PaymentCode, outpoint: TXOutpointS, key: Priv) -> Data {
+    func notificationPayload(for paymentCode: PaymentCode, outpoint: TXOutpointS, key: Priv) throws -> Data {
         let bobNotifKey = paymentCode.notificationKey
         
         let secretPoint = BIP47.secretPoint(priv: key, pub: bobNotifKey)
-        let blindingFactor = BIP47.blindingFactor(secretPoint, outpoint: outpoint)
+        let blindingFactor = try BIP47.blindingFactor(secretPoint, outpoint: outpoint)
         let payload = maskedBinary(with: blindingFactor)
         return payload
     }
@@ -262,8 +213,8 @@ class PaymentCode {
     ///   - outpoint: Designated outpoint of the notification transaction
     ///   - key: Designated Private key of the notification transaction
     /// - Returns: Notification script
-    func notificationOpReturnScript(for paymentCode: PaymentCode, outpoint: TXOutpointS, key: Priv) -> Data {
-        let payload = notificationPayload(for: paymentCode, outpoint: outpoint, key: key)
+    func notificationOpReturnScript(for paymentCode: PaymentCode, outpoint: TXOutpointS, key: Priv) throws -> Data {
+        let payload = try notificationPayload(for: paymentCode, outpoint: outpoint, key: key)
         let script = opReturnScript(with: payload)
         return script
     }
@@ -288,57 +239,13 @@ class PaymentCode {
     }
 }
 
-// MARK: PaymentCode + BRKey
-// Methods and properties dependant on BreadWallet classes
-extension PaymentCode {
-    /// Public notification key in the form of BRKey.
-    ///
-    /// Useful for accessing from BRWallet
-    var notificationBRKey: BRKey? {
-        let pub0 = self.notificationKey
-        let key = BRKey(publicKey: pub0.data)
-        return key
-    }
-    
-    /// Notification address of current payment code
-    var notificationAddress: String? {
-        return self.notificationBRKey?.address
-    }
-    
-    /// Creates a notification payload, ready to be inserted into OP_RETURN script
-    ///
-    /// - Parameters:
-    ///   - paymentCode: Recepient payment code used to create a mask
-    ///   - transaction: Notification transaction
-    ///   - key: Designated Private key of the notification transaction
-    /// - Returns: Notification payload, nil if key doesn't match transaction input
-    func notificationPayload(for paymentCode: PaymentCode, transaction: BRTransaction, key: Priv) -> Data? {
-        guard isKey(key, matches: transaction) else { return nil }
-        
-        let outpoint = extractDesignatedOutpoint(from: transaction)
-        return notificationPayload(for: paymentCode, outpoint: outpoint, key: key)
-    }
-    
-    /// Creates a notification OP_RETURN script
-    ///
-    /// - Parameters:
-    ///   - paymentCode: Recepient payment code used to create a mask
-    ///   - outpoint: Designated outpoint of the notification transaction
-    ///   - key: Designated Private key of the notification transaction
-    /// - Returns: Notification script, nil if key doesn't match transaction input
-    func notificationOpReturnScript(for paymentCode: PaymentCode, transaction: BRTransaction, key: Priv) -> Data? {
-        let payload = notificationPayload(for: paymentCode, transaction: transaction, key: key)
-        guard payload != nil else { return nil }
-        
-        let script = opReturnScript(with: payload!)
-        return script
-    }
-}
 
 class PrivatePaymentCode: PaymentCode {
     
     /// Payment code private key. nil for unowned payment codes.
     var xPriv: XPriv
+    
+    override var isInternal: Bool { return true }
     
     /// Private key for Notification address (PC/0)
     var notificationPrivateKey: Priv {
@@ -351,18 +258,15 @@ class PrivatePaymentCode: PaymentCode {
     /// - Parameter privateKey: Extended private key for PC
     init(_ privateKey: XPriv) {
         xPriv = privateKey
-
-        super.init()
         
-        isInternal = true
-        xPub = privateKey.pub
+        super.init(privateKey.pub)
     }
     
-    /// Convenience initializer for xPriv packed in Data
+    /// Convenience crash safe initializer for xPriv packed in Data
     ///
     /// - Parameter privateData: Data struct containing xPriv
-    convenience init(priv privateData: Data) {
-        let priv = XPriv(privateData)
+    convenience init(priv privateData: Data) throws {
+        let priv = try XPriv(privateData)
         self.init(priv)
     }
     
@@ -373,16 +277,16 @@ class PrivatePaymentCode: PaymentCode {
     ///   - oupoint: Designated outpoint of the notification transaction
     ///   - key: Designated public key
     /// - Returns: Extracted payment code
-    func unmaskPaymentCode(_ maskedPaymentCode: Data, oupoint: TXOutpointS, key: Pub) -> PaymentCode {
+    func unmaskPaymentCode(_ maskedPaymentCode: Data, oupoint: TXOutpointS, key: Pub) throws -> PaymentCode {
         let aliceNotifKey = self.notificationPrivateKey
         
         let secretPoint = BIP47.secretPoint(priv: aliceNotifKey, pub: key)
-        let blindingFactor = BIP47.blindingFactor(secretPoint, outpoint: oupoint)
+        let blindingFactor = try BIP47.blindingFactor(secretPoint, outpoint: oupoint)
         let masked = maskedPaymentCode.subdata(in: Range<Int>(2...66))
         let paymentCodeData = xorData(masked, with: blindingFactor)
         
         // can fail only in case of maskedPaymentCode has invalid size
-        return try! PaymentCode(pub: paymentCodeData)
+        return try PaymentCode(pub: paymentCodeData)
     }
     
     /// Creates a new ephemeral public key for the recipient represented by payment code (Alice -> Bob)
@@ -417,89 +321,30 @@ class PrivatePaymentCode: PaymentCode {
         
         return BIP47.ephemeralPrivKey(priv: bi, pub: A0)
     }
+    
+    /// Creates a new ephemeral public key to receive from sender represented by payment code (Bob -> Alice)
+    ///
+    /// - Parameters:
+    ///   - paymentCode: Sender's payment code
+    ///   - index: Index of a key to generate
+    /// - Returns: i-th ephemeral public key
+    func ephemeralReceivePubKey(from paymentCode: PaymentCode, i index: UInt32) -> Pub? {
+        guard let priv = ephemeralReceiveKey(from: paymentCode, i: index) else {
+            return nil
+        }
+        return privToPub(priv)
+    }
+    
+    private func privToPub(_ priv: Priv) -> Pub {
+        let point = Secp256k1.pointGen(priv.uint256)
+        return Pub(point)
+    }
 }
 
-// MARK: - PrivatePaymentCode + BRKey
-// Methods and properties dependant on BreadWallet classes
-extension PrivatePaymentCode {
-    /// Private notification key in the form of BRKey.
-    ///
-    /// Useful for accessing from BRWallet
-    var notificationPrivateBRKey: BRKey? {
-        let priv0 = self.notificationPrivateKey
-        let key = BRKey(secret: priv0.uint256, compressed: true)
-        return key
-    }
-    
-    /// Creates a new ephemeral send key for the recipient represented by payment code (Alice -> Bob)
-    ///
-    /// - Parameters:
-    ///   - paymentCode: Recipient's payment code
-    ///   - index: Index of a key to generate
-    /// - Returns: i-th ephemeral public key in the form of BRKey (ABi)
-    func ethemeralSendBRKey(to paymentCode: PaymentCode, i index: UInt32) -> BRKey? {
-        guard let sendKey = ephemeralSendKey(to: paymentCode, i: index) else { return nil }
-        return BRKey(publicKey: sendKey.data)
-    }
-    
-    /// Creates a new ephemeral receive key for the sender represented by payment code (Bob -> Alice)
-    ///
-    /// - Parameters:
-    ///   - paymentCode: Sender's payment code
-    ///   - index: Index of a key to generate
-    /// - Returns: i-th ephemeral private key in the form of BRKey (bai)
-    func ethemeralReceiveBRKey(from paymentCode: PaymentCode, i index: UInt32) -> BRKey? {
-        guard let receiveKey = ephemeralReceiveKey(from: paymentCode, i: index) else { return nil }
-        return BRKey(secret: receiveKey.uint256, compressed: true)
-    }
-    
-    /// Creates a number of receive keys for the sender represented by payment code (Bob -> Alice)
-    ///
-    /// - Parameters:
-    ///   - paymentCode: Sender's payment code
-    ///   - range: Range of key indexes
-    /// - Returns: Array of generated keys in form of BRKey
-    func ethemeralReceiveBRKeys(from paymentCode: PaymentCode, range: CountableRange<UInt32>) -> [BRKey?] {
-        var keys: [BRKey?] = []
-        for i in range {
-            let key = ethemeralReceiveBRKey(from: paymentCode, i: i)
-            keys.append(key)
-        }
-        return keys
-    }
-    
-    /// Extracts a payment code from the notification transaction
-    ///
-    /// <b>Warning!</b> If there are several op_return scripts, only first one will be used.
-    ///
-    /// - Parameter notificationTransaction: Received notification transaction
-    /// - Returns: Extracted payment code
-    func recoverCode(from notificationTransaction: BRTransaction) -> PaymentCode? {
-        let outpoint = extractDesignatedOutpoint(from: notificationTransaction)
-        let inScript = notificationTransaction.inputSignatures.first! as? NSData
-        
-        guard inScript != nil else { return nil }
-        let elems = inScript!.scriptElements()
-        let elemsLikePubK = elems.filter { (($0 as? Data)?.count ?? 0) == 33 }
-        
-        guard let pubData = elemsLikePubK.first as? Data else {
-            return nil
-        }
-        
-        let key = Pub(data: pubData)
-        
-        guard let outputScripts = notificationTransaction.outputScripts as? [Data] else {
-            return nil
-        }
-        
-        let maskedCodeScript = outputScripts.filter({ isOpReturnScript($0) }).first
-        
-        guard let maskedCodePayload = maskedCodeScript,
-            let maskedCode = getOpReturnPayload(from: maskedCodePayload)
-         else { return nil }
-        
-        let a = unmaskPaymentCode(maskedCode, oupoint: outpoint, key: key)
-        return a
-    }
-    
+enum PrivatePaymentCodeError: Error {
+    case noScript
+    case noPubData
+    case noOutputScripts
+    case noMaskedCode
+    case keyNotMatchesTransaction
 }

@@ -27,8 +27,5 @@ class SettingsRestoreVM {
         self.icloudProvider = icloudProvider
         self.defaultsProvider = defaultsProvider
     }
-    
-    func createWalletDigest() {
-        _ = accountProvider?.createNewWalletDigest()
-    }
+
 }

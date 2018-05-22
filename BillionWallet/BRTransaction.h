@@ -38,7 +38,8 @@
 
 typedef union _UInt256 UInt256;
 
-@interface BRTransaction : NSObject
+@interface
+BRTransaction : NSObject
 
 /**
  Address in form of NSString
@@ -77,6 +78,7 @@ typedef union _UInt256 UInt256;
  */
 @property (nonatomic, readonly) NSArray * _Nonnull outputScripts;
 
+@property (nonatomic, readonly) NSString * _Nonnull txId;
 
 //Notes for transaction
 @property (nonatomic, nullable) NSString *userNote;

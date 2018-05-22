@@ -9,6 +9,8 @@
 #ifndef BAppStructs_h
 #define BAppStructs_h
 
+@import Foundation;
+
 typedef struct {
     uint8_t txid[32];
     uint32_t index;

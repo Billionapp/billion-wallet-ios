@@ -11,6 +11,8 @@ import LocalAuthentication
 
 final class TouchIDManager {
 
+    typealias LocalizedStrings = Strings.Authentication
+    
     let authContext = LAContext()
     
     var isTouchIdOn: Bool {
@@ -22,32 +24,6 @@ final class TouchIDManager {
             let defaults = Defaults()
             defaults.isTouchIdEnabled = newValue
         }
-    }
-    
-    func authentificateUser(with password: String, success: () -> Void, failure: (String) -> Void) {
-        if BRWalletManager.getKeyChainPassword() != nil {
-            failure("Password is set")
-        } else {
-            BRWalletManager.setKeyChainPassword(password)
-            success()
-        }
-    }
-    
-    func unlock(password: String?, success: @escaping () -> Void, failure: @escaping (String) -> Void) {
-        if isTouchIdOn {
-            self.unlockWithTouchId(success: success, failure: failure)
-        } else {
-            guard let pas = password  else {
-                failure("Unknown error")
-                return
-            }
-            
-            self.unlockWithPassword(password: pas, success: success, failure: failure)
-        }
-    }
-    
-    func changePassword(with password: String?) {
-        BRWalletManager.setKeyChainPassword(password)
     }
     
     func touchIdAvailability(success: @escaping () -> Void, failure: @escaping (NSError) -> Void) {
@@ -66,9 +42,28 @@ final class TouchIDManager {
         }
     }
     
+    @available(iOS 11.0, *)
+    func biometryType() -> LABiometryType {
+        if authContext.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: nil) {
+            return authContext.biometryType
+        }
+        return authContext.biometryType
+    }
+    
+    func faceIdIsAvaliable() -> Bool {
+        if #available(iOS 11.0, *) {
+            return biometryType() == LABiometryType.faceID
+        }
+        return false
+    }
+    
     private func unlockWithTouchId(success: @escaping () -> Void, failure: @escaping (String) -> Void) {
+        var localizedReason = LocalizedStrings.touchIDAuthReason
+        if faceIdIsAvaliable() {
+            localizedReason = LocalizedStrings.faceIDAuthReason
+        }
         touchIdAvailability(success: {
-            self.authContext.evaluatePolicy(LAPolicy.deviceOwnerAuthenticationWithBiometrics, localizedReason: "Use your bio to authenticate.", reply: { (ok, error) in
+            self.authContext.evaluatePolicy(LAPolicy.deviceOwnerAuthenticationWithBiometrics, localizedReason: localizedReason, reply: { (ok, error) in
                 if ok {
                     DispatchQueue.main.async {
                         success()
@@ -81,19 +76,11 @@ final class TouchIDManager {
             failure(error)
         }
     }
-    
-    private func unlockWithPassword(password: String, success: () -> Void, failure: (String) -> Void) {
-        if password == BRWalletManager.getKeyChainPassword() {
-            success()
-        } else {
-            failure("Wrong password.")
-        }
-    }
-
 }
 
 extension TouchIDManager {
-    func errorMessageForLAErrorCode( error: NSError ) -> String{
+    func errorMessageForLAErrorCode( error: NSError ) -> String {
+        // FIXME: Localize reasons
         var message = ""
         
         switch error {
@@ -135,4 +122,5 @@ extension TouchIDManager {
         
         return message
     }
+
 }
